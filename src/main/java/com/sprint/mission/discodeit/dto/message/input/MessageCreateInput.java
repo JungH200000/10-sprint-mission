@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.message.input;
 
-import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateRequest;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
@@ -10,7 +10,7 @@ public record MessageCreateInput(
         UUID channelId,
         UUID authorId,
         String content,
-        BinaryContentCreateInput[] attachments
+        BinaryContentCreateRequest[] attachments
 ) {
     public MessageCreateInput {
         if (attachments != null) {

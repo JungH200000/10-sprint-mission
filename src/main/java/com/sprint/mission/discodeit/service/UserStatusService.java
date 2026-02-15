@@ -14,14 +14,16 @@ public interface UserStatusService {
 
     // read
     UserStatus findUserStatusById(UUID userStatusId);
+    UserStatus findUserStatusByUserId(UUID userId);
 
     // all read
     List<UserStatus> findAllUserStatus();
 
     // update
-    UserStatus updateUserStatus(UserStatusUpdateRequest request);
+    UserStatus updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request);
     UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime);
 
     // delete
     void deleteUserStatus(UUID userStatusId);
+
 }

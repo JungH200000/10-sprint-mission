@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
 import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -47,16 +47,16 @@ public class BasicMessageService implements MessageService {
         Message message = new Message(channel, author, input.content());
 
         if (input.attachments() != null) {
-            for (BinaryContentCreateInput attachment : input.attachments()) {
+            for (BinaryContentCreateRequest attachment : input.attachments()) {
                 if (attachment == null) continue;
 
                 byte[] attachmentContent = attachment.bytes();
                 String contentType = attachment.contentType();
 
                 if (attachmentContent == null || attachmentContent.length == 0) continue;
-                BinaryContent binaryContent = new BinaryContent(contentType, attachmentContent);
-                message.addAttachmentId(binaryContent.getId());
-                binaryContentRepository.save(binaryContent);
+//                BinaryContent binaryContent = new BinaryContent(contentType, attachmentContent);
+//                message.addAttachmentId(binaryContent.getId());
+//                binaryContentRepository.save(binaryContent);
             }
         }
         linkMessage(author, channel, message);

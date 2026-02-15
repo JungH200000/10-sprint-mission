@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,7 +20,7 @@ public class BasicAuthService implements AuthService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public UserWithOnlineResponse login(LoginRequest loginRequest) {
+    public UserDto login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
         User user = userRepository.findByUserNameAndPassword(loginRequest.username(), loginRequest.password())
                 .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 username과 password입니다."));
@@ -36,8 +36,10 @@ public class BasicAuthService implements AuthService {
         return createUserInfo(user, userStatus);
     }
 
-    private UserWithOnlineResponse createUserInfo(User user, UserStatus userStatus) {
-        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUsername(), user.getNickName(),
-                user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
+    private UserDto createUserInfo(User user, UserStatus userStatus) {
+        return new UserDto(
+                user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+                user.getEmail(), user.getUsername(), user.getBirthday(),
+                user.getProfileId(), userStatus.isOnlineStatus());
     }
 }

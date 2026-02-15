@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDto;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ public class AuthController {
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity login(@RequestBody @Valid LoginRequest loginRequest) {
-        UserWithOnlineResponse result = authService.login(loginRequest);
+        UserDto result = authService.login(loginRequest);
 
         return ResponseEntity.status(200).body(result);
     }

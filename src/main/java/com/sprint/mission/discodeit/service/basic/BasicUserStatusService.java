@@ -42,19 +42,25 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    public UserStatus findUserStatusByUserId(UUID userId) {
+        validateUserByUserId(userId);
+        return validateAndGetUserStatusByUserId(userId);
+    }
+
+    @Override
     public List<UserStatus> findAllUserStatus() {
         return userStatusRepository.findAll();
     }
 
     @Override
-    public UserStatus updateUserStatus(UserStatusUpdateRequest request) {
-        if (request.lastOnlineTime() == null) {
-            throw new IllegalArgumentException("lastOnlineTime null로 입력되었습니다.");
+    public UserStatus updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request) {
+        if (request.newLastActiveAt() == null) {
+            throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
 
-        UserStatus userStatus = validateAndGetUserStatusByUserStatusId(request.userStatusId());
+        UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
 
-        userStatus.updateLastOnlineTime(request.lastOnlineTime());
+        userStatus.updateLastOnlineTime(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
         return userStatus;
@@ -76,6 +82,7 @@ public class BasicUserStatusService implements UserStatusService {
         validateUserStatusByUserStatusId(userStatusId);
         userStatusRepository.delete(userStatusId);
     }
+
 
     //// validation
     // user ID null & user 객체 존재 확인

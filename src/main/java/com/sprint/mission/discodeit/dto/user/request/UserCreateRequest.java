@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
-import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -9,16 +7,12 @@ import jakarta.validation.constraints.Pattern;
 public record UserCreateRequest(
         @NotBlank(message = "email이 입력되지 않았습니다.")
         @Pattern(regexp = "^\\S+$", message = "email은 공백이 허용되지 않습니다.")
-        @Email(message = "email 형식에 맞지 않습니다.")
+        @Email(message = "newEmail 형식에 맞지 않습니다.")
         String email,
 
-        @NotBlank(message = "username 입력되지 않았습니다.")
-        @Pattern(regexp = "^\\S+$", message = "username 공백이 허용되지 않습니다.")
+        @NotBlank(message = "newUsername 입력되지 않았습니다.")
+        @Pattern(regexp = "^\\S+$", message = "newUsername 공백이 허용되지 않습니다.")
         String username,
-
-        @NotBlank(message = "nickName이 입력되지 않았습니다.")
-        @Pattern(regexp = "^\\S+$", message = "nickName은 공백이 허용되지 않습니다.")
-        String nickName,
 
         @NotBlank(message = "password가 입력되지 않았습니다.")
         @Pattern(regexp = "^\\S+$", message = "password는 공백이 허용되지 않습니다.")
@@ -26,9 +20,6 @@ public record UserCreateRequest(
 
         @NotBlank(message = "birthday가 입력되지 않았습니다.")
         @Pattern(regexp = "^\\d{8}$", message = "birthday는 YYYYMMDD 형식이어야 합니다.")
-        String birthday,
-
-        @Valid
-        BinaryContentCreateInput profileImage
+        String birthday
 ) {
 }

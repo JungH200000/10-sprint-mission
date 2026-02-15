@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record LoginRequest(
-        @NotBlank(message = "username 입력되지 않았습니다.")
-        @Pattern(regexp = "^\\S+$", message = "username 공백이 허용되지 않습니다.")
+        @NotBlank(message = "newUsername 입력되지 않았습니다.")
+        @Pattern(regexp = "^\\S+$", message = "newUsername 공백이 허용되지 않습니다.")
         String username,
 
         @NotBlank(message = "password가 입력되지 않았습니다.")

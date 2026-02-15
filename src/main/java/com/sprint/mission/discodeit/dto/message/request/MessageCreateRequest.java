@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.message.request;
 
-import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -12,7 +12,7 @@ public record MessageCreateRequest(
 
        @NotBlank(message = "content가 입력되지 않았습니다.")
        String content,
-       BinaryContentCreateInput[] attachments
+       BinaryContentCreateRequest[] attachments
 ) {
     public MessageCreateRequest {
         if (attachments != null) {
