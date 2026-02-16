@@ -10,7 +10,7 @@ public interface UserRepository { // 데이터 관련 로직(저장, 조회, 삭
     void save(User user);
 
     Optional<User> findById(UUID userId);
-    Optional<User> findByUserNameAndPassword(String userName, String password);
+    Optional<User> findByUsername(String username);
 
     List<User> findAll();
 

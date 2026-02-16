@@ -100,7 +100,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found."));
     }
     public void validateUserStatusByUserStatusId(UUID userStatusId) {
         ValidationMethods.validateId(userStatusId);

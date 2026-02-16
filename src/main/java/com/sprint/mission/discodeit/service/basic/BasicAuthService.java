@@ -22,12 +22,15 @@ public class BasicAuthService implements AuthService {
     @Override
     public UserDto login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
-        User user = userRepository.findByUserNameAndPassword(loginRequest.username(), loginRequest.password())
-                .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 username과 password입니다."));
+        User user = userRepository.findByUsername(loginRequest.username())
+                .orElseThrow(() -> new NoSuchElementException("User with username " + loginRequest.username() + " not found."));
+        if (!user.getPassword().equals(loginRequest.password())) {
+            throw new IllegalArgumentException("Wrong password");
+        }
 
         // 유저 존재하면
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않은 userStatus입니다."));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + user.getId() + " not found."));
 
         // 온라인 상태 업데이트
         userStatus.updateLastOnlineTime(Instant.now());

@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import com.sprint.mission.discodeit.service.deletion.UserDeleteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +37,6 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
-    private final UserDeleteService userDeleteService;
 
     /**
      * 회원가입(사용자 등록)
@@ -90,8 +87,6 @@ public class UserController {
             @RequestPart @Valid UserUpdateRequest userUpdateRequest,
             @RequestPart(required = false) @Schema(description = "수정할 User 프로필 이미지") MultipartFile profile) {
         User user = userService.updateUser(userId, userUpdateRequest, profile);
-        UserStatus userStatus = userStatusService.findUserStatusByUserId(userId);
-
         UserDto result = createUserResponse(user);
 
         return ResponseEntity.status(200).body(result);
