@@ -8,7 +8,7 @@ public record ChannelUpdateInput(
         @NotNull(message = "ID가 null입니다.")
         UUID channelId,
         UUID ownerId,
-        String channelName,
-        String channelDescription
+        String name,
+        String description
 ) {
 }

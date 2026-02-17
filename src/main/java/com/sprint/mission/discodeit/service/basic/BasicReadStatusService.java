@@ -39,11 +39,11 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new IllegalStateException("이미 존재하는 ReadStatus가 있습니다.");
         }
 
-        boolean isNotJoin = channel.getChannelMembersList().stream()
-                .noneMatch(member -> member.getId().equals(input.userId()));
-        if (isNotJoin) {
-            throw new IllegalStateException("채널에 참여하지 않은 유저입니다.");
-        }
+//        boolean isNotJoin = channel.getChannelMembersList().stream()
+//                .noneMatch(member -> member.getId().equals(input.userId()));
+//        if (isNotJoin) {
+//            throw new IllegalStateException("채널에 참여하지 않은 유저입니다.");
+//        }
 
         ReadStatus readStatus = new ReadStatus(input.userId(), input.channelId());
         readStatusRepository.save(readStatus);
@@ -68,8 +68,22 @@ public class BasicReadStatusService implements ReadStatusService {
                     readStatus.getUpdatedAt(), readStatus.getLastReadTime()
             ));
         }
-
         return readStatusInfos;
+    }
+
+    @Override
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        validateReadStatusByReadStatusId(channelId);
+//        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
+//        List<ReadStatusResponse> readStatusInfos = new ArrayList<>();
+//        for (ReadStatus readStatus : readStatuses) {
+//            readStatusInfos.add(new ReadStatusResponse(
+//                    readStatus.getId(), readStatus.getUserId(),
+//                    readStatus.getChannelId(), readStatus.getCreatedAt(),
+//                    readStatus.getUpdatedAt(), readStatus.getLastReadTime()
+//            ));
+//        }
+        return readStatusRepository.findAllByChannelId(channelId);
     }
 
     @Override

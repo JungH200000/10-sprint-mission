@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageTime;
+import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelDtoWithLastMessageAt;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateInput;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
@@ -18,27 +19,27 @@ public interface ChannelService {
 
     // R. 읽기
     // 특정 채널 정보 읽기
-    ChannelResponseWithLastMessageTime findChannelById(UUID channelId);
+    ChannelDtoWithLastMessageAt findChannelById(UUID channelId);
 
     // R. 모두 읽기
     // 채널 목록 전체
-    List<ChannelResponseWithLastMessageTime> findAllByUserId(UUID userId);
-    // 특정 사용자가 참여한 모든 channel
-    List<UUID> findJoinChannelsByUserId(UUID userId);
+    List<ChannelDtoWithLastMessageAt> findAllByUserId(UUID userId);
+//    // 특정 사용자가 참여한 모든 channel
+//    List<UUID> findJoinChannelsByUserId(UUID userId);
 //    // 비공개 여부에 따른 채널 목록
-//    List<Channel> findPublicOrPrivateChannel(ChannelType channelType);
+//    List<Channel> findPublicOrPrivateChannel(ChannelType type);
 //    // 특정 사용자가 owner인 모든 채널
 //    List<Channel> findOwnerChannelsByUserId(UUID ownerId);
 
     // U. 수정
-    Channel updateChannelInfo(@Valid ChannelUpdateInput input);
-    // 채널 owner 변경
-    Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId);
-    // 채널 참여하기
-    Channel joinChannel(UUID userId, UUID channelId);
-    // 채널 나가기
-    Channel leaveChannel(UUID userId, UUID channelId);
+    Channel updateChannelInfo(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest);
+//    // 채널 owner 변경
+//    Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId);
+//    // 채널 참여하기
+//    Channel joinChannel(UUID userId, UUID channelId);
+//    // 채널 나가기
+//    Channel leaveChannel(UUID userId, UUID channelId);
 
     // D. 삭제
-    void deleteChannel(UUID ownerId, UUID channelId);
+    void deleteChannel(UUID channelId);
 }

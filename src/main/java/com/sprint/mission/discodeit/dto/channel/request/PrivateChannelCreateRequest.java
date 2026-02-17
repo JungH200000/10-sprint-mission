@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 public record PrivateChannelCreateRequest(
-        @NotNull(message = "ID가 null입니다.")
-        UUID ownerId,
+//        @NotNull(message = "ID가 null입니다.")
+//        UUID ownerId,
         List<UUID> participantIds
 ) {
 }

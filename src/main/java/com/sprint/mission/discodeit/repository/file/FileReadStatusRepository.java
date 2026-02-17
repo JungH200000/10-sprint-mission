@@ -58,6 +58,11 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public void deleteReadStatusByChannelId(UUID channelId) {
+        findAllByChannelId(channelId).forEach(readStatus -> delete(readStatus.getId()));
+    }
+
+    @Override
     public boolean existReadStatus(UUID userId, UUID channelId) {
         return data.values().stream()
                 .anyMatch(readStatus -> readStatus.getUserId().equals(userId) && readStatus.getChannelId().equals(channelId));

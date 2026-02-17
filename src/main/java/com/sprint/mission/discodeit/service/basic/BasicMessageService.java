@@ -38,11 +38,11 @@ public class BasicMessageService implements MessageService {
         Channel channel = channelRepository.findById(input.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
-        // author의 channel 참여 여부 확인
-        if (!channel.getChannelMembersList().stream()
-                .anyMatch(user -> user.getId().equals(input.authorId()))) {
-            throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
-        }
+//        // author의 channel 참여 여부 확인
+//        if (!channel.getChannelMembersList().stream()
+//                .anyMatch(user -> user.getId().equals(input.authorId()))) {
+//            throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
+//        }
 
         Message message = new Message(channel, author, input.content());
 
@@ -139,16 +139,16 @@ public class BasicMessageService implements MessageService {
         userRepository.save(author);
     }
     public void linkMessage(User author, Channel channel, Message message) {
-        // author(user)의 writeMessageList에 message 객체 저장
-        author.writeMessage(message);
-        // channel의 channelMessagesList에 message 객체 저장
-        channel.addMessage(message);
+//        // author(user)의 writeMessageList에 message 객체 저장
+//        author.writeMessage(message);
+//        // channel의 channelMessagesList에 message 객체 저장
+//        channel.addMessage(message);
     }
     public void unlinkMessage(User author, Channel channel, Message message) {
-        // author(user)의 writeMessageList에 저장된 message 객체 삭제
-        author.removeUserMessage(message.getId());
-        // channel의 channelMessagesList에 저장된 message 객체 삭제
-        channel.removeMessageInChannel(message.getId());
+//        // author(user)의 writeMessageList에 저장된 message 객체 삭제
+//        author.removeUserMessage(message.getId());
+//        // channel의 channelMessagesList에 저장된 message 객체 삭제
+//        channel.removeMessageInChannel(message.getId());
     }
 
     //// validation

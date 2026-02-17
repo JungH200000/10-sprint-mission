@@ -17,6 +17,7 @@ public interface ReadStatusService {
 
     // all read
     List<ReadStatusResponse> findAllByUserId(UUID userId);
+    List<ReadStatus> findAllByChannelId(UUID channelId);
 
     // update
     ReadStatus updateReadStatus(ReadStatusUpdateInput input);
