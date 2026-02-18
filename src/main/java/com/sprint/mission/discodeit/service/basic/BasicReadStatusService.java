@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.readstatus.input.ReadStatusCreateInput;
-import com.sprint.mission.discodeit.dto.readstatus.input.ReadStatusUpdateInput;
+import com.sprint.mission.discodeit.dto.readstatus.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.response.ReadStatusResponse;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -28,25 +26,21 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatus createReadStatus(ReadStatusCreateInput input) {
+    public ReadStatus createReadStatus(ReadStatusCreateRequest readStatusCreateRequest) {
+        UUID userId = readStatusCreateRequest.userId();
+        UUID channelId = readStatusCreateRequest.channelId();
+        Instant lastReadAt = readStatusCreateRequest.lastReadAt();
         // user 객체 존재 확인
-        User user = userRepository.findById(input.userId())
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+        validateUserByUserId(userId);
         // channel 객체 존재 확인
-        Channel channel = channelRepository.findById(input.channelId())
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+        validateChannelByChannelId(channelId);
 
-        if (readStatusRepository.existReadStatus(input.userId(), input.channelId())) {
-            throw new IllegalStateException("이미 존재하는 ReadStatus가 있습니다.");
+        if (readStatusRepository.existReadStatus(userId, channelId)) {
+            throw new IllegalArgumentException("ReadStatus with userId " + userId + " and channelId " + channelId + " already exists.");
         }
 
-//        boolean isNotJoin = channel.getChannelMembersList().stream()
-//                .noneMatch(member -> member.getId().equals(input.userId()));
-//        if (isNotJoin) {
-//            throw new IllegalStateException("채널에 참여하지 않은 유저입니다.");
-//        }
+        ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
 
-        ReadStatus readStatus = new ReadStatus(input.userId(), input.channelId(), Instant.now());
         readStatusRepository.save(readStatus);
         return readStatus;
     }
@@ -64,35 +58,22 @@ public class BasicReadStatusService implements ReadStatusService {
         List<ReadStatusResponse> readStatusInfos = new ArrayList<>();
         for (ReadStatus readStatus : readStatuses) {
             readStatusInfos.add(new ReadStatusResponse(
-                    readStatus.getId(), readStatus.getUserId(),
-                    readStatus.getChannelId(), readStatus.getCreatedAt(),
-                    readStatus.getUpdatedAt(), readStatus.getLastReadTime()
+                    readStatus.getId(),
+                    readStatus.getCreatedAt(),
+                    readStatus.getUpdatedAt(),
+                    readStatus.getUserId(),
+                    readStatus.getChannelId(),
+                    readStatus.getLastReadAt()
             ));
         }
         return readStatusInfos;
     }
 
     @Override
-    public List<ReadStatus> findAllByChannelId(UUID channelId) {
-        validateReadStatusByReadStatusId(channelId);
-//        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
-//        List<ReadStatusResponse> readStatusInfos = new ArrayList<>();
-//        for (ReadStatus readStatus : readStatuses) {
-//            readStatusInfos.add(new ReadStatusResponse(
-//                    readStatus.getId(), readStatus.getUserId(),
-//                    readStatus.getChannelId(), readStatus.getCreatedAt(),
-//                    readStatus.getUpdatedAt(), readStatus.getLastReadTime()
-//            ));
-//        }
-        return readStatusRepository.findAllByChannelId(channelId);
-    }
+    public ReadStatus updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest) {
+        ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
 
-    @Override
-    public ReadStatus updateReadStatus(ReadStatusUpdateInput input) {
-        ReadStatus readStatus = readStatusRepository.findById(input.readStatusId())
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus가 없습니다."));
-
-        readStatus.updateLastReadTime(input.lastReadTime());
+        readStatus.updateLastReadTime(readStatusUpdateRequest.newLastReadAt());
         readStatusRepository.save(readStatus);
 
         return readStatus;
@@ -109,16 +90,21 @@ public class BasicReadStatusService implements ReadStatusService {
     public void validateUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    }
+    public void validateChannelByChannelId(UUID channelId) {
+        ValidationMethods.validateId(channelId);
+        channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
     public ReadStatus validateAndGetReadStatusByReadStatusId(UUID readStatusId) {
         ValidationMethods.validateId(readStatusId);
         return readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
     }
     public void validateReadStatusByReadStatusId(UUID readStatusId) {
         ValidationMethods.validateId(readStatusId);
         readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
     }
 }

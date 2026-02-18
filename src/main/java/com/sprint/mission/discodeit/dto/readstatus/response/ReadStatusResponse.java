@@ -4,11 +4,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ReadStatusResponse(
-        UUID readStatusId,
-        UUID userId,
-        UUID channelId,
+        UUID id,
         Instant createdAt,
         Instant updatedAt,
-        Instant lastReadTime
+        UUID userId,
+        UUID channelId,
+        Instant lastReadAt
 ) {
 }

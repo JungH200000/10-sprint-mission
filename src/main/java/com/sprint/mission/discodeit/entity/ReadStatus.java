@@ -17,19 +17,19 @@ public class ReadStatus extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID userId;
     private final UUID channelId;
-    private Instant lastReadTime;
+    private Instant lastReadAt;
 
     // 생성자
     // 채널 생성/참여 시 함께 생성
-    public ReadStatus(UUID userId, UUID channelId, Instant lastReadTime) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.userId = userId;
         this.channelId = channelId;
-        this.lastReadTime = lastReadTime;
+        this.lastReadAt = lastReadAt;
     }
 
     // update - 메세지 확인 시, 시간 업데이트
-    public void updateLastReadTime(Instant lastReadTime) {
-        this.lastReadTime = lastReadTime;
+    public void updateLastReadTime(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
         updateTime();
     }
 }
