@@ -154,6 +154,8 @@ public class ChannelController {
 //        List<UUID> channelMembersIds = channel.getChannelMembersList().stream().map(member -> member.getId()).toList();
         return new ChannelResponse(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getChannelDescription()

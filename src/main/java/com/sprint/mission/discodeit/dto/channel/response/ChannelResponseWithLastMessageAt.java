@@ -9,6 +9,8 @@ import java.util.UUID;
 public record ChannelResponseWithLastMessageAt(
         UUID id,
 //        UUID ownerId,
+        Instant createdAt,
+        Instant updatedAt,
         ChannelType type,
         String name,
         String description,
