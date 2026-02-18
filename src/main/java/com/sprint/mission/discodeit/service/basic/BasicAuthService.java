@@ -33,7 +33,7 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + user.getId() + " not found."));
 
         // 온라인 상태 업데이트
-        userStatus.updateLastOnlineTime(Instant.now());
+        userStatus.updateLastActiveAt(Instant.now());
         userStatusRepository.save(userStatus);
 
         return createUserInfo(user, userStatus);

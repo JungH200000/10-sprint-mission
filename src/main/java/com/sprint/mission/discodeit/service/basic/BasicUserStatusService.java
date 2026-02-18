@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -60,18 +59,21 @@ public class BasicUserStatusService implements UserStatusService {
 
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
 
-        userStatus.updateLastOnlineTime(request.newLastActiveAt());
+        userStatus.updateLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
         return userStatus;
     }
 
     @Override
-    public UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime) {
+    public UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
+        if (userStatusUpdateRequest.newLastActiveAt() == null) {
+            throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
+        }
         validateUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
-        userStatus.updateLastOnlineTime(lastOnlineTime);
+        userStatus.updateLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
         return userStatus;

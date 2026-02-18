@@ -21,7 +21,7 @@ public interface UserStatusService {
 
     // update
     UserStatus updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request);
-    UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime);
+    UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest request);
 
     // delete
     void deleteUserStatus(UUID userStatusId);

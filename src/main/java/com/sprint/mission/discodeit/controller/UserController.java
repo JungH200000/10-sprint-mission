@@ -106,14 +106,14 @@ public class UserController {
     public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
             @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
-        UserStatus userStatus = userStatusService.updateUserStatusByUserId(userId, userStatusUpdateRequest.newLastActiveAt());
+        UserStatus userStatus = userStatusService.updateUserStatusByUserId(userId, userStatusUpdateRequest);
 
         UserStatusResponse result = new UserStatusResponse(
                 userStatus.getId(),
                 userStatus.getCreatedAt(),
                 userStatus.getUpdatedAt(),
                 userId,
-                userStatus.getLastOnlineTime(),
+                userStatus.getLastActiveAt(),
                 userStatus.isOnlineStatus()
         );
         return ResponseEntity.status(200).body(result);
