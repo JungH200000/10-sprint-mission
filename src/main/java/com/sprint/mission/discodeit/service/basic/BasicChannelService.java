@@ -29,8 +29,8 @@ public class BasicChannelService implements ChannelService {
     public Channel createPublicChannel(PublicChannelCreateRequest request) {
         Channel channel = new Channel(
                 ChannelType.PUBLIC,
-                request.channelName(),
-                request.channelDescription()
+                request.name(),
+                request.description()
         );
         channelRepository.save(channel);
 
@@ -147,6 +147,8 @@ public class BasicChannelService implements ChannelService {
         }
         return new ChannelResponseWithLastMessageAt(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getChannelDescription(),
