@@ -33,10 +33,10 @@ public interface ChannelService {
     Channel updateChannelInfo(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest);
 //    // 채널 owner 변경
 //    Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId);
-//    // 채널 참여하기
-//    Channel joinChannel(UUID userId, UUID channelId);
-//    // 채널 나가기
-//    Channel leaveChannel(UUID userId, UUID channelId);
+    // 채널 참여하기
+    Channel joinChannel(UUID userId, UUID channelId);
+    // 채널 나가기
+    Channel leaveChannel(UUID userId, UUID channelId);
 
     // D. 삭제
     void deleteChannel(UUID channelId);
