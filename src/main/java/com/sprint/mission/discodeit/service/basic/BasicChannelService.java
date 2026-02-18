@@ -186,13 +186,6 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
     }
-    // channel owner의 user ID와 owner의 user ID가 동일한지 확인
-    public void verifyChannelOwner(Channel channel, UUID ownerId) {
-        // channel owner의 user Id와 owner의 user Id 동일한지 확인
-        if (!channel.getOwner().getId().equals(ownerId)) {
-            throw new IllegalStateException("채널 owner만 수행 가능합니다.");
-        }
-    }
 
     @Override
     public Channel joinChannel(UUID userId, UUID channelId) {

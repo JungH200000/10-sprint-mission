@@ -10,7 +10,7 @@ import java.util.*;
 public class Channel extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private User owner;
+//    private User owner;
     private ChannelType channelType;
     private String channelName;
     private String channelDescription;
@@ -37,7 +37,7 @@ public class Channel extends BaseEntity implements Serializable {
                 "id = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "owner = " + owner.getId() + ", " +
+//                "owner = " + owner.getId() + ", " +
                 "channel type = " + channelType + ", " +
                 "name = " + channelName + ", " + ", " +
 //                "description = " + description + ", " +
@@ -68,12 +68,6 @@ public class Channel extends BaseEntity implements Serializable {
 
     public void updateChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
-        updateTime();
-    }
-
-    // owner 변경(+업데이트)
-    public void changeOwner(User owner) {
-        this.owner = owner;
         updateTime();
     }
 
