@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.dto.message.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-import java.util.UUID;
-
+@Schema(description = "수정할 Message 내용")
 public record MessageUpdateRequest(
-        @NotNull(message = "ID가 null입니다.")
-        UUID requestUserId,
         @NotBlank(message = "content가 입력되지 않았습니다.")
-        String content
+        String newContent
 ) {
 }

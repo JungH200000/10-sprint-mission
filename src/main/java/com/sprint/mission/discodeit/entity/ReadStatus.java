@@ -21,10 +21,10 @@ public class ReadStatus extends BaseEntity implements Serializable {
 
     // 생성자
     // 채널 생성/참여 시 함께 생성
-    public ReadStatus(UUID userId, UUID channelId) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadTime) {
         this.userId = userId;
         this.channelId = channelId;
-        this.lastReadTime = getCreatedAt();
+        this.lastReadTime = lastReadTime;
     }
 
     // update - 메세지 확인 시, 시간 업데이트

@@ -160,12 +160,12 @@ public class BasicChannelService implements ChannelService {
     public void validateUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found."));
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
     public User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found."));
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
     public void validateChannelByChannelId(UUID channelId) {
         ValidationMethods.validateId(channelId);

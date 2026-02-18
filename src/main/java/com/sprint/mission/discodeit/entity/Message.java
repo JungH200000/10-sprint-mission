@@ -29,7 +29,7 @@ public class Message extends BaseEntity implements Serializable {
     @Override
     public String toString() {
         return "Message{" +
-                "messageId = " + getId() + ", " +
+                "id = " + getId() + ", " +
                 "channel = " + channel.getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +

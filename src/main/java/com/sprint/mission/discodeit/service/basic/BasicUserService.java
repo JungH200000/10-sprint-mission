@@ -38,16 +38,14 @@ public class BasicUserService implements UserService {
         if (profile != null && !profile.isEmpty()) {
             try {
                 byte[] bytes = profile.getBytes();
-                if (isBinaryContent(bytes)) {
-                    BinaryContent binaryContent = new BinaryContent(
-                            profile.getOriginalFilename(),
-                            profile.getContentType(),
-                            bytes,
-                            (long) bytes.length
-                    );
-                    binaryContentRepository.save(binaryContent);
-                    user.updateProfileId(binaryContent.getId());
-                }
+                BinaryContent binaryContent = new BinaryContent(
+                        profile.getOriginalFilename(),
+                        profile.getContentType(),
+                        bytes,
+                        (long) bytes.length
+                );
+                binaryContentRepository.save(binaryContent);
+                user.updateProfileId(binaryContent.getId());
             } catch (IOException e) {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
             }
@@ -174,7 +172,7 @@ public class BasicUserService implements UserService {
     public User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found."));
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
     // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {

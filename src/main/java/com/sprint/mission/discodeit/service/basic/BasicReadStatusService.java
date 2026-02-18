@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -45,7 +46,7 @@ public class BasicReadStatusService implements ReadStatusService {
 //            throw new IllegalStateException("채널에 참여하지 않은 유저입니다.");
 //        }
 
-        ReadStatus readStatus = new ReadStatus(input.userId(), input.channelId());
+        ReadStatus readStatus = new ReadStatus(input.userId(), input.channelId(), Instant.now());
         readStatusRepository.save(readStatus);
         return readStatus;
     }
