@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelDtoWithLastMessageAt;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageAt;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
@@ -59,7 +59,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelDtoWithLastMessageAt findChannelById(UUID channelId) {
+    public ChannelResponseWithLastMessageAt findChannelById(UUID channelId) {
         // Channel ID null 검증
         ValidationMethods.validateId(channelId);
         Channel channel = channelRepository.findById(channelId)
@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public List<ChannelDtoWithLastMessageAt> findAllByUserId(UUID userId) {
+    public List<ChannelResponseWithLastMessageAt> findAllByUserId(UUID userId) {
         // User ID null 검증
         validateUserByUserId(userId);
 
@@ -138,14 +138,14 @@ public class BasicChannelService implements ChannelService {
         channelRepository.delete(channelId);
     }
 
-    private ChannelDtoWithLastMessageAt createChannelPublicResponse(Channel channel, Instant lastMessageTime) {
+    private ChannelResponseWithLastMessageAt createChannelPublicResponse(Channel channel, Instant lastMessageTime) {
         List<UUID> participantIds = new ArrayList<>();
         if (channel.getChannelType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelId(channel.getId()).stream()
                     .map(readStatus -> readStatus.getUserId())
                     .forEach(participantId -> participantIds.add(participantId));
         }
-        return new ChannelDtoWithLastMessageAt(
+        return new ChannelResponseWithLastMessageAt(
                 channel.getId(),
                 channel.getChannelType(),
                 channel.getChannelName(),

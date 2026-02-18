@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserDto;
+import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,11 +15,11 @@ public interface UserService {
     User createUser(UserCreateRequest request, MultipartFile profile);
 
     // R. 읽기
-    UserDto findUserById(UUID userId);
+    UserResponse findUserById(UUID userId);
 
     // R. 모두 읽기
     // 모든 사용자
-    List<UserDto> findAllUsers();
+    List<UserResponse> findAllUsers();
 
     // U. 수정
     User updateUser(UUID userId, UserUpdateRequest request, MultipartFile profile);

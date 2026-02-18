@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelDto;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelDtoWithLastMessageAt;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageAt;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -40,12 +40,12 @@ public class ChannelController {
     @RequestMapping(value = "/public", method = RequestMethod.POST)
     @Operation(summary = "Public Channel 생성")
     @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
-    public ResponseEntity<ChannelDto> create(
+    public ResponseEntity<ChannelResponse> create(
             @RequestBody @Valid PublicChannelCreateRequest request
     ) {
         Channel channel = channelService.createPublicChannel(request);
 
-        ChannelDto result = createChannelResponse(channel);
+        ChannelResponse result = createChannelResponse(channel);
 
         return ResponseEntity.status(201).body(result);
     }
@@ -56,12 +56,12 @@ public class ChannelController {
     @RequestMapping(value = "/private", method = RequestMethod.POST)
     @Operation(summary = "Private Channel 생성")
     @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
-    public ResponseEntity<ChannelDto> create(
+    public ResponseEntity<ChannelResponse> create(
             @RequestBody @Valid PrivateChannelCreateRequest request
     ) {
         Channel channel = channelService.createPrivateChannel(request);
 
-        ChannelDto result = createChannelResponse(channel);
+        ChannelResponse result = createChannelResponse(channel);
 
         return ResponseEntity.status(201).body(result);
     }
@@ -72,11 +72,11 @@ public class ChannelController {
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "User가 참여 중인 Channel 목록 조회")
     @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
-    @Schema(implementation = ChannelDtoWithLastMessageAt.class)
-    public ResponseEntity<List<ChannelDtoWithLastMessageAt>> findAll(
+    @Schema(implementation = ChannelResponseWithLastMessageAt.class)
+    public ResponseEntity<List<ChannelResponseWithLastMessageAt>> findAll(
             @Parameter(description = "조회할 User ID") @RequestParam UUID userId
     ) {
-        List<ChannelDtoWithLastMessageAt> result = channelService.findAllByUserId(userId);
+        List<ChannelResponseWithLastMessageAt> result = channelService.findAllByUserId(userId);
 
         return ResponseEntity.status(200).body(result);
     }
@@ -91,12 +91,12 @@ public class ChannelController {
             @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음", content = @Content(examples = @ExampleObject("Private channel cannot be updated"))),
             @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음", content = @Content(examples = @ExampleObject("Channel with id {channelId} not found")))
     })
-    public ResponseEntity<ChannelDto> update(
+    public ResponseEntity<ChannelResponse> update(
             @Parameter(description = "수정할 Channel ID") @PathVariable UUID channelId,
             @RequestBody @Valid PublicChannelUpdateRequest publicChannelUpdateRequest) {
         Channel channel = channelService.updateChannelInfo(channelId, publicChannelUpdateRequest);
 
-        ChannelDto result = createChannelResponse(channel);
+        ChannelResponse result = createChannelResponse(channel);
         return ResponseEntity.status(200).body(result);
     }
 
@@ -150,9 +150,9 @@ public class ChannelController {
 //        return ResponseEntity.status(200).body(result);
 //    }
 
-    private ChannelDto createChannelResponse(Channel channel) {
+    private ChannelResponse createChannelResponse(Channel channel) {
 //        List<UUID> channelMembersIds = channel.getChannelMembersList().stream().map(member -> member.getId()).toList();
-        return new ChannelDto(
+        return new ChannelResponse(
                 channel.getId(),
                 channel.getChannelType(),
                 channel.getChannelName(),

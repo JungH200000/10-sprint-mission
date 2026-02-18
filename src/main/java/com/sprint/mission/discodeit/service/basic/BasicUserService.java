@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserDto;
+import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -58,7 +58,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto findUserById(UUID userId) {
+    public UserResponse findUserById(UUID userId) {
         // User ID null 검증
         ValidationMethods.validateId(userId);
         User user = userRepository.findById(userId)
@@ -70,10 +70,10 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserDto> findAllUsers() {
+    public List<UserResponse> findAllUsers() {
         List<UserStatus> userStatuses = userStatusRepository.findAll();
 
-        List<UserDto> userInfos = new ArrayList<>();
+        List<UserResponse> userInfos = new ArrayList<>();
         userStatuses.forEach(status -> {
             User user = userRepository.findById(status.getUserId())
                     .orElseThrow(() -> new NoSuchElementException("status의 userId를 가진 유저가 존재하지 않음"));
@@ -160,8 +160,8 @@ public class BasicUserService implements UserService {
         userRepository.delete(userId);
     }
 
-    private UserDto createUserWithOnlineResponse(User user, UserStatus userStatus) {
-        return new UserDto(
+    private UserResponse createUserWithOnlineResponse(User user, UserStatus userStatus) {
+        return new UserResponse(
                 user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
                 user.getEmail(), user.getUsername(), user.getBirthday(),
                 user.getProfileId(), userStatus.isOnlineStatus());
