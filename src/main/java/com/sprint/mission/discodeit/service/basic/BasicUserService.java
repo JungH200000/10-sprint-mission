@@ -150,7 +150,7 @@ public class BasicUserService implements UserService {
         User user = validateAndGetUserByUserId(userId);
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found"));
 
         // channel, message 삭제는 상위에서
         if (user.getProfileId() != null) {

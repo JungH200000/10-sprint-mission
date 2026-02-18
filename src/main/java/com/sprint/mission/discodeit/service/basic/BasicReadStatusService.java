@@ -36,7 +36,7 @@ public class BasicReadStatusService implements ReadStatusService {
         validateChannelByChannelId(channelId);
 
         if (readStatusRepository.existReadStatus(userId, channelId)) {
-            throw new IllegalArgumentException("ReadStatus with userId " + userId + " and channelId " + channelId + " already exists.");
+            throw new IllegalArgumentException("ReadStatus with id " + userId + " and channelId " + channelId + " already exists.");
         }
 
         ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);

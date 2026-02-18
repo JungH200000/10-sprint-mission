@@ -35,8 +35,8 @@ public class ReadStatusController {
     @Operation(summary = "Message 읽음 상태 생성")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Message 읽음 상태가 성공적으로 생성됨"),
-            @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함", content = @Content(examples = @ExampleObject(value = "ReadStatus with userId {userId} and channelId {channelId} already exists"))),
-            @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "Channel | User with id {channelId | userId} not found")))
+            @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함", content = @Content(examples = @ExampleObject(value = "ReadStatus with id {id} and channelId {channelId} already exists"))),
+            @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "Channel | User with id {channelId | id} not found")))
     })
     public ResponseEntity<ReadStatusResponse> create(
             @RequestBody @Valid ReadStatusCreateRequest readStatusCreateRequest

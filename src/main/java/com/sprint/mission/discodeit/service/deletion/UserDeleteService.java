@@ -17,30 +17,30 @@
 //    private final MessageService messageService;
 //
 //    // 유저 삭제 메소드
-//    public void deleteUser(UUID userId) {
-//        // userId null 검증 및 유저 존재 확인
-//        userService.findUserById(userId);
+//    public void deleteUser(UUID id) {
+//        // id null 검증 및 유저 존재 확인
+//        userService.findUserById(id);
 //
 //        // 삭제하려는 유저가 owner인 채널이 있는지 확인(owner인 채널이 있으면 유저 삭제 불가)
-//        boolean isChannelOwner = channelService.findAllByUserId(userId).stream()
-//                .anyMatch(cr -> cr.ownerId().equals(userId));
+//        boolean isChannelOwner = channelService.findAllByUserId(id).stream()
+//                .anyMatch(cr -> cr.ownerId().equals(id));
 //        if (isChannelOwner) {
 //            throw new IllegalStateException("현재 owner인 channel이 존재합니다. 먼저 채널을 변경하세요.");
 //        }
 //
 //        // 삭제하려는 user의 모든 메세지 삭제
-//        for (Message message : messageService.findUserMessagesByUserId(userId)) {
-//            messageService.deleteMessage(userId, message.getId());
+//        for (Message message : messageService.findUserMessagesByUserId(id)) {
+//            messageService.deleteMessage(id, message.getId());
 //        }
 ////        System.out.println("해당 user 메세지 삭제 완료");
 //
-//        for (UUID channelId : channelService.findJoinChannelsByUserId(userId)) {
-//            channelService.leaveChannel(userId, channelId);
+//        for (UUID channelId : channelService.findJoinChannelsByUserId(id)) {
+//            channelService.leaveChannel(id, channelId);
 //        }
 ////        System.out.println("성공: 해당 user가 참여한 채널 나가기");
 //
 //        // user 삭제
-//        userService.deleteUser(userId);
+//        userService.deleteUser(id);
 ////        System.out.println("해당 user 삭제 완료");
 //    }
 //}

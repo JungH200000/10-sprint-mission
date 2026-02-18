@@ -120,8 +120,8 @@ public class ChannelController {
 //     * 채널 참여
 //     */
 //    @RequestMapping(value = "/channels/{channelId}/join", method = RequestMethod.POST)
-//    public ResponseEntity joinChannel(@PathVariable UUID channelId, @RequestBody UUID userId) {
-//        Channel channel = channelService.joinChannel(userId, channelId);
+//    public ResponseEntity joinChannel(@PathVariable UUID channelId, @RequestBody UUID id) {
+//        Channel channel = channelService.joinChannel(id, channelId);
 //        ChannelDto result = createChannelResponse(channel);
 //
 //        return ResponseEntity.status(200).body(result);
@@ -131,8 +131,8 @@ public class ChannelController {
 //     * 채널 탈퇴
 //     */
 //    @RequestMapping(value = "/channels/{channelId}/leave", method = RequestMethod.DELETE)
-//    public ResponseEntity leaveChannel(@PathVariable UUID channelId, @RequestBody UUID userId) {
-//        Channel channel = channelService.leaveChannel(userId, channelId);
+//    public ResponseEntity leaveChannel(@PathVariable UUID channelId, @RequestBody UUID id) {
+//        Channel channel = channelService.leaveChannel(id, channelId);
 //        ChannelDto result = createChannelResponse(channel);
 //
 //        return ResponseEntity.status(200).body(result);

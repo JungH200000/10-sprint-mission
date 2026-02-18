@@ -30,7 +30,7 @@ public class BasicAuthService implements AuthService {
 
         // 유저 존재하면
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + user.getId() + " not found."));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + user.getId() + " not found."));
 
         // 온라인 상태 업데이트
         userStatus.updateLastActiveAt(Instant.now());
