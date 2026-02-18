@@ -3,6 +3,13 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +21,24 @@ import java.util.UUID;
  * 바이너리 파일 다운로드 Controller
  */
 @RestController
-@RequestMapping("/api/binaryContent")
+@RequestMapping("/api/binaryContents")
 @AllArgsConstructor
+@Tag(name = "BinaryContent", description = "첨부 파일 API")
 public class BinaryContentController {
     BinaryContentService binaryContentService;
 
     /**
      * 바이너리 파일 1개 조회
      */
-    @RequestMapping(value = "/find", method = RequestMethod.GET)
-    public ResponseEntity downloadFile(@RequestParam UUID binaryContentId) {
+    @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
+    @Operation(summary = "첨부 파일 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "첨부 파일 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "첨부 파일을 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found")))
+    })
+    public ResponseEntity<BinaryContentResponse> find(
+            @Parameter(description = "조회할 첨부 파일 ID") @PathVariable UUID binaryContentId
+    ) {
         BinaryContent binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
         BinaryContentResponse result = createBinaryContentResponse(binaryContent);
 
@@ -33,8 +48,12 @@ public class BinaryContentController {
     /**
      * 바이너리 파일 여러 개 조회
      */
-    @RequestMapping(value = "/batch", method = RequestMethod.GET)
-    public ResponseEntity downloadFiles(@RequestBody List<UUID> binaryContentIds) {
+    @RequestMapping(method = RequestMethod.GET)
+    @Operation(summary = "여러 첨부 파일 조회")
+    @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
+    public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+            @Parameter(description = "조회할 첨부 파일 ID 목록") @RequestParam List<UUID> binaryContentIds
+    ) {
         List<BinaryContent> binaryContents = binaryContentService.findAllBinaryContentByIdIn(binaryContentIds);
         List<BinaryContentResponse> result = binaryContents.stream().map(b -> createBinaryContentResponse(b)).toList();
 
@@ -45,6 +64,8 @@ public class BinaryContentController {
         return new BinaryContentResponse(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
+                binaryContent.getFileName(),
+                binaryContent.getSize(),
                 binaryContent.getContentType(),
                 binaryContent.getBytes());
     }

@@ -55,11 +55,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void validateBinaryContentByBinaryContentId(UUID binaryContentId) {
         ValidationMethods.validateId(binaryContentId);
         binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("해당 BinaryContent가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
     }
     public BinaryContent validateAndGetBinaryContentByBinaryContentId(UUID binaryContentId) {
         ValidationMethods.validateId(binaryContentId);
         return binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("해당 BinaryContent가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
     }
 }
