@@ -58,17 +58,18 @@ public class BasicChannelService implements ChannelService {
         // PRIVATE 채널은 channelName과 channelDescription이 null
         Channel channel = new Channel(
                 ChannelType.PRIVATE,
-                null, null
+                null,
+                null
         );
 
-        if (request.participantIds() != null && !request.participantIds().isEmpty()) {
-            for (UUID participantId : request.participantIds()) {
-                User participant = validateAndGetUserByUserId(participantId);
-                ReadStatus participantReadStatus = new ReadStatus(participant.getId(), channel.getId());
-
-                readStatusRepository.save(participantReadStatus);
-            }
-        }
+//        if (request.participantIds() != null && !request.participantIds().isEmpty()) {
+//            for (UUID participantId : request.participantIds()) {
+//                User participant = validateAndGetUserByUserId(participantId);
+//                ReadStatus participantReadStatus = new ReadStatus(participant.getId(), channel.getId());
+//
+//                readStatusRepository.save(participantReadStatus);
+//            }
+//        }
 //        // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
 //        linkMemberAndChannel(owner, channel);
 //        ReadStatus ownerReadStatus = new ReadStatus(owner.getId(), channel.getId());
