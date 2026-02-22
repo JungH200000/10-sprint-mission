@@ -25,7 +25,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Tag(name = "BinaryContent", description = "첨부 파일 API")
 public class BinaryContentController {
-    BinaryContentService binaryContentService;
+    private final BinaryContentService binaryContentService;
 
     /**
      * 바이너리 파일 1개 조회
