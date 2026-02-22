@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +45,7 @@ public class ReadStatusController {
         ReadStatus readStatus = readStatusService.createReadStatus(readStatusCreateRequest);
         ReadStatusResponse result = createReadStatusResponse(readStatus);
 
-        return ResponseEntity.status(201).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
@@ -63,7 +64,7 @@ public class ReadStatusController {
         ReadStatus readStatus = readStatusService.updateReadStatus(readStatusId, readStatusUpdateRequest);
         ReadStatusResponse result = createReadStatusResponse(readStatus);
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -77,7 +78,7 @@ public class ReadStatusController {
     ) {
         List<ReadStatusResponse> result = readStatusService.findAllByUserId(userId);
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     private ReadStatusResponse createReadStatusResponse(ReadStatus readStatus) {

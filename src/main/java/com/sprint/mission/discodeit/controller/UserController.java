@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class UserController {
             @RequestPart(required = false) @Schema(description = "User 프로필 이미지") MultipartFile profile) {
         User user = userService.createUser(userCreateRequest, profile);
         UserResponse result = createUserResponse(user);
-        return ResponseEntity.status(201).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
@@ -65,7 +66,7 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> findAll() {
         List<UserResponse> result = userService.findAllUsers();
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -90,10 +91,8 @@ public class UserController {
         User user = userService.updateUser(userId, userUpdateRequest, profile);
         UserResponse result = createUserResponse(user);
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-
-    // 인증 추가 후, 본인이면? /me/online ???
 
     /**
      * 사용자의 온라인 상태 업데이트
@@ -117,7 +116,7 @@ public class UserController {
                 userStatus.getLastActiveAt(),
                 userStatus.isOnlineStatus()
         );
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     // 사용자 삭제

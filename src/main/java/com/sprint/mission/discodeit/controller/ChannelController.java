@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +48,7 @@ public class ChannelController {
 
         ChannelResponse result = createChannelResponse(channel);
 
-        return ResponseEntity.status(201).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
@@ -63,7 +64,7 @@ public class ChannelController {
 
         ChannelResponse result = createChannelResponse(channel);
 
-        return ResponseEntity.status(201).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
@@ -78,7 +79,7 @@ public class ChannelController {
     ) {
         List<ChannelResponseWithLastMessageAt> result = channelService.findAllByUserId(userId);
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -97,7 +98,7 @@ public class ChannelController {
         Channel channel = channelService.updateChannelInfo(channelId, publicChannelUpdateRequest);
 
         ChannelResponse result = createChannelResponse(channel);
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -124,7 +125,7 @@ public class ChannelController {
 //        Channel channel = channelService.joinChannel(id, channelId);
 //        ChannelDto result = createChannelResponse(channel);
 //
-//        return ResponseEntity.status(200).body(result);
+//        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
 //
 //    /**
@@ -135,7 +136,7 @@ public class ChannelController {
 //        Channel channel = channelService.leaveChannel(id, channelId);
 //        ChannelDto result = createChannelResponse(channel);
 //
-//        return ResponseEntity.status(200).body(result);
+//        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
 //
 //    /**
@@ -147,7 +148,7 @@ public class ChannelController {
 //        Channel channel = channelService.changeChannelOwner(request.currentUserId(), channelId, request.newOwnerId());
 //        ChannelDto result = createChannelResponse(channel);
 //
-//        return ResponseEntity.status(200).body(result);
+//        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
 
     private ChannelResponse createChannelResponse(Channel channel) {

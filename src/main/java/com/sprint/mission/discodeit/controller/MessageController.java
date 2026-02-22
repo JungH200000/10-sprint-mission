@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +49,7 @@ public class MessageController {
         Message message = messageService.createMessage(messageCreateRequest, attachments);
         MessageResponse result = createMessageResponse(message);
 
-        return ResponseEntity.status(201).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
@@ -65,7 +66,7 @@ public class MessageController {
                 .map(m -> createMessageResponse(m))
                 .toList();
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -84,7 +85,7 @@ public class MessageController {
         Message message = messageService.updateMessageContent(messageId, messageUpdateRequest);
         MessageResponse result = createMessageResponse(message);
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**

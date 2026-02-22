@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +43,7 @@ public class BinaryContentController {
         BinaryContent binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
         BinaryContentResponse result = createBinaryContentResponse(binaryContent);
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     /**
@@ -57,7 +58,7 @@ public class BinaryContentController {
         List<BinaryContent> binaryContents = binaryContentService.findAllBinaryContentByIdIn(binaryContentIds);
         List<BinaryContentResponse> result = binaryContents.stream().map(b -> createBinaryContentResponse(b)).toList();
 
-        return ResponseEntity.status(200).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     private BinaryContentResponse createBinaryContentResponse(BinaryContent binaryContent) {
