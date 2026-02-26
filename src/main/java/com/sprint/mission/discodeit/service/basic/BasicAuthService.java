@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,7 +20,7 @@ public class BasicAuthService implements AuthService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public UserResponse login(LoginRequest loginRequest) {
+    public UserDto login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
         User user = userRepository.findByUsername(loginRequest.username())
                 .orElseThrow(() -> new NoSuchElementException("User with username " + loginRequest.username() + " not found."));
@@ -39,8 +39,8 @@ public class BasicAuthService implements AuthService {
         return createUserInfo(user, userStatus);
     }
 
-    private UserResponse createUserInfo(User user, UserStatus userStatus) {
-        return new UserResponse(
+    private UserDto createUserInfo(User user, UserStatus userStatus) {
+        return new UserDto(
                 user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
                 user.getEmail(), user.getUsername(), user.getBirthday(),
                 user.getProfileId(), userStatus.isOnlineStatus());

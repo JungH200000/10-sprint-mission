@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.response.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readstatus.response.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -51,13 +51,13 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
         // user ID null & user 객체 존재 확인
         validateUserByUserId(userId);
         List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
-        List<ReadStatusResponse> readStatusInfos = new ArrayList<>();
+        List<ReadStatusDto> readStatusInfos = new ArrayList<>();
         for (ReadStatus readStatus : readStatuses) {
-            readStatusInfos.add(new ReadStatusResponse(
+            readStatusInfos.add(new ReadStatusDto(
                     readStatus.getId(),
                     readStatus.getCreatedAt(),
                     readStatus.getUpdatedAt(),

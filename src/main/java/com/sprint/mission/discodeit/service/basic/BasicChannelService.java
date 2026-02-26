@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageAt;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
@@ -26,7 +26,7 @@ public class BasicChannelService implements ChannelService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Channel createPublicChannel(PublicChannelCreateRequest request) {
+    public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
         Channel channel = new Channel(
                 ChannelType.PUBLIC,
                 request.name(),
@@ -34,11 +34,11 @@ public class BasicChannelService implements ChannelService {
         );
         channelRepository.save(channel);
 
-        return channel;
+        return createChannelPublicResponse(channel, null);
     }
 
     @Override
-    public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
+    public ChannelDto createPrivateChannel(PrivateChannelCreateRequest request) {
         // PRIVATE 채널은 channelName과 channelDescription이 null
         Channel channel = new Channel(
                 ChannelType.PRIVATE,
@@ -55,11 +55,11 @@ public class BasicChannelService implements ChannelService {
         }
         channelRepository.save(channel);
 
-        return channel;
+        return createChannelPublicResponse(channel, null);
     }
 
     @Override
-    public ChannelResponseWithLastMessageAt findChannelById(UUID channelId) {
+    public ChannelDto findChannelById(UUID channelId) {
         // Channel ID null 검증
         ValidationMethods.validateId(channelId);
         Channel channel = channelRepository.findById(channelId)
@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public List<ChannelResponseWithLastMessageAt> findAllByUserId(UUID userId) {
+    public List<ChannelDto> findAllByUserId(UUID userId) {
         // User ID null 검증
         validateUserByUserId(userId);
 
@@ -92,7 +92,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel updateChannelInfo(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
+    public ChannelDto updateChannelInfo(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
         // channel 객체 존재 확인
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
@@ -113,7 +113,14 @@ public class BasicChannelService implements ChannelService {
                 .ifPresent(d -> channel.updateChannelDescription(d));
 
         channelRepository.save(channel);
-        return channel;
+
+        Instant lastMessageTime = messageRepository.findByChannelId(channelId).stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .findFirst()
+                .map(message -> message.getCreatedAt())
+                .orElse(null);
+
+        return createChannelPublicResponse(channel, lastMessageTime);
     }
 
     @Override
@@ -138,14 +145,14 @@ public class BasicChannelService implements ChannelService {
         channelRepository.delete(channelId);
     }
 
-    private ChannelResponseWithLastMessageAt createChannelPublicResponse(Channel channel, Instant lastMessageTime) {
+    private ChannelDto createChannelPublicResponse(Channel channel, Instant lastMessageTime) {
         List<UUID> participantIds = new ArrayList<>();
         if (channel.getChannelType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelId(channel.getId()).stream()
                     .map(readStatus -> readStatus.getUserId())
                     .forEach(participantId -> participantIds.add(participantId));
         }
-        return new ChannelResponseWithLastMessageAt(
+        return new ChannelDto(
                 channel.getId(),
                 channel.getCreatedAt(),
                 channel.getUpdatedAt(),

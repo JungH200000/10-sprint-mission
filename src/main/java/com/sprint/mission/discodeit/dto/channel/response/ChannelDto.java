@@ -6,9 +6,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record ChannelResponseWithLastMessageAt(
+public record ChannelDto(
         UUID id,
-//        UUID ownerId,
         Instant createdAt,
         Instant updatedAt,
         ChannelType type,

@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageDto;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,14 +40,14 @@ public class MessageController {
     @RequestMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, method = RequestMethod.POST)
     @Operation(summary = "Message 생성")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = MessageResponse.class))),
+            @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = MessageDto.class))),
             @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject("Channel | Author with id {channelId | authorId} not found")))
     })
-    public ResponseEntity<MessageResponse> create(
+    public ResponseEntity<MessageDto> create(
             @RequestPart @Valid MessageCreateRequest messageCreateRequest,
             @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments) {
         Message message = messageService.createMessage(messageCreateRequest, attachments);
-        MessageResponse result = createMessageResponse(message);
+        MessageDto result = createMessageResponse(message);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -58,11 +58,11 @@ public class MessageController {
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "Channel의 Message 목록 조회")
     @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
-    public ResponseEntity<List<MessageResponse>> findAllByChannelId(
+    public ResponseEntity<List<MessageDto>> findAllByChannelId(
             @Parameter(description = "수정할 Channel ID") @RequestParam UUID channelId
     ) {
         List<Message> messages = messageService.findAllByChannelId(channelId);
-        List<MessageResponse> result = messages.stream()
+        List<MessageDto> result = messages.stream()
                 .map(m -> createMessageResponse(m))
                 .toList();
 
@@ -78,12 +78,12 @@ public class MessageController {
             @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨"),
             @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음", content = @Content(examples = @ExampleObject("Message with id {messageId} not found")))
     })
-    public ResponseEntity<MessageResponse> update(
+    public ResponseEntity<MessageDto> update(
             @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
             @RequestBody @Valid MessageUpdateRequest messageUpdateRequest
     ) {
         Message message = messageService.updateMessageContent(messageId, messageUpdateRequest);
-        MessageResponse result = createMessageResponse(message);
+        MessageDto result = createMessageResponse(message);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -104,8 +104,8 @@ public class MessageController {
         return ResponseEntity.noContent().build();
     }
 
-    private MessageResponse createMessageResponse(Message message) {
-        return new MessageResponse(
+    private MessageDto createMessageResponse(Message message) {
+        return new MessageDto(
                 message.getId(),
                 message.getCreatedAt(),
                 message.getUpdatedAt(),

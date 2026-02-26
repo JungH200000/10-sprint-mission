@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,11 +37,11 @@ public class BinaryContentController {
             @ApiResponse(responseCode = "200", description = "첨부 파일 조회 성공"),
             @ApiResponse(responseCode = "404", description = "첨부 파일을 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found")))
     })
-    public ResponseEntity<BinaryContentResponse> find(
+    public ResponseEntity<BinaryContentDto> find(
             @Parameter(description = "조회할 첨부 파일 ID") @PathVariable UUID binaryContentId
     ) {
         BinaryContent binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
-        BinaryContentResponse result = createBinaryContentResponse(binaryContent);
+        BinaryContentDto result = createBinaryContentResponse(binaryContent);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -52,17 +52,17 @@ public class BinaryContentController {
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "여러 첨부 파일 조회")
     @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
-    public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
             @Parameter(description = "조회할 첨부 파일 ID 목록") @RequestParam List<UUID> binaryContentIds
     ) {
         List<BinaryContent> binaryContents = binaryContentService.findAllBinaryContentByIdIn(binaryContentIds);
-        List<BinaryContentResponse> result = binaryContents.stream().map(b -> createBinaryContentResponse(b)).toList();
+        List<BinaryContentDto> result = binaryContents.stream().map(b -> createBinaryContentResponse(b)).toList();
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    private BinaryContentResponse createBinaryContentResponse(BinaryContent binaryContent) {
-        return new BinaryContentResponse(
+    private BinaryContentDto createBinaryContentResponse(BinaryContent binaryContent) {
+        return new BinaryContentDto(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
                 binaryContent.getFileName(),

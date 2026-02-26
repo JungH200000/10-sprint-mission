@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.dto.user.response;
 import java.time.Instant;
 import java.util.UUID;
 
-public record UserResponse(
+public record UserDto(
         UUID id,
         Instant createdAt,
         Instant updatedAt,
