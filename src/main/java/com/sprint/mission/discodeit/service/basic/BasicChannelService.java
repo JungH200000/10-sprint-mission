@@ -34,7 +34,7 @@ public class BasicChannelService implements ChannelService {
         );
         channelRepository.save(channel);
 
-        return createChannelPublicResponse(channel, null);
+        return createChannelDto(channel, null);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class BasicChannelService implements ChannelService {
         }
         channelRepository.save(channel);
 
-        return createChannelPublicResponse(channel, null);
+        return createChannelDto(channel, null);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class BasicChannelService implements ChannelService {
                 .map(message -> message.getCreatedAt())
                 .orElse(null);
 
-        return createChannelPublicResponse(channel, lastMessageTime);
+        return createChannelDto(channel, lastMessageTime);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class BasicChannelService implements ChannelService {
                 .map(message -> message.getCreatedAt())
                 .orElse(null);
 
-        return createChannelPublicResponse(channel, lastMessageTime);
+        return createChannelDto(channel, lastMessageTime);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.delete(channelId);
     }
 
-    private ChannelDto createChannelPublicResponse(Channel channel, Instant lastMessageTime) {
+    private ChannelDto createChannelDto(Channel channel, Instant lastMessageTime) {
         List<UUID> participantIds = new ArrayList<>();
         if (channel.getChannelType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelId(channel.getId()).stream()

@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.user.response.UserDto;
 import com.sprint.mission.discodeit.dto.userstatus.response.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,9 +50,9 @@ public class UserController {
     public ResponseEntity<UserDto> create(
             @RequestPart @Valid UserCreateRequest userCreateRequest,
             @RequestPart(required = false) @Schema(description = "User 프로필 이미지") MultipartFile profile) {
-        User user = userService.createUser(userCreateRequest, profile);
-        UserDto result = createUserResponse(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        UserDto user = userService.createUser(userCreateRequest, profile);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     /**
@@ -88,10 +87,9 @@ public class UserController {
             @Parameter(description = "수정할 User ID") @PathVariable UUID userId,
             @RequestPart @Valid UserUpdateRequest userUpdateRequest,
             @RequestPart(required = false) @Schema(description = "수정할 User 프로필 이미지") MultipartFile profile) {
-        User user = userService.updateUser(userId, userUpdateRequest, profile);
-        UserDto result = createUserResponse(user);
+        UserDto user = userService.updateUser(userId, userUpdateRequest, profile);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
     /**
@@ -106,17 +104,9 @@ public class UserController {
     public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
             @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
-        UserStatus userStatus = userStatusService.updateUserStatusByUserId(userId, userStatusUpdateRequest);
+        UserStatusDto userStatus = userStatusService.updateUserStatusByUserId(userId, userStatusUpdateRequest);
 
-        UserStatusDto result = new UserStatusDto(
-                userStatus.getId(),
-                userStatus.getCreatedAt(),
-                userStatus.getUpdatedAt(),
-                userId,
-                userStatus.getLastActiveAt(),
-                userStatus.isOnlineStatus()
-        );
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(userStatus);
     }
 
     // 사용자 삭제
@@ -131,17 +121,5 @@ public class UserController {
         userService.deleteUser(userId);
 
         return ResponseEntity.noContent().build();
-    }
-
-    private UserDto createUserResponse(User user) {
-        return new UserDto(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getEmail(),
-                user.getUsername(),
-                user.getBirthday(),
-                user.getProfileId(),
-                userStatusService.findUserStatusByUserId(user.getId()).isOnlineStatus());
     }
 }

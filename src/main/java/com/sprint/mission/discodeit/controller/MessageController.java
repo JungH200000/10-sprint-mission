@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDto;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,10 +45,9 @@ public class MessageController {
     public ResponseEntity<MessageDto> create(
             @RequestPart @Valid MessageCreateRequest messageCreateRequest,
             @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments) {
-        Message message = messageService.createMessage(messageCreateRequest, attachments);
-        MessageDto result = createMessageResponse(message);
+        MessageDto message = messageService.createMessage(messageCreateRequest, attachments);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
 
     /**
@@ -61,12 +59,9 @@ public class MessageController {
     public ResponseEntity<List<MessageDto>> findAllByChannelId(
             @Parameter(description = "수정할 Channel ID") @RequestParam UUID channelId
     ) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-        List<MessageDto> result = messages.stream()
-                .map(m -> createMessageResponse(m))
-                .toList();
+        List<MessageDto> messages = messageService.findAllByChannelId(channelId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
     }
 
     /**
@@ -82,10 +77,9 @@ public class MessageController {
             @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
             @RequestBody @Valid MessageUpdateRequest messageUpdateRequest
     ) {
-        Message message = messageService.updateMessageContent(messageId, messageUpdateRequest);
-        MessageDto result = createMessageResponse(message);
+        MessageDto message = messageService.updateMessageContent(messageId, messageUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
     /**
@@ -102,16 +96,5 @@ public class MessageController {
     ) {
         messageService.deleteMessage(messageId);
         return ResponseEntity.noContent().build();
-    }
-
-    private MessageDto createMessageResponse(Message message) {
-        return new MessageDto(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannel().getId(),
-                message.getAuthor().getId(),
-                message.getAttachmentIds());
     }
 }

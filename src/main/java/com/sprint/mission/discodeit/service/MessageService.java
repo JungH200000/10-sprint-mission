@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.message.response.MessageDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -10,23 +10,23 @@ import java.util.UUID;
 public interface MessageService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: messageID과 내용 출력
-    Message createMessage(MessageCreateRequest messageCreateRequest,  List<MultipartFile> attachments);
+    MessageDto createMessage(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments);
 
     // R. 읽기
     // 특정 메시지 정보 읽기
-    Message findMessageById(UUID messageId);
+    MessageDto findMessageById(UUID messageId);
 
     // R. 모두 읽기 : 시간순으로 정렬?
     // 메시지 전체
-    List<Message> findAllMessages();
+    List<MessageDto> findAllMessages();
     // 특정 채널의 모든 메시지 읽어오기
-    List<Message> findAllByChannelId(UUID channelId);
+    List<MessageDto> findAllByChannelId(UUID channelId);
     // 특정 사용자가 작성한 모든 메시지
-    List<Message> findUserMessagesByUserId(UUID userId);
+    List<MessageDto> findUserMessagesByUserId(UUID userId);
 
     // U. 수정
     // 메시지 수정
-    Message updateMessageContent(UUID messageId, MessageUpdateRequest messageUpdateRequest);
+    MessageDto updateMessageContent(UUID messageId, MessageUpdateRequest messageUpdateRequest);
 
     // D. 삭제
     void deleteMessageByUserId(UUID userId, UUID messageId);

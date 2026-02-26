@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.response.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -21,7 +22,7 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserRepository userRepository;
 
     @Override
-    public UserStatus createUserStatus(UserStatusCreateRequest request) {
+    public UserStatusDto createUserStatus(UserStatusCreateRequest request) {
         userRepository.findById(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
@@ -32,27 +33,30 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = new UserStatus(request.userId());
         userStatusRepository.save(userStatus);
 
-        return userStatus;
+        return createUserStatusDto(userStatus);
     }
 
     @Override
-    public UserStatus findUserStatusById(UUID userStatusId) {
-        return validateAndGetUserStatusByUserStatusId(userStatusId);
+    public UserStatusDto findUserStatusById(UUID userStatusId) {
+        UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
+        return createUserStatusDto(userStatus);
     }
 
     @Override
-    public UserStatus findUserStatusByUserId(UUID userId) {
-        validateUserByUserId(userId);
-        return validateAndGetUserStatusByUserId(userId);
+    public UserStatusDto findUserStatusByUserId(UUID userId) {
+        UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
+        return createUserStatusDto(userStatus);
     }
 
     @Override
-    public List<UserStatus> findAllUserStatus() {
-        return userStatusRepository.findAll();
+    public List<UserStatusDto> findAllUserStatus() {
+        return userStatusRepository.findAll().stream()
+                .map(userStatus -> createUserStatusDto(userStatus))
+                .toList();
     }
 
     @Override
-    public UserStatus updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request) {
+    public UserStatusDto updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request) {
         if (request.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
@@ -62,11 +66,11 @@ public class BasicUserStatusService implements UserStatusService {
         userStatus.updateLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
-        return userStatus;
+        return createUserStatusDto(userStatus);
     }
 
     @Override
-    public UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
+    public UserStatusDto updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
         if (userStatusUpdateRequest.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
@@ -76,7 +80,7 @@ public class BasicUserStatusService implements UserStatusService {
         userStatus.updateLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
-        return userStatus;
+        return createUserStatusDto(userStatus);
     }
 
     @Override
@@ -85,6 +89,16 @@ public class BasicUserStatusService implements UserStatusService {
         userStatusRepository.delete(userStatusId);
     }
 
+    private UserStatusDto createUserStatusDto(UserStatus userStatus) {
+        return new UserStatusDto(
+                userStatus.getId(),
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
+                userStatus.getUserId(),
+                userStatus.getLastActiveAt(),
+                userStatus.isOnlineStatus()
+        );
+    }
 
     //// validation
     // user ID null & user 객체 존재 확인

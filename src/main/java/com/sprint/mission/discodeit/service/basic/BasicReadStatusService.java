@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -26,7 +25,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatus createReadStatus(ReadStatusCreateRequest readStatusCreateRequest) {
+    public ReadStatusDto createReadStatus(ReadStatusCreateRequest readStatusCreateRequest) {
         UUID userId = readStatusCreateRequest.userId();
         UUID channelId = readStatusCreateRequest.channelId();
         Instant lastReadAt = readStatusCreateRequest.lastReadAt();
@@ -42,47 +41,50 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
 
         readStatusRepository.save(readStatus);
-        return readStatus;
+        return createReadStatusDto(readStatus);
     }
 
     @Override
-    public ReadStatus findReadStatusById(UUID readStatusId) {
-        return validateAndGetReadStatusByReadStatusId(readStatusId);
+    public ReadStatusDto findReadStatusById(UUID readStatusId) {
+        ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
+        return createReadStatusDto(readStatus);
     }
 
     @Override
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         // user ID null & user 객체 존재 확인
         validateUserByUserId(userId);
-        List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
-        List<ReadStatusDto> readStatusInfos = new ArrayList<>();
-        for (ReadStatus readStatus : readStatuses) {
-            readStatusInfos.add(new ReadStatusDto(
-                    readStatus.getId(),
-                    readStatus.getCreatedAt(),
-                    readStatus.getUpdatedAt(),
-                    readStatus.getUserId(),
-                    readStatus.getChannelId(),
-                    readStatus.getLastReadAt()
-            ));
-        }
-        return readStatusInfos;
+
+        return readStatusRepository.findAllByUserId(userId).stream()
+                .map(readStatus -> createReadStatusDto(readStatus))
+                .toList();
     }
 
     @Override
-    public ReadStatus updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest) {
+    public ReadStatusDto updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest) {
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
 
         readStatus.updateLastReadTime(readStatusUpdateRequest.newLastReadAt());
         readStatusRepository.save(readStatus);
 
-        return readStatus;
+        return createReadStatusDto(readStatus);
     }
 
     @Override
     public void deleteReadStatus(UUID readStatusId) {
         validateReadStatusByReadStatusId(readStatusId);
         readStatusRepository.delete(readStatusId);
+    }
+
+    private ReadStatusDto createReadStatusDto(ReadStatus readStatus) {
+        return new ReadStatusDto(
+                readStatus.getId(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
+                readStatus.getUserId(),
+                readStatus.getChannelId(),
+                readStatus.getLastReadAt()
+        );
     }
 
     //// validation

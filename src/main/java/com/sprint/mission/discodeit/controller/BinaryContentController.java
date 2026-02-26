@@ -40,10 +40,9 @@ public class BinaryContentController {
     public ResponseEntity<BinaryContentDto> find(
             @Parameter(description = "조회할 첨부 파일 ID") @PathVariable UUID binaryContentId
     ) {
-        BinaryContent binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
-        BinaryContentDto result = createBinaryContentResponse(binaryContent);
+        BinaryContentDto binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
     }
 
     /**
@@ -55,19 +54,8 @@ public class BinaryContentController {
     public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
             @Parameter(description = "조회할 첨부 파일 ID 목록") @RequestParam List<UUID> binaryContentIds
     ) {
-        List<BinaryContent> binaryContents = binaryContentService.findAllBinaryContentByIdIn(binaryContentIds);
-        List<BinaryContentDto> result = binaryContents.stream().map(b -> createBinaryContentResponse(b)).toList();
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllBinaryContentByIdIn(binaryContentIds);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
-    }
-
-    private BinaryContentDto createBinaryContentResponse(BinaryContent binaryContent) {
-        return new BinaryContentDto(
-                binaryContent.getId(),
-                binaryContent.getCreatedAt(),
-                binaryContent.getFileName(),
-                binaryContent.getSize(),
-                binaryContent.getContentType(),
-                binaryContent.getBytes());
+        return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
     }
 }

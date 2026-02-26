@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.response.MessageDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -30,7 +31,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments) {
+    public MessageDto createMessage(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User author = userRepository.findById(messageCreateRequest.authorId())
                 .orElseThrow(() -> new NoSuchElementException("Author with id " + messageCreateRequest.authorId() + " not found"));
@@ -60,48 +61,52 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.save(message);
-        return message;
+        return createMessageDto(message);
     }
 
     @Override
-    public Message findMessageById(UUID messageId) {
-        // Message ID `null` 검증
-        ValidationMethods.validateId(messageId);
+    public MessageDto findMessageById(UUID messageId) {
+        // Message ID `null` 및 존재 검증
+        Message message = validateAndGetMessageByMessageId(messageId);
 
-        return messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
+        return createMessageDto(message);
     }
 
     @Override
-    public List<Message> findAllMessages() {
-        return messageRepository.findAll();
+    public List<MessageDto> findAllMessages() {
+        return messageRepository.findAll().stream()
+                .map(message -> createMessageDto(message))
+                .toList();
     }
 
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
+    public List<MessageDto> findAllByChannelId(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
 
-        return messageRepository.findByChannelId(channelId);
+        return messageRepository.findByChannelId(channelId).stream()
+                .map(message -> createMessageDto(message))
+                .toList();
     }
 
     @Override
-    public List<Message> findUserMessagesByUserId(UUID userId) {
+    public List<MessageDto> findUserMessagesByUserId(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
 
-        return messageRepository.findByAuthorId(userId);
+        return messageRepository.findByAuthorId(userId).stream()
+                .map(message -> createMessageDto(message))
+                .toList();
     }
 
     @Override
-    public Message updateMessageContent(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
+    public MessageDto updateMessageContent(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
         // Message ID null & Message 객체 존재 확인
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+        Message message = validateAndGetMessageByMessageId(messageId);
 
         message.updateContent(messageUpdateRequest.newContent());
         messageRepository.save(message);
-        return message;
+        return createMessageDto(message);
     }
 
     @Override
@@ -138,6 +143,17 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.delete(messageId);
+    }
+
+    private MessageDto createMessageDto(Message message) {
+        return new MessageDto(
+                message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getContent(),
+                message.getChannel().getId(),
+                message.getAuthor().getId(),
+                message.getAttachmentIds());
     }
 
     //// validation

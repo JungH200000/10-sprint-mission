@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.readstatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.response.ReadStatusDto;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,10 +41,9 @@ public class ReadStatusController {
     public ResponseEntity<ReadStatusDto> create(
             @RequestBody @Valid ReadStatusCreateRequest readStatusCreateRequest
     ) {
-        ReadStatus readStatus = readStatusService.createReadStatus(readStatusCreateRequest);
-        ReadStatusDto result = createReadStatusResponse(readStatus);
+        ReadStatusDto readStatus = readStatusService.createReadStatus(readStatusCreateRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
     }
 
     /**
@@ -61,10 +59,9 @@ public class ReadStatusController {
             @Parameter(description = "수정할 읽음 상태 ID") @PathVariable UUID readStatusId,
             @RequestBody @Valid ReadStatusUpdateRequest readStatusUpdateRequest
             ) {
-        ReadStatus readStatus = readStatusService.updateReadStatus(readStatusId, readStatusUpdateRequest);
-        ReadStatusDto result = createReadStatusResponse(readStatus);
+        ReadStatusDto readStatus = readStatusService.updateReadStatus(readStatusId, readStatusUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(readStatus);
     }
 
     /**
@@ -80,16 +77,4 @@ public class ReadStatusController {
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-
-    private ReadStatusDto createReadStatusResponse(ReadStatus readStatus) {
-        return new ReadStatusDto(
-                readStatus.getId(),
-                readStatus.getCreatedAt(),
-                readStatus.getUpdatedAt(),
-                readStatus.getUserId(),
-                readStatus.getChannelId(),
-                readStatus.getLastReadAt()
-        );
-    }
-
 }
