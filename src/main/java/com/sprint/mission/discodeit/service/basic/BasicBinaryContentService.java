@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -19,8 +19,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContent createBinaryContent(BinaryContentCreateInput input) {
-        BinaryContent binaryContent = new BinaryContent(input.contentType(), input.bytes());
+    public BinaryContent createBinaryContent(BinaryContentCreateRequest binaryContentCreateRequest) {
+        BinaryContent binaryContent = new BinaryContent(
+                binaryContentCreateRequest.fileName(),
+                binaryContentCreateRequest.contentType(),
+                binaryContentCreateRequest.bytes(),
+                (long) binaryContentCreateRequest.bytes().length
+        );
         binaryContentRepository.save(binaryContent);
         return binaryContent;
     }
@@ -50,11 +55,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void validateBinaryContentByBinaryContentId(UUID binaryContentId) {
         ValidationMethods.validateId(binaryContentId);
         binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("해당 BinaryContent가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
     }
     public BinaryContent validateAndGetBinaryContentByBinaryContentId(UUID binaryContentId) {
         ValidationMethods.validateId(binaryContentId);
         return binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("해당 BinaryContent가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
     }
 }

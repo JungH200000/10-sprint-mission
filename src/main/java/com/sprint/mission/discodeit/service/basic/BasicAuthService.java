@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,24 +20,29 @@ public class BasicAuthService implements AuthService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public UserWithOnlineResponse login(LoginRequest loginRequest) {
+    public UserResponse login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
-        User user = userRepository.findByUserNameAndPassword(loginRequest.username(), loginRequest.password())
-                .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 username과 password입니다."));
+        User user = userRepository.findByUsername(loginRequest.username())
+                .orElseThrow(() -> new NoSuchElementException("User with username " + loginRequest.username() + " not found."));
+        if (!user.getPassword().equals(loginRequest.password())) {
+            throw new IllegalArgumentException("Wrong password");
+        }
 
         // 유저 존재하면
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않은 userStatus입니다."));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + user.getId() + " not found."));
 
         // 온라인 상태 업데이트
-        userStatus.updateLastOnlineTime(Instant.now());
+        userStatus.updateLastActiveAt(Instant.now());
         userStatusRepository.save(userStatus);
 
         return createUserInfo(user, userStatus);
     }
 
-    private UserWithOnlineResponse createUserInfo(User user, UserStatus userStatus) {
-        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUsername(), user.getNickName(),
-                user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
+    private UserResponse createUserInfo(User user, UserStatus userStatus) {
+        return new UserResponse(
+                user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+                user.getEmail(), user.getUsername(), user.getBirthday(),
+                user.getProfileId(), userStatus.isOnlineStatus());
     }
 }

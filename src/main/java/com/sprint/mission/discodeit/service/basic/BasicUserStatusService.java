@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -42,30 +41,39 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    public UserStatus findUserStatusByUserId(UUID userId) {
+        validateUserByUserId(userId);
+        return validateAndGetUserStatusByUserId(userId);
+    }
+
+    @Override
     public List<UserStatus> findAllUserStatus() {
         return userStatusRepository.findAll();
     }
 
     @Override
-    public UserStatus updateUserStatus(UserStatusUpdateRequest request) {
-        if (request.lastOnlineTime() == null) {
-            throw new IllegalArgumentException("lastOnlineTime null로 입력되었습니다.");
+    public UserStatus updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request) {
+        if (request.newLastActiveAt() == null) {
+            throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
 
-        UserStatus userStatus = validateAndGetUserStatusByUserStatusId(request.userStatusId());
+        UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
 
-        userStatus.updateLastOnlineTime(request.lastOnlineTime());
+        userStatus.updateLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
         return userStatus;
     }
 
     @Override
-    public UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime) {
+    public UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
+        if (userStatusUpdateRequest.newLastActiveAt() == null) {
+            throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
+        }
         validateUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
-        userStatus.updateLastOnlineTime(lastOnlineTime);
+        userStatus.updateLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
         return userStatus;
@@ -76,6 +84,7 @@ public class BasicUserStatusService implements UserStatusService {
         validateUserStatusByUserStatusId(userStatusId);
         userStatusRepository.delete(userStatusId);
     }
+
 
     //// validation
     // user ID null & user 객체 존재 확인
@@ -93,7 +102,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
     }
     public void validateUserStatusByUserStatusId(UUID userStatusId) {
         ValidationMethods.validateId(userStatusId);

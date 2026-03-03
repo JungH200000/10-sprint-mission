@@ -10,7 +10,7 @@ import java.util.*;
 public class Channel extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private User owner;
+//    private User owner;
     private ChannelType channelType;
     private String channelName;
     private String channelDescription;
@@ -22,8 +22,8 @@ public class Channel extends BaseEntity implements Serializable {
     private final List<Message> channelMessagesList; // 채팅창 안의 메시지들
 
     // 생성자
-    public Channel(User user, ChannelType channelType, String channelName, String channelDescription) {
-        this.owner = user; // owner 임명(생성하는 사용자 본인)
+    public Channel(ChannelType channelType, String channelName, String channelDescription) {
+//        this.owner = user; // owner 임명(생성하는 사용자 본인)
         this.channelType = channelType;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
@@ -34,15 +34,15 @@ public class Channel extends BaseEntity implements Serializable {
     @Override
     public String toString() {
         return "Channel{" +
-                "channelId = " + getId() + ", " +
+                "id = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "owner = " + owner.getId() + ", " +
+//                "owner = " + owner.getId() + ", " +
                 "channel type = " + channelType + ", " +
-                "channelName = " + channelName + ", " +
-//                "channelDescription = " + channelDescription + ", " +
-//                "channelMembersList = " + channelMembersList + ", " +
-//                "channelMessagesList = " + channelMessagesList +
+                "name = " + channelName + ", " + ", " +
+//                "description = " + description + ", " +
+//                "members = " + channelMembersList + ", " +
+//                "messages = " + channelMessagesList +
                 "}";
     }
 
@@ -68,12 +68,6 @@ public class Channel extends BaseEntity implements Serializable {
 
     public void updateChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
-        updateTime();
-    }
-
-    // owner 변경(+업데이트)
-    public void changeOwner(User owner) {
-        this.owner = owner;
         updateTime();
     }
 

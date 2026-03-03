@@ -48,6 +48,12 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
+    public void deleteByUserId(UUID userId) {
+        findByUserId(userId)
+                .ifPresent(userStatus -> data.remove(userStatus.getId()));
+    }
+
+    @Override
     public boolean existUserStatus(UUID userId) {
         return data.values().stream()
                 .anyMatch(userStatus -> userStatus.getUserId().equals(userId));

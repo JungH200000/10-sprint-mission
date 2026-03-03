@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.time.Instant;
@@ -14,14 +14,16 @@ public interface UserStatusService {
 
     // read
     UserStatus findUserStatusById(UUID userStatusId);
+    UserStatus findUserStatusByUserId(UUID userId);
 
     // all read
     List<UserStatus> findAllUserStatus();
 
     // update
-    UserStatus updateUserStatus(UserStatusUpdateRequest request);
-    UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime);
+    UserStatus updateUserStatus(UUID userStatusId, UserStatusUpdateRequest request);
+    UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest request);
 
     // delete
     void deleteUserStatus(UUID userStatusId);
+
 }

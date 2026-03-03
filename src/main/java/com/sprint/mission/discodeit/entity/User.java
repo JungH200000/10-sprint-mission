@@ -12,7 +12,6 @@ public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private String email;
     private String username;
-    private String nickName;
     private String password;
     private String birthday;
 
@@ -25,10 +24,9 @@ public class User extends BaseEntity implements Serializable {
     private final List<Message> writeMessageList;
 
     // 생성자
-    public User(String email, String username, String nickName, String password, String birthday) {
+    public User(String email, String username, String password, String birthday) {
         this.email = email;
         this.username = username;
-        this.nickName = nickName;
         this.password = password; // 해싱?
         this.birthday = birthday;
         this.profileId = null;
@@ -40,14 +38,13 @@ public class User extends BaseEntity implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-                "userId = " + getId() + ", " +
+                "id = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "email = " + email + ", " +
-                "nickName = " + nickName + ", " +
-                "username = " + username + ", " +
-//                "password = " + password + ", " +
-                "birthday = " + birthday + ", " +
+                "newEmail = " + email + ", " +
+                "newUsername = " + username + ", " +
+//                "newPassword = " + newPassword + ", " +
+                "newBirthday = " + birthday + ", " +
 //                "joinChannelList = " + joinChannelList + ", " +
 //                "writeMessageList = " + writeMessageList +
                 "}";
@@ -65,11 +62,6 @@ public class User extends BaseEntity implements Serializable {
     // update
     public void updateEmail(String email) {
         this.email = email;
-        updateTime();
-    }
-
-    public void updateNickName(String nickName) {
-        this.nickName = nickName;
         updateTime();
     }
 
