@@ -12,8 +12,11 @@ import java.util.UUID;
  */
 @Getter
 public class ReadStatus extends BaseUpdatableEntity {
-    private final UUID userId;
-    private final UUID channelId;
+    private final UUID userId; // 삭제 예정
+    private final UUID channelId; // 삭제 예정
+
+    private User user;
+    private Channel channel;
     private Instant lastReadAt;
 
     // 생성자

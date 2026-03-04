@@ -2,17 +2,22 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.*;
 
 @Getter
+@NoArgsConstructor
 public class User extends BaseUpdatableEntity {
     private String email;
     private String username;
     private String password;
     private String birthday;
 
-    private UUID profileId; // 프로필 이미지
+    private UUID profileId; // 삭제 예정
+
+    private BinaryContent profile; // 프로필 이미지
+    private UserStatus status;
 
     // 생성자
     public User(String email, String username, String password, String birthday) {

@@ -13,7 +13,9 @@ public class Message extends BaseUpdatableEntity {
     private final User author; // 메시지 작성자
     private String content; // 메시지 내용
 
-    private final List<UUID> attachmentIds; // 메세지 첨부파일
+    private final List<UUID> attachmentIds; // 삭제 예정
+
+    private List<BinaryContent> attachments; // 메세지 첨부파일
 
     // 생성자
     public Message(Channel channel, User author, String content) {

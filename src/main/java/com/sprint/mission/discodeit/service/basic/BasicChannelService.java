@@ -86,7 +86,7 @@ public class BasicChannelService implements ChannelService {
 
         // 모든 채널에서 PUBLIC인 채널 전체와 유저가 참여한 모든 채널 비교?
         return channelRepository.findAll().stream()
-                .filter(channel -> channel.getChannelType() == ChannelType.PUBLIC || participatedChannelList.contains(channel.getId()))
+                .filter(channel -> channel.getType() == ChannelType.PUBLIC || participatedChannelList.contains(channel.getId()))
                 .map(channel -> findChannelById(channel.getId()))
                 .toList();
     }
@@ -98,7 +98,7 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
         // PRIVATE Channel일 경우 수정 불가
-        if (ChannelType.PRIVATE.equals(channel.getChannelType())) {
+        if (ChannelType.PRIVATE.equals(channel.getType())) {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
 
@@ -106,10 +106,10 @@ public class BasicChannelService implements ChannelService {
         validateAllInputDuplicateOrEmpty(publicChannelUpdateRequest, channel);
 
         Optional.ofNullable(publicChannelUpdateRequest.newName())
-                .filter(n -> !channel.getChannelName().equals(n))
+                .filter(n -> !channel.getName().equals(n))
                 .ifPresent(n -> channel.updateChannelName(n));
         Optional.ofNullable(publicChannelUpdateRequest.newDescription())
-                .filter(d -> !channel.getChannelDescription().equals(d))
+                .filter(d -> !channel.getDescription().equals(d))
                 .ifPresent(d -> channel.updateChannelDescription(d));
 
         channelRepository.save(channel);
@@ -147,7 +147,7 @@ public class BasicChannelService implements ChannelService {
 
     private ChannelDto createChannelDto(Channel channel, Instant lastMessageTime) {
         List<UUID> participantIds = new ArrayList<>();
-        if (channel.getChannelType().equals(ChannelType.PRIVATE)) {
+        if (channel.getType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelId(channel.getId()).stream()
                     .map(readStatus -> readStatus.getUserId())
                     .forEach(participantId -> participantIds.add(participantId));
@@ -156,9 +156,9 @@ public class BasicChannelService implements ChannelService {
                 channel.getId(),
                 channel.getCreatedAt(),
                 channel.getUpdatedAt(),
-                channel.getChannelType(),
-                channel.getChannelName(),
-                channel.getChannelDescription(),
+                channel.getType(),
+                channel.getName(),
+                channel.getDescription(),
                 participantIds,
                 lastMessageTime
         );
@@ -188,8 +188,8 @@ public class BasicChannelService implements ChannelService {
     }
     // type, name, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
     private void validateAllInputDuplicateOrEmpty(PublicChannelUpdateRequest publicChannelUpdateRequest, Channel channel) {
-        if ((publicChannelUpdateRequest.newName() == null || channel.getChannelName().equals(publicChannelUpdateRequest.newName()))
-                && (publicChannelUpdateRequest.newDescription() == null || channel.getChannelDescription().equals(publicChannelUpdateRequest.newDescription()))) {
+        if ((publicChannelUpdateRequest.newName() == null || channel.getName().equals(publicChannelUpdateRequest.newName()))
+                && (publicChannelUpdateRequest.newDescription() == null || channel.getDescription().equals(publicChannelUpdateRequest.newDescription()))) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
     }

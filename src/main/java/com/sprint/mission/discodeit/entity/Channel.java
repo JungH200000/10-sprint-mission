@@ -5,16 +5,16 @@ import lombok.Getter;
 
 @Getter
 public class Channel extends BaseUpdatableEntity {
-    private ChannelType channelType;
-    private String channelName;
-    private String channelDescription;
+    private ChannelType type;
+    private String name;
+    private String description;
 
     // 생성자
-    public Channel(ChannelType channelType, String channelName, String channelDescription) {
+    public Channel(ChannelType type, String name, String description) {
 //        this.owner = user; // owner 임명(생성하는 사용자 본인)
-        this.channelType = channelType;
-        this.channelName = channelName;
-        this.channelDescription = channelDescription;
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
     @Override
@@ -23,22 +23,22 @@ public class Channel extends BaseUpdatableEntity {
                 "id = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "channel type = " + channelType + ", " +
-                "name = " + channelName + ", " + ", " +
+                "channel type = " + type + ", " +
+                "name = " + name + ", " + ", " +
 //                "description = " + description + ", " +
                 "}";
     }
 
     // update
     public void updateChannelName(String channelName) {
-        this.channelName = channelName;
+        this.name = channelName;
     }
 
     public void updateChannelType(ChannelType channelType) {
-        this.channelType = channelType;
+        this.type = channelType;
     }
 
     public void updateChannelDescription(String channelDescription) {
-        this.channelDescription = channelDescription;
+        this.description = channelDescription;
     }
 }

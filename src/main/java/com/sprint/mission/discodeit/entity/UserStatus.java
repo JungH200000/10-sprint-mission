@@ -17,7 +17,9 @@ import java.util.UUID;
  */
 @Getter
 public class UserStatus extends BaseUpdatableEntity {
-    private final UUID userId;
+    private final UUID userId; // 삭제 예정
+
+    private User user;
     private Instant lastActiveAt;
 
     // 생성자
