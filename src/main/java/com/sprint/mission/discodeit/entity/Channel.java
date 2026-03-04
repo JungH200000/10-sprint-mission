@@ -1,44 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
 @Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "channels")
 public class Channel extends BaseUpdatableEntity {
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChannelType type;
+
+    @Column
     private String name;
+
+    @Column
     private String description;
 
     // 생성자
     public Channel(ChannelType type, String name, String description) {
-//        this.owner = user; // owner 임명(생성하는 사용자 본인)
         this.type = type;
         this.name = name;
         this.description = description;
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "id = " + getId() + ", " +
-//                "createdAt = " + getCreatedAt() + ", " +
-//                "updatedAt = " + getUpdatedAt() + ", " +
-                "channel type = " + type + ", " +
-                "name = " + name + ", " + ", " +
-//                "description = " + description + ", " +
-                "}";
-    }
-
-    // update
-    public void updateChannelName(String channelName) {
-        this.name = channelName;
-    }
-
-    public void updateChannelType(ChannelType channelType) {
-        this.type = channelType;
-    }
-
-    public void updateChannelDescription(String channelDescription) {
-        this.description = channelDescription;
     }
 }

@@ -1,20 +1,38 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+@Entity
 @Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "messages")
 public class Message extends BaseUpdatableEntity {
-    private final Channel channel; // 메시지가 위치한 채널
-    private final User author; // 메시지 작성자
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel; // 메시지가 위치한 채널
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author; // 메시지 작성자
+
+    @Column
     private String content; // 메시지 내용
 
-    private final List<UUID> attachmentIds; // 삭제 예정
-
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    @JoinTable(
+            name = "message_attachments",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
     private List<BinaryContent> attachments; // 메세지 첨부파일
 
     // 생성자
@@ -22,35 +40,15 @@ public class Message extends BaseUpdatableEntity {
         this.channel = channel;
         this.author = author;
         this.content = content;
-        this.attachmentIds = new ArrayList<>();
-    }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id = " + getId() + ", " +
-                "channel = " + channel.getId() + ", " +
-//                "createdAt = " + getCreatedAt() + ", " +
-//                "updatedAt = " + getUpdatedAt() + ", " +
-                "author = " + author.getId() + ", " +
-                "bytes = " + content +
-                "}";
+        this.attachments = new ArrayList<>();
     }
 
     // getter
-    public List<UUID> getAttachmentIds() {
-        return attachmentIds.stream().toList();
+    public List<BinaryContent> getAttachments() {
+        return attachments.stream().toList();
     }
 
-    // update
-    public void updateContent(String content) {
-        this.content = content;
-    }
-
-    public void addAttachmentId(UUID attachmentId) {
-        this.attachmentIds.add(attachmentId);
-    }
-    public void removeAttachmentId(UUID attachmentId) {
-        this.attachmentIds.removeIf(id -> id.equals(attachmentId));
+    public void addAttachment(BinaryContent attachment) {
+        this.attachments.add(attachment);
     }
 }

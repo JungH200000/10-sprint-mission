@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * 사용자별 마지막으로 확인된 접속 시간을 표현하는 도메인 모델로,
@@ -15,23 +17,24 @@ import java.util.UUID;
  * <br>
  * 마지막 접속 시간이 현재 시간 기준 5분 이내라면 접속 중인 유저로 간주
  */
+@Entity
 @Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "user_statuses")
 public class UserStatus extends BaseUpdatableEntity {
-    private final UUID userId; // 삭제 예정
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
+    @Column(nullable = false)
     private Instant lastActiveAt;
 
     // 생성자
     // 유저 생성 시 함께 생성?
-    public UserStatus(UUID userId) {
-        this.userId = userId;
-        this.lastActiveAt = Instant.EPOCH; // 생성 시, Online 상태로 보지 않음
-    }
-
-    // update
-    // 유저 온라인 상태 주기적? 업데이트?
-    public void updateLastActiveAt(Instant lastActiveAt) {
+    public UserStatus(User user, Instant lastActiveAt) {
+        setUser(user);
         this.lastActiveAt = lastActiveAt;
     }
 
@@ -41,5 +44,10 @@ public class UserStatus extends BaseUpdatableEntity {
         return !Instant.now().isAfter(lastActiveAt.plus(Duration.ofMinutes(5)));
         // !true = 5분 초과
         // !false = 5분 포함 이내
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+        user.setStatus(this);
     }
 }
