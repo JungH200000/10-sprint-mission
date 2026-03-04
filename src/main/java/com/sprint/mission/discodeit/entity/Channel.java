@@ -32,16 +32,13 @@ public class Channel extends BaseUpdatableEntity {
     // update
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        updateTime();
     }
 
     public void updateChannelType(ChannelType channelType) {
         this.channelType = channelType;
-        updateTime();
     }
 
     public void updateChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
-        updateTime();
     }
 }

@@ -43,15 +43,12 @@ public class Message extends BaseUpdatableEntity {
     // update
     public void updateContent(String content) {
         this.content = content;
-        updateTime();
     }
 
     public void addAttachmentId(UUID attachmentId) {
         this.attachmentIds.add(attachmentId);
-        updateTime();
     }
     public void removeAttachmentId(UUID attachmentId) {
         this.attachmentIds.removeIf(id -> id.equals(attachmentId));
-        updateTime();
     }
 }

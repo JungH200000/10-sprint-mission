@@ -31,7 +31,6 @@ public class UserStatus extends BaseUpdatableEntity {
     // 유저 온라인 상태 주기적? 업데이트?
     public void updateLastActiveAt(Instant lastActiveAt) {
         this.lastActiveAt = lastActiveAt;
-        updateTime();
     }
 
     // 현재 유저 상태 확인(자리 비움, 미접속 등등)

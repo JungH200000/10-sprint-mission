@@ -39,27 +39,22 @@ public class User extends BaseUpdatableEntity {
     // update
     public void updateEmail(String email) {
         this.email = email;
-        updateTime();
     }
 
     public void updateUserName(String username) {
         this.username = username;
-        updateTime();
     }
 
     // 해시??
     public void updatePassword(String password) {
         this.password = password;
-        updateTime();
     }
 
     public void updateBirthday(String birthday) {
         this.birthday = birthday;
-        updateTime();
     }
 
     public void updateProfileId(UUID profileId) { // BinaryContent의 id
         this.profileId = profileId;
-        updateTime();
     }
 }

@@ -17,9 +17,4 @@ public abstract class BaseUpdatableEntity extends BaseEntity {
     @LastModifiedDate
 //    @Column(name = "")
     protected Instant updatedAt; // 객체 수정 시간
-
-    // update 시간 메소드
-    public void updateTime() {
-        this.updatedAt = Instant.now();
-    }
 }
