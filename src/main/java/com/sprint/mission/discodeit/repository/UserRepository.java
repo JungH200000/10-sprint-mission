@@ -1,23 +1,30 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository { // 데이터 관련 로직(저장, 조회, 삭제 등등) 담당
-    void save(User user);
-
-    Optional<User> findById(UUID userId);
+// 데이터 관련 로직(저장, 조회, 삭제 등등) 담당
+public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsername(String username);
 
-    List<User> findAll();
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 
-    void delete(UUID userId);
 
-    boolean existUserName(String newUserName);
-    boolean existEmail(String newEmail);
-    boolean isEmailUsedByOther(UUID userId, String newEmail);
-    boolean isUserNameUsedByOther(UUID userId, String newUserName);
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END\n" +
+            "FROM User AS u\n" +
+            "WHERE u.email = :email\n" +
+            "  AND u.id != :userId\n")
+    boolean isEmailUsedByOther(@Param("userId") UUID userId, @Param("email") String newEmail);
+
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END\n" +
+            "FROM User AS u\n" +
+            "WHERE u.username = :username\n" +
+            "  AND u.id != :userId\n")
+    boolean isUserNameUsedByOther(@Param("userId") UUID userId, @Param("username") String newUsername);
 }
