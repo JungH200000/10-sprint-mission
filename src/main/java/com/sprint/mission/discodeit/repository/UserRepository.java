@@ -10,21 +10,26 @@ import java.util.UUID;
 
 // 데이터 관련 로직(저장, 조회, 삭제 등등) 담당
 public interface UserRepository extends JpaRepository<User, UUID> {
+    @Query(value = "SELECT u FROM User AS u " +
+            "LEFT JOIN FETCH u.status " +
+            "LEFT JOIN FETCH u.profile " +
+            "WHERE u.id = :id")
+    Optional<User> findByIdWithStatusAndProfile(@Param("id") UUID userId);
     Optional<User> findByUsername(String username);
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
 
-    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END\n" +
-            "FROM User AS u\n" +
-            "WHERE u.email = :email\n" +
-            "  AND u.id != :userId\n")
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+            "FROM User AS u " +
+            "WHERE u.email = :email " +
+            "  AND u.id != :userId ")
     boolean isEmailUsedByOther(@Param("userId") UUID userId, @Param("email") String newEmail);
 
-    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END\n" +
-            "FROM User AS u\n" +
-            "WHERE u.username = :username\n" +
-            "  AND u.id != :userId\n")
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+            "FROM User AS u " +
+            "WHERE u.username = :username " +
+            "  AND u.id != :userId ")
     boolean isUserNameUsedByOther(@Param("userId") UUID userId, @Param("username") String newUsername);
 }
