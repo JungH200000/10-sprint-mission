@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -13,9 +11,7 @@ import java.util.UUID;
  * 사용자별 각 채널에 읽지 않은 메시지를 확인하기 위해 활용
  */
 @Getter
-public class ReadStatus extends BaseEntity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class ReadStatus extends BaseUpdatableEntity {
     private final UUID userId;
     private final UUID channelId;
     private Instant lastReadAt;

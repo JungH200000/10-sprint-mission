@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -18,9 +16,7 @@ import java.util.UUID;
  * 마지막 접속 시간이 현재 시간 기준 5분 이내라면 접속 중인 유저로 간주
  */
 @Getter
-public class UserStatus extends BaseEntity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class UserStatus extends BaseUpdatableEntity {
     private final UUID userId;
     private Instant lastActiveAt;
 
