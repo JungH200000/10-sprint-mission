@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
