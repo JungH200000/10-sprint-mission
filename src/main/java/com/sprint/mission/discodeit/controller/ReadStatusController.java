@@ -41,7 +41,7 @@ public class ReadStatusController {
     public ResponseEntity<ReadStatusDto> create(
             @RequestBody @Valid ReadStatusCreateRequest readStatusCreateRequest
     ) {
-        ReadStatusDto readStatus = readStatusService.createReadStatus(readStatusCreateRequest);
+        ReadStatusDto readStatus = readStatusService.create(readStatusCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
     }
@@ -59,7 +59,7 @@ public class ReadStatusController {
             @Parameter(description = "수정할 읽음 상태 ID") @PathVariable UUID readStatusId,
             @RequestBody @Valid ReadStatusUpdateRequest readStatusUpdateRequest
             ) {
-        ReadStatusDto readStatus = readStatusService.updateReadStatus(readStatusId, readStatusUpdateRequest);
+        ReadStatusDto readStatus = readStatusService.update(readStatusId, readStatusUpdateRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(readStatus);
     }

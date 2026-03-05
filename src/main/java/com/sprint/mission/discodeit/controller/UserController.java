@@ -50,7 +50,7 @@ public class UserController {
     public ResponseEntity<UserDto> create(
             @RequestPart @Valid UserCreateRequest userCreateRequest,
             @RequestPart(required = false) @Schema(description = "User 프로필 이미지") MultipartFile profile) {
-        UserDto user = userService.createUser(userCreateRequest, profile);
+        UserDto user = userService.create(userCreateRequest, profile);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
@@ -63,7 +63,7 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
     @Schema(implementation = UserDto.class)
     public ResponseEntity<List<UserDto>> findAll() {
-        List<UserDto> result = userService.findAllUsers();
+        List<UserDto> result = userService.findAll();
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -87,7 +87,7 @@ public class UserController {
             @Parameter(description = "수정할 User ID") @PathVariable UUID userId,
             @RequestPart @Valid UserUpdateRequest userUpdateRequest,
             @RequestPart(required = false) @Schema(description = "수정할 User 프로필 이미지") MultipartFile profile) {
-        UserDto user = userService.updateUser(userId, userUpdateRequest, profile);
+        UserDto user = userService.update(userId, userUpdateRequest, profile);
 
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
@@ -104,7 +104,7 @@ public class UserController {
     public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
             @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
-        UserStatusDto userStatus = userStatusService.updateUserStatusByUserId(userId, userStatusUpdateRequest);
+        UserStatusDto userStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(userStatus);
     }
@@ -118,7 +118,7 @@ public class UserController {
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "삭제할 User ID") @PathVariable UUID userId) {
-        userService.deleteUser(userId);
+        userService.delete(userId);
 
         return ResponseEntity.noContent().build();
     }

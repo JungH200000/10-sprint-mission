@@ -89,7 +89,7 @@ public class ChannelController {
     public ResponseEntity<ChannelDto> update(
             @Parameter(description = "수정할 Channel ID") @PathVariable UUID channelId,
             @RequestBody @Valid PublicChannelUpdateRequest publicChannelUpdateRequest) {
-        ChannelDto channel = channelService.updateChannelInfo(channelId, publicChannelUpdateRequest);
+        ChannelDto channel = channelService.update(channelId, publicChannelUpdateRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(channel);
     }
@@ -106,7 +106,7 @@ public class ChannelController {
     public ResponseEntity<Void> delete(
             @Parameter(description = "삭제할 Channel ID") @PathVariable UUID channelId
     ) {
-        channelService.deleteChannel(channelId);
+        channelService.delete(channelId);
         return ResponseEntity.noContent().build();
     }
 }

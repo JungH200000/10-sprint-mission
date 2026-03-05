@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,7 +39,7 @@ public class BinaryContentController {
     public ResponseEntity<BinaryContentDto> find(
             @Parameter(description = "조회할 첨부 파일 ID") @PathVariable UUID binaryContentId
     ) {
-        BinaryContentDto binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
 
         return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
     }
@@ -54,7 +53,7 @@ public class BinaryContentController {
     public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
             @Parameter(description = "조회할 첨부 파일 ID 목록") @RequestParam List<UUID> binaryContentIds
     ) {
-        List<BinaryContentDto> binaryContents = binaryContentService.findAllBinaryContentByIdIn(binaryContentIds);
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
 
         return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
     }

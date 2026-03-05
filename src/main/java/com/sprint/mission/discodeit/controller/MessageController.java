@@ -45,7 +45,7 @@ public class MessageController {
     public ResponseEntity<MessageDto> create(
             @RequestPart @Valid MessageCreateRequest messageCreateRequest,
             @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments) {
-        MessageDto message = messageService.createMessage(messageCreateRequest, attachments);
+        MessageDto message = messageService.create(messageCreateRequest, attachments);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
@@ -77,7 +77,7 @@ public class MessageController {
             @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
             @RequestBody @Valid MessageUpdateRequest messageUpdateRequest
     ) {
-        MessageDto message = messageService.updateMessageContent(messageId, messageUpdateRequest);
+        MessageDto message = messageService.update(messageId, messageUpdateRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(message);
     }
@@ -94,7 +94,7 @@ public class MessageController {
     public ResponseEntity<Void> delete(
             @Parameter(description = "삭제할 Message ID") @PathVariable UUID messageId
     ) {
-        messageService.deleteMessage(messageId);
+        messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 }
