@@ -35,6 +35,7 @@ public class BasicReadStatusService implements ReadStatusService {
         UUID userId = readStatusCreateRequest.userId();
         UUID channelId = readStatusCreateRequest.channelId();
         Instant lastReadAt = readStatusCreateRequest.lastReadAt();
+
         // user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
         // channel 객체 존재 확인
