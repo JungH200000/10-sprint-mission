@@ -52,42 +52,30 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user, Instant.now());
 
         userRepository.save(user);
-        return createUserDto(user, userStatus);
+        return createUserDto(user);
     }
 
     @Transactional(readOnly = true)
     @Override
     public UserDto find(UUID userId) {
         // User ID null 검증
-        ValidationMethods.validateId(userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 userId에 맞는 UserStatus가 없습니다."));
+        User user = validateAndGetUserByUserId(userId);
 
-        return createUserDto(user, userStatus);
+        return createUserDto(user);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        List<UserStatus> userStatuses = userStatusRepository.findAll();
-
-        List<UserDto> userInfos = new ArrayList<>();
-        userStatuses.forEach(status -> {
-            User user = userRepository.findById(status.getUserId())
-                    .orElseThrow(() -> new NoSuchElementException("status의 userId를 가진 유저가 존재하지 않음"));
-            userInfos.add(createUserDto(user, status));
-        });
-
-        return userInfos;
+        return userRepository.findAllWithStatusAndProfile().stream()
+                .map(user -> createUserDto(user))
+                .toList();
     }
 
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, MultipartFile profile) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
-        UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         byte[] bytes = null;
@@ -135,28 +123,22 @@ public class BasicUserService implements UserService {
                     bytes,
                     (long) bytes.length
             );
-//            binaryContentRepository.save(newProfile);
             user.setProfile(newProfile);
         }
         userRepository.save(user);
 
-//        // BinaryContent가 교체되고, profileId가 null이 아닐 때
-//        if (binaryContentChanged && oldProfileId != null) {
-//            binaryContentRepository.deleteById(oldProfileId);
-//        }
-
-        return createUserDto(user, userStatus);
+        return createUserDto(user);
     }
 
     @Override
     public void delete(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateAndGetUserByUserId(userId);
+        validateUserByUserId(userId);
 
         userRepository.deleteById(userId);
     }
 
-    private UserDto createUserDto(User user, UserStatus userStatus) {
+    private UserDto createUserDto(User user) {
         return new UserDto(
                 user.getId(),
                 user.getCreatedAt(),
@@ -164,16 +146,28 @@ public class BasicUserService implements UserService {
                 user.getEmail(),
                 user.getUsername(),
                 user.getProfile(),
-                userStatus.isOnlineStatus());
+                user.getStatus().isOnlineStatus());
     }
 
     //// validation
     // user ID null & user 객체 존재 확인
     public User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
-        return userRepository.findById(userId)
+        return userRepository.findByIdWithStatusAndProfile(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
+    public void validateUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    }
+
+    public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
+        return userStatusRepository.findByUserIdWithUser(userId)
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found."));
+    }
+
     // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {
         if (userRepository.existsByEmail(newEmail)) {
@@ -186,22 +180,11 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("user with userName이 " + newUserName + " already exists");
         }
     }
-    public void validateUserStatusByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
-        userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
-    }
-    public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
-        return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
-    }
     // newEmail or newPassword or newUsername 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
     private void validateAllInputDuplicateOrEmpty(UserUpdateRequest request, User user, boolean binaryContentChanged) {
         if ((request.newEmail() == null || user.getEmail().equals(request.newEmail()))
                 && (request.newPassword() == null || user.getPassword().equals(request.newPassword()))
                 && (request.newUsername() == null || user.getUsername().equals(request.newUsername()))
-                && (request.newBirthday() == null || user.getBirthday().equals(request.newBirthday()))
                 && !binaryContentChanged
         ) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");

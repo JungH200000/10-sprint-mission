@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +17,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContentDto createBinaryContent(BinaryContentCreateRequest binaryContentCreateRequest) {
+    public BinaryContentDto create(BinaryContentCreateRequest binaryContentCreateRequest) {
         BinaryContent binaryContent = new BinaryContent(
                 binaryContentCreateRequest.fileName(),
                 binaryContentCreateRequest.contentType(),
@@ -31,28 +33,27 @@ public class BasicBinaryContentService implements BinaryContentService {
         return createBinaryContentDto(binaryContent);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public BinaryContentDto findBinaryContentById(UUID binaryContentId) {
+    public BinaryContentDto find(UUID binaryContentId) {
         BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
         return createBinaryContentDto(binaryContent);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<BinaryContentDto> findAllBinaryContentByIdIn(List<UUID> binaryContentIds) {
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
         if (binaryContentIds == null || binaryContentIds.isEmpty()) return List.of();
 
-        List<BinaryContentDto> foundBinaryContentList = new ArrayList<>();
-        for (UUID binaryContentId : binaryContentIds) {
-            BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
-            foundBinaryContentList.add(createBinaryContentDto(binaryContent));
-        }
-        return foundBinaryContentList;
+        return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
+                .map(binaryContent -> createBinaryContentDto(binaryContent))
+                .toList();
     }
 
     @Override
-    public void deleteBinaryContent(UUID binaryContentId) {
+    public void delete(UUID binaryContentId) {
         validateBinaryContentByBinaryContentId(binaryContentId);
-        binaryContentRepository.delete(binaryContentId);
+        binaryContentRepository.deleteById(binaryContentId);
     }
 
     private BinaryContentDto createBinaryContentDto(BinaryContent binaryContent) {

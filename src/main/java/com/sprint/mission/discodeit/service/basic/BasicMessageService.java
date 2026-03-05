@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
@@ -31,14 +33,15 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageDto createMessage(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments) {
+    public MessageDto create(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments) {
+        UUID authorId = messageCreateRequest.authorId();
+        UUID channelId = messageCreateRequest.channelId();
+
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User author = userRepository.findById(messageCreateRequest.authorId())
-                .orElseThrow(() -> new NoSuchElementException("Author with id " + messageCreateRequest.authorId() + " not found"));
+        User author = validateAndGetUserByUserId(authorId);
 
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = channelRepository.findById(messageCreateRequest.channelId())
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + messageCreateRequest.channelId() + " not found"));
+        Channel channel = validateAndGetChannelByChannelId(channelId);
 
         Message message = new Message(channel, author, messageCreateRequest.content());
 
@@ -47,89 +50,84 @@ public class BasicMessageService implements MessageService {
                 if (attachment == null || attachment.isEmpty()) continue;
                 try {
                     byte[] bytes = attachment.getBytes();
-                    BinaryContent binaryContent = new BinaryContent(
-                            attachment.getOriginalFilename(),
-                            attachment.getContentType(),
-                            bytes,
-                            (long) bytes.length
-                    );
-                    message.addAttachmentId(binaryContent.getId());
-                    binaryContentRepository.save(binaryContent);
+                    BinaryContent binaryContent = new BinaryContent(attachment.getOriginalFilename(), attachment.getContentType(), bytes, (long) bytes.length);
+                    message.addAttachment(binaryContent);
                 } catch (IOException e) {
                     throw new IllegalArgumentException("attachments 업로드 실패", e);
                 }
             }
         }
         messageRepository.save(message);
+
         return createMessageDto(message);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public MessageDto findMessageById(UUID messageId) {
+    public MessageDto find(UUID messageId) {
         // Message ID `null` 및 존재 검증
         Message message = validateAndGetMessageByMessageId(messageId);
 
         return createMessageDto(message);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<MessageDto> findAllMessages() {
+    public List<MessageDto> findAll() {
         return messageRepository.findAll().stream()
                 .map(message -> createMessageDto(message))
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<MessageDto> findAllByChannelId(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
 
-        return messageRepository.findByChannelId(channelId).stream()
+        return messageRepository.findAllByChannelId(channelId).stream()
                 .map(message -> createMessageDto(message))
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<MessageDto> findUserMessagesByUserId(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
 
-        return messageRepository.findByAuthorId(userId).stream()
+        return messageRepository.findAllByAuthorId(userId).stream()
                 .map(message -> createMessageDto(message))
                 .toList();
     }
 
     @Override
-    public MessageDto updateMessageContent(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
+    public MessageDto update(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
 
-        message.updateContent(messageUpdateRequest.newContent());
+        message.setContent(messageUpdateRequest.newContent());
         messageRepository.save(message);
         return createMessageDto(message);
     }
 
     @Override
-    public void deleteMessageByUserId(UUID userId, UUID messageId) {
+    public void deletByIdAndUserId(UUID userId, UUID messageId) {
         // 요청자의 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
-        // User ID null / user 객체 존재 확인
-        validateUserByUserId(userId);
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(message.getChannel().getId());
 
-        if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
-            for (UUID attachmentId : message.getAttachmentIds()) {
-                binaryContentRepository.delete(attachmentId);
-            }
+        if (message.getAttachments() != null && !message.getAttachments().isEmpty()) {
+            binaryContentRepository.deleteAll(message.getAttachments());
         }
-        messageRepository.delete(messageId);
+        messageRepository.deleteById(messageId);
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
+    public void delete(UUID messageId) {
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
         // User ID null / user 객체 존재 확인
@@ -137,12 +135,10 @@ public class BasicMessageService implements MessageService {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(message.getChannel().getId());
 
-        if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
-            for (UUID attachmentId : message.getAttachmentIds()) {
-                binaryContentRepository.delete(attachmentId);
-            }
+        if (message.getAttachments() != null && !message.getAttachments().isEmpty()) {
+            binaryContentRepository.deleteAll(message.getAttachments());
         }
-        messageRepository.delete(messageId);
+        messageRepository.deleteById(messageId);
     }
 
     private MessageDto createMessageDto(Message message) {
@@ -153,19 +149,19 @@ public class BasicMessageService implements MessageService {
                 message.getContent(),
                 message.getChannel().getId(),
                 message.getAuthor().getId(),
-                message.getAttachmentIds());
+                message.getAttachments());
     }
 
     //// validation
     // 로그인 되어있는 user ID null & user 객체 존재 확인
-    public void validateUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-    }
     public User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    }
+    public void validateUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
+        userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
@@ -180,10 +176,11 @@ public class BasicMessageService implements MessageService {
         channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
+
     // Message ID null & Message 객체 존재 확인
     public Message validateAndGetMessageByMessageId(UUID messageId) {
         ValidationMethods.validateId(messageId);
-        return messageRepository.findById(messageId)
+        return messageRepository.findByIdWithAuthorAndChannel(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 

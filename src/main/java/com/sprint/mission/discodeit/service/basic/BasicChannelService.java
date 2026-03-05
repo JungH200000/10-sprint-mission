@@ -10,20 +10,19 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Validated
+@Transactional
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
-    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
@@ -39,60 +38,57 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelDto createPrivateChannel(PrivateChannelCreateRequest request) {
-        // PRIVATE 채널은 channelName과 channelDescription이 null
-        Channel channel = new Channel(
-                ChannelType.PRIVATE,
-                null,
-                null
-        );
-
-        if (request.participantIds() != null && !request.participantIds().isEmpty()) {
-            for (UUID participantId : request.participantIds()) {
-                validateUserByUserId(participantId);
-                ReadStatus participantReadStatus = new ReadStatus(participantId, channel.getId(), Instant.now());
-                readStatusRepository.save(participantReadStatus);
-            }
+        if (request.participantIds() == null || request.participantIds().isEmpty()) {
+            throw new IllegalArgumentException("Private Channel에 참가자 필요함");
         }
+        // 인원 검증
+        List<User> participants = request.participantIds().stream()
+                .map(id -> validateAndGetUserByUserId(id))
+                .toList();
+
+        // PRIVATE 채널은 channelName과 channelDescription이 null
+        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         channelRepository.save(channel);
+
+        Instant now = Instant.now();
+        participants.forEach(participant -> {
+            ReadStatus participantReadStatus = new ReadStatus(participant, channel, now);
+            readStatusRepository.save(participantReadStatus);
+        });
 
         return createChannelDto(channel, null);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public ChannelDto findChannelById(UUID channelId) {
+    public ChannelDto find(UUID channelId) {
         // Channel ID null 검증
-        ValidationMethods.validateId(channelId);
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+        Channel channel = validateAndGetChannelByChannelId(channelId);
 
-        Instant lastMessageTime = messageRepository.findByChannelId(channelId).stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .findFirst()
-                .map(message -> message.getCreatedAt())
+        Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channelId)
                 .orElse(null);
 
-        return createChannelDto(channel, lastMessageTime);
+        return createChannelDto(channel, lastMessageAt);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
         // User ID null 검증
         validateUserByUserId(userId);
 
-        // 유저가 참여한 모든 채널
-        List<UUID> participatedChannelList = readStatusRepository.findAllByUserId(userId).stream()
-                .map(readStatus -> readStatus.getChannelId())
-                .toList();
-
-        // 모든 채널에서 PUBLIC인 채널 전체와 유저가 참여한 모든 채널 비교?
-        return channelRepository.findAll().stream()
-                .filter(channel -> channel.getType() == ChannelType.PUBLIC || participatedChannelList.contains(channel.getId()))
-                .map(channel -> findChannelById(channel.getId()))
+        // 모든 채널에서 PUBLIC인 채널 전체와 유저가 참여한 모든 채널
+        return channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId).stream()
+                .map(channel -> {
+                    Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channel.getId())
+                            .orElse(null);
+                    return createChannelDto(channel, lastMessageAt);
+                })
                 .toList();
     }
 
     @Override
-    public ChannelDto updateChannelInfo(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
+    public ChannelDto update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
         // channel 객체 존재 확인
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
@@ -107,50 +103,35 @@ public class BasicChannelService implements ChannelService {
 
         Optional.ofNullable(publicChannelUpdateRequest.newName())
                 .filter(n -> !channel.getName().equals(n))
-                .ifPresent(n -> channel.updateChannelName(n));
+                .ifPresent(n -> channel.setName(n));
         Optional.ofNullable(publicChannelUpdateRequest.newDescription())
                 .filter(d -> !channel.getDescription().equals(d))
-                .ifPresent(d -> channel.updateChannelDescription(d));
+                .ifPresent(d -> channel.setDescription(d));
 
         channelRepository.save(channel);
 
-        Instant lastMessageTime = messageRepository.findByChannelId(channelId).stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .findFirst()
-                .map(message -> message.getCreatedAt())
+        Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channel.getId())
                 .orElse(null);
 
-        return createChannelDto(channel, lastMessageTime);
+        return createChannelDto(channel, lastMessageAt);
     }
 
     @Override
-    public void deleteChannel(UUID channelId) {
+    public void delete(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
 
-        for (Message message : messageRepository.findByChannelId(channelId)) {
-            validateUserByUserId(message.getAuthor().getId());
+//        messageRepository.deleteAll(messageRepository.findAllByChannelId(channelId));
+//        readStatusRepository.deleteAll(readStatusRepository.findAllByChannelIdWithUserAndChannel(channelId));
 
-            if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
-                for (UUID attachmentId : message.getAttachmentIds()) {
-                    binaryContentRepository.delete(attachmentId);
-                }
-            }
-            messageRepository.delete(message.getId());
-        }
-        for (ReadStatus readStatus : readStatusRepository.findAllByChannelId(channelId)) {
-            readStatusRepository.delete(readStatus.getId());
-        }
-
-        channelRepository.delete(channelId);
+        channelRepository.deleteById(channelId);
     }
 
-    private ChannelDto createChannelDto(Channel channel, Instant lastMessageTime) {
+    private ChannelDto createChannelDto(Channel channel, Instant lastMessageAt) {
         List<UUID> participantIds = new ArrayList<>();
         if (channel.getType().equals(ChannelType.PRIVATE)) {
-            readStatusRepository.findAllByChannelId(channel.getId()).stream()
-                    .map(readStatus -> readStatus.getUserId())
-                    .forEach(participantId -> participantIds.add(participantId));
+            readStatusRepository.findAllByChannelIdWithUserAndChannel(channel.getId())
+                    .forEach(readStatus -> participantIds.add(readStatus.getUser().getId()));
         }
         return new ChannelDto(
                 channel.getId(),
@@ -160,7 +141,7 @@ public class BasicChannelService implements ChannelService {
                 channel.getName(),
                 channel.getDescription(),
                 participantIds,
-                lastMessageTime
+                lastMessageAt
         );
     }
 

@@ -9,12 +9,14 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -29,20 +31,24 @@ public class BasicAuthService implements AuthService {
         }
 
         // 유저 존재하면
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+        UserStatus userStatus = userStatusRepository.findByUserIdWithUser(user.getId())
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + user.getId() + " not found."));
 
         // 온라인 상태 업데이트
-        userStatus.updateLastActiveAt(Instant.now());
+        userStatus.setLastActiveAt(Instant.now());
         userStatusRepository.save(userStatus);
 
-        return createUserInfo(user, userStatus);
+        return createUserInfo(user);
     }
 
-    private UserDto createUserInfo(User user, UserStatus userStatus) {
+    private UserDto createUserInfo(User user) {
         return new UserDto(
-                user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
-                user.getEmail(), user.getUsername(), user.getBirthday(),
-                user.getProfileId(), userStatus.isOnlineStatus());
+                user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getEmail(),
+                user.getUsername(),
+                user.getProfile(),
+                user.getStatus().isOnlineStatus());
     }
 }
