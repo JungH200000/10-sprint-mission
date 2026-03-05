@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.message;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.time.Instant;
@@ -12,7 +14,7 @@ public record MessageDto(
         Instant updatedAt,
         String content,
         UUID channelId,
-        UUID authorId,
-        List<BinaryContent> attachments
+        UserDto author,
+        List<BinaryContentDto> attachments
 ) {
 }
