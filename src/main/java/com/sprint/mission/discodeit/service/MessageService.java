@@ -10,15 +10,15 @@ import java.util.UUID;
 public interface MessageService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: messageID과 내용 출력
-    MessageDto createMessage(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments);
+    MessageDto create(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments);
 
     // R. 읽기
     // 특정 메시지 정보 읽기
-    MessageDto findMessageById(UUID messageId);
+    MessageDto find(UUID messageId);
 
     // R. 모두 읽기 : 시간순으로 정렬?
     // 메시지 전체
-    List<MessageDto> findAllMessages();
+    List<MessageDto> findAll();
     // 특정 채널의 모든 메시지 읽어오기
     List<MessageDto> findAllByChannelId(UUID channelId);
     // 특정 사용자가 작성한 모든 메시지
@@ -26,9 +26,9 @@ public interface MessageService {
 
     // U. 수정
     // 메시지 수정
-    MessageDto updateMessageContent(UUID messageId, MessageUpdateRequest messageUpdateRequest);
+    MessageDto update(UUID messageId, MessageUpdateRequest messageUpdateRequest);
 
     // D. 삭제
-    void deleteMessageByUserId(UUID userId, UUID messageId);
-    void deleteMessage(UUID messageId);
+    void deletByIdAndUserId(UUID userId, UUID messageId);
+    void delete(UUID messageId);
 }

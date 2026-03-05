@@ -11,18 +11,18 @@ import java.util.UUID;
 public interface UserService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: userId와 기타 등등 출력
-    UserDto createUser(UserCreateRequest request, MultipartFile profile);
+    UserDto create(UserCreateRequest request, MultipartFile profile);
 
     // R. 읽기
-    UserDto findUserById(UUID userId);
+    UserDto find(UUID userId);
 
     // R. 모두 읽기
     // 모든 사용자
-    List<UserDto> findAllUsers();
+    List<UserDto> findAll();
 
     // U. 수정
-    UserDto updateUser(UUID userId, UserUpdateRequest request, MultipartFile profile);
+    UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile);
 
     // D. 삭제
-    void deleteUser(UUID userId);
+    void delete(UUID userId);
 }

@@ -9,17 +9,17 @@ import java.util.UUID;
 
 public interface ReadStatusService {
     // creat
-    ReadStatusDto createReadStatus(ReadStatusCreateRequest readStatusCreateRequest);
+    ReadStatusDto create(ReadStatusCreateRequest readStatusCreateRequest);
 
     // read
-    ReadStatusDto findReadStatusById(UUID readStatusId);
+    ReadStatusDto find(UUID readStatusId);
 
     // all read
     List<ReadStatusDto> findAllByUserId(UUID userId);
 
     // update
-    ReadStatusDto updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest);
+    ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest);
 
     // delete
-    void deleteReadStatus(UUID readStatusId);
+    void delete(UUID readStatusId);
 }

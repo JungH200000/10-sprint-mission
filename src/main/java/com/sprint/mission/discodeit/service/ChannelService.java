@@ -16,15 +16,15 @@ public interface ChannelService {
 
     // R. 읽기
     // 특정 채널 정보 읽기
-    ChannelDto findChannelById(UUID channelId);
+    ChannelDto find(UUID channelId);
 
     // R. 모두 읽기
     // 채널 목록 전체
     List<ChannelDto> findAllByUserId(UUID userId);
 
     // U. 수정
-    ChannelDto updateChannelInfo(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest);
+    ChannelDto update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest);
 
     // D. 삭제
-    void deleteChannel(UUID channelId);
+    void delete(UUID channelId);
 }
