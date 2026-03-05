@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -27,6 +28,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final ReadStatusMapper readStatusMapper;
 
     @Override
     public ReadStatusDto create(ReadStatusCreateRequest readStatusCreateRequest) {
@@ -45,14 +47,14 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
 
         readStatusRepository.save(readStatus);
-        return createReadStatusDto(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Transactional(readOnly = true)
     @Override
     public ReadStatusDto find(UUID readStatusId) {
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
-        return createReadStatusDto(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Transactional(readOnly = true)
@@ -62,7 +64,7 @@ public class BasicReadStatusService implements ReadStatusService {
         validateUserByUserId(userId);
 
         return readStatusRepository.findAllByUserIdWithUserAndChannel(userId).stream()
-                .map(readStatus -> createReadStatusDto(readStatus))
+                .map(readStatus -> readStatusMapper.toDto(readStatus))
                 .toList();
     }
 
@@ -73,24 +75,13 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatus.updateLastReadTime(readStatusUpdateRequest.newLastReadAt());
         readStatusRepository.save(readStatus);
 
-        return createReadStatusDto(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Override
     public void delete(UUID readStatusId) {
         validateReadStatusByReadStatusId(readStatusId);
         readStatusRepository.deleteById(readStatusId);
-    }
-
-    private ReadStatusDto createReadStatusDto(ReadStatus readStatus) {
-        return new ReadStatusDto(
-                readStatus.getId(),
-                readStatus.getCreatedAt(),
-                readStatus.getUpdatedAt(),
-                readStatus.getUser().getId(),
-                readStatus.getChannel().getId(),
-                readStatus.getLastReadAt()
-        );
     }
 
     //// validation

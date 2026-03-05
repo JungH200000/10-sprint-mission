@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Transactional
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public BinaryContentDto create(BinaryContentCreateRequest binaryContentCreateRequest) {
@@ -29,14 +31,14 @@ public class BasicBinaryContentService implements BinaryContentService {
                 (long) binaryContentCreateRequest.bytes().length
         );
         binaryContentRepository.save(binaryContent);
-        return createBinaryContentDto(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Transactional(readOnly = true)
     @Override
     public BinaryContentDto find(UUID binaryContentId) {
         BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
-        return createBinaryContentDto(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +47,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         if (binaryContentIds == null || binaryContentIds.isEmpty()) return List.of();
 
         return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
-                .map(binaryContent -> createBinaryContentDto(binaryContent))
+                .map(binaryContent -> binaryContentMapper.toDto(binaryContent))
                 .toList();
     }
 
@@ -53,16 +55,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID binaryContentId) {
         validateBinaryContentByBinaryContentId(binaryContentId);
         binaryContentRepository.deleteById(binaryContentId);
-    }
-
-    private BinaryContentDto createBinaryContentDto(BinaryContent binaryContent) {
-        return new BinaryContentDto(
-                binaryContent.getId(),
-                binaryContent.getCreatedAt(),
-                binaryContent.getFileName(),
-                binaryContent.getSize(),
-                binaryContent.getContentType(),
-                binaryContent.getBytes());
     }
 
     public void validateBinaryContentByBinaryContentId(UUID binaryContentId) {

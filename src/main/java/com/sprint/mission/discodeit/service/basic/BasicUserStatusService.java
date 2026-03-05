@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateReque
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
+    private final UserStatusMapper userStatusMapper;
 
     @Override
     public UserStatusDto create(UserStatusCreateRequest request) {
@@ -37,28 +39,28 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = new UserStatus(user, Instant.now());
         userStatusRepository.save(userStatus);
 
-        return createUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional(readOnly = true)
     @Override
     public UserStatusDto find(UUID userStatusId) {
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
-        return createUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional(readOnly = true)
     @Override
     public UserStatusDto findByUserId(UUID userId) {
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
-        return createUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserStatusDto> findAll() {
         return userStatusRepository.findAllWithUser().stream()
-                .map(userStatus -> createUserStatusDto(userStatus))
+                .map(userStatus -> userStatusMapper.toDto(userStatus))
                 .toList();
     }
 
@@ -73,7 +75,7 @@ public class BasicUserStatusService implements UserStatusService {
         userStatus.setLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
-        return createUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Override
@@ -87,24 +89,13 @@ public class BasicUserStatusService implements UserStatusService {
         userStatus.setLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
         userStatusRepository.save(userStatus);
 
-        return createUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Override
     public void delete(UUID userStatusId) {
         validateUserStatusByUserStatusId(userStatusId);
         userStatusRepository.deleteById(userStatusId);
-    }
-
-    private UserStatusDto createUserStatusDto(UserStatus userStatus) {
-        return new UserStatusDto(
-                userStatus.getId(),
-                userStatus.getCreatedAt(),
-                userStatus.getUpdatedAt(),
-                userStatus.getUser().getId(),
-                userStatus.getLastActiveAt(),
-                userStatus.isOnlineStatus()
-        );
     }
 
     //// validation
