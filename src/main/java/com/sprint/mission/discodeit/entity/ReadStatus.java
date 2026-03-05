@@ -40,7 +40,6 @@ public class ReadStatus extends BaseUpdatableEntity {
     private Instant lastReadAt;
 
     // 생성자
-    // 채널 생성/참여 시 함께 생성
     public ReadStatus(User user, Channel channel, Instant lastReadAt) {
         this.user = user;
         this.channel = channel;
