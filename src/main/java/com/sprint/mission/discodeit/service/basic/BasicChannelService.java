@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
@@ -23,6 +24,7 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final ChannelMapper channelMapper;
 
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
@@ -33,7 +35,7 @@ public class BasicChannelService implements ChannelService {
         );
         channelRepository.save(channel);
 
-        return createChannelDto(channel, null);
+        return channelMapper.toDto(channel);
     }
 
     @Override
@@ -56,7 +58,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(participantReadStatus);
         });
 
-        return createChannelDto(channel, null);
+        return channelMapper.toDto(channel);
     }
 
     @Transactional(readOnly = true)
@@ -65,10 +67,7 @@ public class BasicChannelService implements ChannelService {
         // Channel ID null 검증
         Channel channel = validateAndGetChannelByChannelId(channelId);
 
-        Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channelId)
-                .orElse(null);
-
-        return createChannelDto(channel, lastMessageAt);
+        return channelMapper.toDto(channel);
     }
 
     @Transactional(readOnly = true)
@@ -79,11 +78,7 @@ public class BasicChannelService implements ChannelService {
 
         // 모든 채널에서 PUBLIC인 채널 전체와 유저가 참여한 모든 채널
         return channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId).stream()
-                .map(channel -> {
-                    Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channel.getId())
-                            .orElse(null);
-                    return createChannelDto(channel, lastMessageAt);
-                })
+                .map(channel -> channelMapper.toDto(channel))
                 .toList();
     }
 
@@ -110,10 +105,7 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.save(channel);
 
-        Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channel.getId())
-                .orElse(null);
-
-        return createChannelDto(channel, lastMessageAt);
+        return channelMapper.toDto(channel);
     }
 
     @Override
@@ -125,24 +117,6 @@ public class BasicChannelService implements ChannelService {
 //        readStatusRepository.deleteAll(readStatusRepository.findAllByChannelIdWithUserAndChannel(channelId));
 
         channelRepository.deleteById(channelId);
-    }
-
-    private ChannelDto createChannelDto(Channel channel, Instant lastMessageAt) {
-        List<UUID> participantIds = new ArrayList<>();
-        if (channel.getType().equals(ChannelType.PRIVATE)) {
-            readStatusRepository.findAllByChannelIdWithUserAndChannel(channel.getId())
-                    .forEach(readStatus -> participantIds.add(readStatus.getUser().getId()));
-        }
-        return new ChannelDto(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
-                channel.getType(),
-                channel.getName(),
-                channel.getDescription(),
-                participantIds,
-                lastMessageAt
-        );
     }
 
     // validation

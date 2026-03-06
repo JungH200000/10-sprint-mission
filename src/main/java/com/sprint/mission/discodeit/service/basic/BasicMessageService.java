@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -31,6 +32,7 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final MessageMapper messageMapper;
 
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments) {
@@ -59,7 +61,7 @@ public class BasicMessageService implements MessageService {
         }
         messageRepository.save(message);
 
-        return createMessageDto(message);
+        return messageMapper.toDto(message);
     }
 
     @Transactional(readOnly = true)
@@ -68,14 +70,14 @@ public class BasicMessageService implements MessageService {
         // Message ID `null` 및 존재 검증
         Message message = validateAndGetMessageByMessageId(messageId);
 
-        return createMessageDto(message);
+        return messageMapper.toDto(message);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<MessageDto> findAll() {
         return messageRepository.findAll().stream()
-                .map(message -> createMessageDto(message))
+                .map(message -> messageMapper.toDto(message))
                 .toList();
     }
 
@@ -86,7 +88,7 @@ public class BasicMessageService implements MessageService {
         validateChannelByChannelId(channelId);
 
         return messageRepository.findAllByChannelId(channelId).stream()
-                .map(message -> createMessageDto(message))
+                .map(message -> messageMapper.toDto(message))
                 .toList();
     }
 
@@ -97,7 +99,7 @@ public class BasicMessageService implements MessageService {
         validateUserByUserId(userId);
 
         return messageRepository.findAllByAuthorId(userId).stream()
-                .map(message -> createMessageDto(message))
+                .map(message -> messageMapper.toDto(message))
                 .toList();
     }
 
@@ -108,7 +110,7 @@ public class BasicMessageService implements MessageService {
 
         message.setContent(messageUpdateRequest.newContent());
         messageRepository.save(message);
-        return createMessageDto(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
@@ -139,17 +141,6 @@ public class BasicMessageService implements MessageService {
             binaryContentRepository.deleteAll(message.getAttachments());
         }
         messageRepository.deleteById(messageId);
-    }
-
-    private MessageDto createMessageDto(Message message) {
-        return new MessageDto(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannel().getId(),
-                message.getAuthor().getId(),
-                message.getAttachments());
     }
 
     //// validation

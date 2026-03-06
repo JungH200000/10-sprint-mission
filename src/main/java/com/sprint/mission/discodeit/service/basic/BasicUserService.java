@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -27,6 +28,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
@@ -52,7 +54,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user, Instant.now());
 
         userRepository.save(user);
-        return createUserDto(user);
+        return userMapper.toDto(user);
     }
 
     @Transactional(readOnly = true)
@@ -61,14 +63,14 @@ public class BasicUserService implements UserService {
         // User ID null 검증
         User user = validateAndGetUserByUserId(userId);
 
-        return createUserDto(user);
+        return userMapper.toDto(user);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
         return userRepository.findAllWithStatusAndProfile().stream()
-                .map(user -> createUserDto(user))
+                .map(user -> userMapper.toDto(user))
                 .toList();
     }
 
@@ -80,7 +82,7 @@ public class BasicUserService implements UserService {
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         byte[] bytes = null;
         boolean binaryContentChanged = false;
-        if (profile != null && !profile.isEmpty()) { // 새 BinaryContent 들어오는데
+        if (profile != null && !profile.isEmpty()) {
             try {
                 bytes = profile.getBytes();
                 binaryContentChanged = isProfileChanged(bytes, user.getProfile());
@@ -115,7 +117,6 @@ public class BasicUserService implements UserService {
                 .filter(p -> !user.getPassword().equals(p)) // !false(중복 아닌 값) -> true
                 .ifPresent(p -> user.setPassword(p));
 
-        UUID oldProfileId = user.getProfile() != null ? user.getProfile().getId() : null;
         if (binaryContentChanged) {
             BinaryContent newProfile = new BinaryContent(
                     profile.getOriginalFilename(),
@@ -125,9 +126,9 @@ public class BasicUserService implements UserService {
             );
             user.setProfile(newProfile);
         }
-        userRepository.save(user);
+//        userRepository.save(user);
 
-        return createUserDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -136,17 +137,6 @@ public class BasicUserService implements UserService {
         validateUserByUserId(userId);
 
         userRepository.deleteById(userId);
-    }
-
-    private UserDto createUserDto(User user) {
-        return new UserDto(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getEmail(),
-                user.getUsername(),
-                user.getProfile(),
-                user.getStatus().isOnlineStatus());
     }
 
     //// validation
@@ -161,7 +151,7 @@ public class BasicUserService implements UserService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
-
+    // userStatus ID null & userStatus 객체 존재 확인
     public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userStatusRepository.findByUserIdWithUser(userId)
@@ -180,6 +170,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("user with userName이 " + newUserName + " already exists");
         }
     }
+
     // newEmail or newPassword or newUsername 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
     private void validateAllInputDuplicateOrEmpty(UserUpdateRequest request, User user, boolean binaryContentChanged) {
         if ((request.newEmail() == null || user.getEmail().equals(request.newEmail()))
@@ -190,6 +181,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
     }
+
     // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
     private boolean isProfileChanged(byte[] bytes, BinaryContent profile) {
         if (profile == null) { // 기존에 BinaryContent 없을 때
@@ -202,6 +194,7 @@ public class BasicUserService implements UserService {
             return !Arrays.equals(oldBinaryContent.getBytes(), bytes);
         }
     }
+
     // binaryContent가 null 인지, 없는지 확인
     public boolean isBinaryContent(byte[] bytes) {
         return bytes != null && bytes.length != 0;
@@ -212,6 +205,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("user with newEmail " + newEmail + " already exists");
         }
     }
+
     // 나를 제외한 newUsername 중에 중복된 값이 있는지 확인
     private void validateDuplicateUserNameForUpdate(UUID userId, String newUserName) {
         if (userRepository.isUserNameUsedByOther(userId, newUserName)) {

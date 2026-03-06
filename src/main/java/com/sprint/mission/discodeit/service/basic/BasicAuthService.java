@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -20,11 +21,12 @@ import java.util.NoSuchElementException;
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserDto login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
-        User user = userRepository.findByUsername(loginRequest.username())
+        User user = userRepository.findByUsernameWithStatusAndProfile(loginRequest.username())
                 .orElseThrow(() -> new NoSuchElementException("User with username " + loginRequest.username() + " not found."));
         if (!user.getPassword().equals(loginRequest.password())) {
             throw new IllegalArgumentException("Wrong password");
@@ -36,19 +38,8 @@ public class BasicAuthService implements AuthService {
 
         // 온라인 상태 업데이트
         userStatus.setLastActiveAt(Instant.now());
-        userStatusRepository.save(userStatus);
+//        userStatusRepository.save(userStatus);
 
-        return createUserInfo(user);
-    }
-
-    private UserDto createUserInfo(User user) {
-        return new UserDto(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getEmail(),
-                user.getUsername(),
-                user.getProfile(),
-                user.getStatus().isOnlineStatus());
+        return userMapper.toDto(user);
     }
 }
