@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
-    @Query(value = "SELECT m FROM Message AS m " +
+    @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel " +
             "LEFT JOIN FETCH m.author " +
             "LEFT JOIN FETCH m.attachments " +
@@ -24,7 +24,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             "WHERE m.channel.id = :channelId ")
     Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
 
-    @Query(value = "SELECT m FROM Message AS m " +
+    @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel AS c " +
             "LEFT JOIN FETCH m.author AS a " +
             "LEFT JOIN FETCH a.status " +
@@ -33,11 +33,11 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             "WHERE c.id = :channelId")
     List<Message> findAllByChannelId(@Param("channelId") UUID channelId);
 
-    @Query(value = "SELECT m FROM Message AS m " +
+    @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel " +
             "LEFT JOIN FETCH m.author " +
             "LEFT JOIN FETCH m.attachments " +
-            "WHERE m.id = :authorId")
+            "WHERE m.author.id = :authorId")
     List<Message> findAllByAuthorId(@Param("authorId") UUID authorId);
 
     void deleteAllByChannel_Id(UUID channelId);
