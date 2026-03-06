@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "LEFT JOIN FETCH u.status " +
             "LEFT JOIN FETCH u.profile " +
             "WHERE u.username = :username")
-    Optional<User> findByUsername(@Param("username") String username);
+    Optional<User> findByUsernameWithStatusAndProfile(@Param("username") String username);
 
     @Query(value = "SELECT u FROM User AS u " +
             "LEFT JOIN FETCH u.status " +
