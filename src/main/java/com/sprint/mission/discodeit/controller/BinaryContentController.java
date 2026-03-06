@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,6 +27,7 @@ import java.util.UUID;
 @Tag(name = "BinaryContent", description = "첨부 파일 API")
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     /**
      * 바이너리 파일 1개 조회
@@ -39,9 +41,9 @@ public class BinaryContentController {
     public ResponseEntity<BinaryContentDto> find(
             @Parameter(description = "조회할 첨부 파일 ID") @PathVariable UUID binaryContentId
     ) {
-        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
+        return ResponseEntity.status(HttpStatus.OK).body(binaryContentDto);
     }
 
     /**
@@ -56,5 +58,19 @@ public class BinaryContentController {
         List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
 
         return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
+    }
+
+    /**
+     * 바이너리 파일 다운로드
+     */
+    @RequestMapping(value = "/{binaryContentId}/download", method = RequestMethod.GET)
+    @Operation(summary = "파일 다운로드")
+    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공")
+    public ResponseEntity<?> download(
+            @Parameter(description = "다운로드할 파일 ID") @PathVariable UUID binaryContentId
+    ) {
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+
+        return binaryContentStorage.download(binaryContentDto);
     }
 }
