@@ -23,3 +23,9 @@ logging:
     org.springframework.transaction.support: TRACE
     org.springframework.orm.jpa: TRACE
 
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ./storage/binary
+
