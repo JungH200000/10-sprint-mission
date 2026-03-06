@@ -39,14 +39,16 @@ public class BasicUserService implements UserService {
         validateDuplicateUserName(request.username());
 
         BinaryContent binaryContent = null;
+        byte[] bytes = null;
         if (profile != null && !profile.isEmpty()) {
             try {
-                byte[] bytes = profile.getBytes();
+                bytes = profile.getBytes();
                 binaryContent = new BinaryContent(
                         profile.getOriginalFilename(),
                         profile.getContentType(),
                         (long) bytes.length
                 );
+                binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
             } catch (IOException e) {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
