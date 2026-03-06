@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS binary_contents
     created_at   timestamptz  NOT NULL,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
-    content_type VARCHAR(100) NOT NULL,
-    bytes        BYTEA        NOT NULL
+    content_type VARCHAR(100) NOT NULL
+--     bytes        BYTEA        NOT NULL
     );
 
 -- binary_contents : users = 0..1 : 1
