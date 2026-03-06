@@ -14,7 +14,6 @@ spring:
     init:
       mode: always
 
-
 logging:
   level:
     org.springframework.transaction.interceptor: TRACE
@@ -23,11 +22,3 @@ logging:
 #    org.hibernate.SQL: debug
 #    org.hibernate.orm.jdbc.bind: trace
 #    org.hibernate.orm.jdbc.extract: trace
-
-
-
-discodeit:
-  repository:
-    type: file # jcf | file
-    file-directory: ./FileIOTestStorage/objectStorage.ser
-
