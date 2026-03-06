@@ -14,6 +14,6 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
             "LEFT JOIN ReadStatus AS r ON r.channel = c " +
             "WHERE c.type = :type OR r.user.id = :userId")
     List<Channel> findChannelByUserId(
-            @Param("PUBLIC") ChannelType type,
+            @Param("type") ChannelType type,
             @Param("userId") UUID userId);
 }
