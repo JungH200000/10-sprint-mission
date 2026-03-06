@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter
