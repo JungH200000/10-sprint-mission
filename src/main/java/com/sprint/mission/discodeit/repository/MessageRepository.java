@@ -25,10 +25,12 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
 
     @Query(value = "SELECT m FROM Message AS m " +
-            "LEFT JOIN FETCH m.channel " +
-            "LEFT JOIN FETCH m.author " +
+            "LEFT JOIN FETCH m.channel AS c " +
+            "LEFT JOIN FETCH m.author AS a " +
+            "LEFT JOIN FETCH a.status " +
+            "LEFT JOIN FETCH a.profile " +
             "LEFT JOIN FETCH m.attachments " +
-            "WHERE m.id = :channelId")
+            "WHERE c.id = :channelId")
     List<Message> findAllByChannelId(@Param("channelId") UUID channelId);
 
     @Query(value = "SELECT m FROM Message AS m " +
