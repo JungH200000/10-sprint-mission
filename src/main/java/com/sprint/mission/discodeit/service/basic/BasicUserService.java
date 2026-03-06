@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
@@ -43,9 +45,9 @@ public class BasicUserService implements UserService {
                 binaryContent = new BinaryContent(
                         profile.getOriginalFilename(),
                         profile.getContentType(),
-                        bytes,
                         (long) bytes.length
                 );
+                binaryContentStorage.put(binaryContent.getId(), bytes);
             } catch (IOException e) {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
             }
@@ -121,9 +123,9 @@ public class BasicUserService implements UserService {
             BinaryContent newProfile = new BinaryContent(
                     profile.getOriginalFilename(),
                     profile.getContentType(),
-                    bytes,
                     (long) bytes.length
             );
+            binaryContentStorage.put(newProfile.getId(), bytes);
             user.setProfile(newProfile);
         }
 //        userRepository.save(user);
@@ -186,12 +188,17 @@ public class BasicUserService implements UserService {
     private boolean isProfileChanged(byte[] bytes, BinaryContent profile) {
         if (profile == null) { // 기존에 BinaryContent 없을 때
             return true; // 새로운 BinaryContent 들어옴
-        } else { //기존 프로필이 존재
-            BinaryContent oldBinaryContent = binaryContentRepository.findById(profile.getId())
-                    .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
-            // 새로 들어온 BinaryContent와 비교
-            // 같으면 -> false -> change 되지 않음
-            return !Arrays.equals(oldBinaryContent.getBytes(), bytes);
+        }
+        //기존 프로필이 존재
+        BinaryContent oldBinaryContent = binaryContentRepository.findById(profile.getId())
+                .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
+        // 새로 들어온 BinaryContent와 비교
+        // 같으면 -> false -> change 되지 않음
+        try {
+            byte[] oldBytes = binaryContentStorage.get(oldBinaryContent.getId()).readAllBytes();
+            return !Arrays.equals(oldBytes, bytes);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("기존 프로필 데이터를 읽는 중 오류가 발생했습니다.", e);
         }
     }
 

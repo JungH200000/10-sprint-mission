@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest, List<MultipartFile> attachments) {
@@ -52,7 +54,8 @@ public class BasicMessageService implements MessageService {
                 if (attachment == null || attachment.isEmpty()) continue;
                 try {
                     byte[] bytes = attachment.getBytes();
-                    BinaryContent binaryContent = new BinaryContent(attachment.getOriginalFilename(), attachment.getContentType(), bytes, (long) bytes.length);
+                    BinaryContent binaryContent = new BinaryContent(attachment.getOriginalFilename(), attachment.getContentType(), (long) bytes.length);
+                    binaryContentStorage.put(binaryContent.getId(), bytes);
                     message.addAttachment(binaryContent);
                 } catch (IOException e) {
                     throw new IllegalArgumentException("attachments 업로드 실패", e);
