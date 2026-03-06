@@ -16,6 +16,9 @@ import java.util.List;
 @Table(name = "messages")
 public class Message extends BaseUpdatableEntity {
 
+    @Column
+    private String content; // 메시지 내용
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
     private Channel channel; // 메시지가 위치한 채널
@@ -23,9 +26,6 @@ public class Message extends BaseUpdatableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private User author; // 메시지 작성자
-
-    @Column
-    private String content; // 메시지 내용
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @JoinTable(

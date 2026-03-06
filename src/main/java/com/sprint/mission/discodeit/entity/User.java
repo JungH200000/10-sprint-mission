@@ -14,10 +14,10 @@ import lombok.Setter;
 public class User extends BaseUpdatableEntity {
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private String username;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String email;
 
     @Column(nullable = false)
     private String password;
