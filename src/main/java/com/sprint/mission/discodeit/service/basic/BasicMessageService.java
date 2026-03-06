@@ -132,8 +132,8 @@ public class BasicMessageService implements MessageService {
     public void delete(UUID messageId) {
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
-        // User ID null / user 객체 존재 확인
-        validateUserByUserId(message.getAuthor().getId());
+//        // User ID null / user 객체 존재 확인
+//        validateUserByUserId(message.getAuthor().getId());
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(message.getChannel().getId());
 
