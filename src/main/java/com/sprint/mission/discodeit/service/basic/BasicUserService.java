@@ -127,6 +127,7 @@ public class BasicUserService implements UserService {
                     profile.getContentType(),
                     (long) bytes.length
             );
+            binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
             binaryContentStorage.put(newProfile.getId(), bytes);
             user.setProfile(newProfile);
         }
