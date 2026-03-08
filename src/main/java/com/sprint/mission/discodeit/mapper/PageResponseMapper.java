@@ -6,9 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 
 @Mapper(componentModel = "spring")
-public interface PageResponseMapper {
+public abstract class PageResponseMapper {
 
-    default <T> PageResponse<T> fromSlice(Slice<T> slice) {
+    public <T> PageResponse<T> fromSlice(Slice<T> slice) {
         return new PageResponse<>(
                 slice.getContent(),
                 slice.getNumber(),
@@ -18,7 +18,7 @@ public interface PageResponseMapper {
         );
     }
 
-    default <T> PageResponse<T> fromPage(Page<T> page) {
+    public <T> PageResponse<T> fromPage(Page<T> page) {
         return new PageResponse<>(
                 page.getContent(),
                 page.getNumber(),
