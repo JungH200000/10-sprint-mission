@@ -10,6 +10,7 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+    open-in-view: false
   sql:
     init:
       mode: always
@@ -19,9 +20,9 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
 #    org.hibernate.orm.jdbc.extract: TRACE
-    org.springframework.transaction.interceptor: TRACE
-    org.springframework.transaction.support: TRACE
-    org.springframework.orm.jpa: TRACE
+#    org.springframework.transaction.interceptor: TRACE
+#    org.springframework.transaction.support: TRACE
+#    org.springframework.orm.jpa: TRACE
 
 discodeit:
   storage:
