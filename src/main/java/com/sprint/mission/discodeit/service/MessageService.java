@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,7 +22,7 @@ public interface MessageService {
     // 메시지 전체
     List<MessageDto> findAll();
     // 특정 채널의 모든 메시지 읽어오기
-    List<MessageDto> findAllByChannelId(UUID channelId);
+    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable);
     // 특정 사용자가 작성한 모든 메시지
     List<MessageDto> findUserMessagesByUserId(UUID userId);
 

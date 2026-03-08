@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,9 +31,10 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             "LEFT JOIN FETCH m.author AS a " +
             "LEFT JOIN FETCH a.status " +
             "LEFT JOIN FETCH a.profile " +
-            "LEFT JOIN FETCH m.attachments " +
-            "WHERE c.id = :channelId")
-    List<Message> findAllByChannelId(@Param("channelId") UUID channelId);
+//            "LEFT JOIN FETCH m.attachments " +
+            "WHERE c.id = :channelId " +
+            "ORDER BY m.createdAt DESC")
+    Slice<Message> findAllByChannelId(@Param("channelId") UUID channelId, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel " +
