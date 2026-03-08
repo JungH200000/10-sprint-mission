@@ -60,6 +60,7 @@ public class BasicMessageService implements MessageService {
                 try {
                     byte[] bytes = attachment.getBytes();
                     BinaryContent binaryContent = new BinaryContent(attachment.getOriginalFilename(), attachment.getContentType(), (long) bytes.length);
+                    binaryContentRepository.save(binaryContent);
                     binaryContentStorage.put(binaryContent.getId(), bytes);
                     message.addAttachment(binaryContent);
                 } catch (IOException e) {
