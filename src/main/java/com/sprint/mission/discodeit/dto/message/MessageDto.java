@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.dto.message;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.time.Instant;
 import java.util.List;
