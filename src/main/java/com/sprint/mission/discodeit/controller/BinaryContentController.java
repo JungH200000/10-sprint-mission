@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -65,7 +66,7 @@ public class BinaryContentController {
      */
     @RequestMapping(value = "/{binaryContentId}/download", method = RequestMethod.GET)
     @Operation(summary = "파일 다운로드")
-    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공")
+    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공", content = @Content(schema = @Schema(format = "binary")))
     public ResponseEntity<?> download(
             @Parameter(description = "다운로드할 파일 ID") @PathVariable UUID binaryContentId
     ) {

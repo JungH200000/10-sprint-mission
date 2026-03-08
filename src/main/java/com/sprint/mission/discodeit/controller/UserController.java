@@ -79,7 +79,7 @@ public class UserController {
     )
     @Operation(summary = "User 정보 수정")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User 정보가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "200", description = "User 정보가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "400", description = "같은 newEmail 또는 username을 사용하는 User가 이미 존재함", content = @Content(examples = @ExampleObject(value = "User with newEmail {newEmail} already exists"))),
             @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User with id {id} not found")))
     })

@@ -59,10 +59,10 @@ public class MessageController {
      */
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "Channel의 Message 목록 조회")
-    @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
-    public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-            @Parameter(description = "수정할 Channel ID") @RequestParam UUID channelId,
-            @Parameter(description = "페이징 정보")
+    @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공", content = @Content(schema = @Schema(implementation = PageResponse.class)))
+    public ResponseEntity<PageResponse<?>> findAllByChannelId(
+            @Parameter(description = "조회할 Channel ID") @RequestParam UUID channelId,
+            @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"page\": 0, \"sort\": \"createdAt, desc\"}")
             @PageableDefault(size = 50, page = 0, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
