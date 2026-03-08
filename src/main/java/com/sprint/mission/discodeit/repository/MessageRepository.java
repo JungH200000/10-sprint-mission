@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -31,10 +30,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             "LEFT JOIN FETCH m.author AS a " +
             "LEFT JOIN FETCH a.status " +
             "LEFT JOIN FETCH a.profile " +
-//            "LEFT JOIN FETCH m.attachments " +
-            "WHERE c.id = :channelId " +
-            "ORDER BY m.createdAt DESC")
-    Slice<Message> findAllByChannelId(@Param("channelId") UUID channelId, Pageable pageable);
+            "WHERE c.id = :channelId AND m.createdAt < :createdAt " +
+            "ORDER BY m.createdAt DESC, m.id DESC")
+    Slice<Message> findAllByChannelId(@Param("channelId") UUID channelId, @Param("createdAt") Instant createdAt, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel " +
@@ -43,5 +41,5 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             "WHERE m.author.id = :authorId")
     List<Message> findAllByAuthorId(@Param("authorId") UUID authorId);
 
-    void deleteAllByChannel_Id(UUID channelId);
+    void deleteAllByChannelId(UUID channelId);
 }

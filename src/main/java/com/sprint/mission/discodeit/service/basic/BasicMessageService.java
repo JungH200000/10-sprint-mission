@@ -25,8 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -92,14 +94,18 @@ public class BasicMessageService implements MessageService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
+        Instant createdAt = Optional.ofNullable(cursor)
+                .orElse(Instant.now());
 
-        Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, pageable)
+        Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, createdAt, pageable)
                 .map(message -> messageMapper.toDto(message));
 
-        return pageResponseMapper.fromSlice(slice);
+        Instant nextCursor = !slice.getContent().isEmpty() ? slice.getContent().get(slice.getContent().size() - 1).createdAt() : null;
+
+        return pageResponseMapper.fromSlice(slice, nextCursor);
     }
 
     @Transactional(readOnly = true)
