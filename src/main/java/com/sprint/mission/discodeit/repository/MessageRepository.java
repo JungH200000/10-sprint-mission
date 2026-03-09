@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.dto.message.ChannelLastMessageAtDto;
 import com.sprint.mission.discodeit.entity.Message;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -22,8 +23,14 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @Query(value = "SELECT max(m.createdAt) AS lastMessageAt " +
             "FROM Message AS m " +
-            "WHERE m.channel.id = :channelId ")
+            "WHERE m.channel.id = :channelId")
     Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
+
+    @Query(value = "SELECT new com.sprint.mission.discodeit.dto.message.ChannelLastMessageAtDto(m.channel.id, max(m.createdAt)) " +
+            "FROM Message AS m " +
+            "WHERE m.channel.id IN :channelIds " +
+            "GROUP BY m.channel.id")
+    List<ChannelLastMessageAtDto> findLastMessageAtDtoByChannelIds(@Param("channelIds") List<UUID> channelIds);
 
     @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel AS c " +

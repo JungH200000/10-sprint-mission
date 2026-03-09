@@ -4,8 +4,10 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateReque
 import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
+    private final UserMapper userMapper;
 
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
@@ -76,9 +80,38 @@ public class BasicChannelService implements ChannelService {
         // User ID null 검증
         validateUserByUserId(userId);
 
-        // 모든 채널에서 PUBLIC인 채널 전체와 유저가 참여한 모든 채널
-        return channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId).stream()
-                .map(channel -> channelMapper.toDto(channel))
+        // 접근 가능한 전체 채널 조회
+        List<Channel> channels = channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId);
+        // 접근 가능한 전체 채널 ID
+        List<UUID> channelIds = channels.stream()
+                .map(channel -> channel.getId())
+                .toList();
+        // 접근 가능한 Private 채널 ID
+        List<UUID> privateChannelIds = channels.stream()
+                .filter(channel -> channel.getType().equals(ChannelType.PRIVATE))
+                .map(channel -> channel.getId())
+                .toList();
+
+        // 각 채널의 마지막 메시지 createdAt 시간
+        Map<UUID, Instant> lastMessageAtMap = messageRepository.findLastMessageAtDtoByChannelIds(channelIds).stream()
+                .collect(Collectors.toMap(
+                                dto -> dto.id(),
+                                dto -> dto.lastMessageAt()
+                        )
+                );
+
+        // 채널별 참가자 목록 조회
+        Map<UUID, List<UserDto>> participantMap = readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds).stream()
+                .collect(Collectors.groupingBy(
+                        readStatus -> readStatus.getChannel().getId(),
+                        Collectors.mapping(
+                                readStatus -> userMapper.toDto(readStatus.getUser()),
+                                Collectors.toList()
+                        )
+                ));
+
+        return channels.stream()
+                .map(channel -> channelMapper.toListDto(channel, participantMap, lastMessageAtMap))
                 .toList();
     }
 
