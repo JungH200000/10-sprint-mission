@@ -39,8 +39,8 @@ public abstract class ChannelMapper {
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),
-                assignParticipantInMap(channel, participantMap),
-                assignLastMessageAtInMap(channel, laseMessageAtMap)
+                channel.getType().equals(ChannelType.PRIVATE) ? participantMap.getOrDefault(channel.getId(), List.of()) : List.of(),
+                laseMessageAtMap.getOrDefault(channel.getId(), null)
         );
     }
 
@@ -57,16 +57,5 @@ public abstract class ChannelMapper {
     protected Instant assignLastMessageAt(Channel channel) {
         return messageRepository.findLastMessageAtByChannelId(channel.getId())
                 .orElse(null);
-    }
-
-    protected List<UserDto> assignParticipantInMap(Channel channel, Map<UUID, List<UserDto>> participantMap) {
-        if (!channel.getType().equals(ChannelType.PRIVATE)) {
-            return List.of();
-        }
-        return participantMap.getOrDefault(channel.getId(), List.of());
-    }
-
-    protected Instant assignLastMessageAtInMap(Channel channel, Map<UUID, Instant> lastMessageAtMap) {
-        return lastMessageAtMap.getOrDefault(channel.getId(), null);
     }
 }
