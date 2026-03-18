@@ -21,7 +21,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Discodeit API 문서")
                         .description("Discodeit 프로젝트의 Swagger API 문서입니다.")
-                        .version("1.0.0"))
+                        .version("1.2"))
                 .servers(List.of(localServer));
     }
 }

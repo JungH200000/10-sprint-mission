@@ -2,11 +2,10 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
-import com.sprint.mission.discodeit.dto.userstatus.response.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,15 +44,15 @@ public class UserController {
     @RequestMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, method = RequestMethod.POST)
     @Operation(summary = "User 등록")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "400", description = "같은 email이나 username을 사용하는 User가 이미 존재함", content = @Content(examples = @ExampleObject(value = "User with newEmail {newEmail} already exists")))
     })
-    public ResponseEntity<UserResponse> create(
+    public ResponseEntity<UserDto> create(
             @RequestPart @Valid UserCreateRequest userCreateRequest,
             @RequestPart(required = false) @Schema(description = "User 프로필 이미지") MultipartFile profile) {
-        User user = userService.createUser(userCreateRequest, profile);
-        UserResponse result = createUserResponse(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        UserDto user = userService.create(userCreateRequest, profile);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     /**
@@ -62,9 +61,9 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "전체 User 목록 조회")
     @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
-    @Schema(implementation = UserResponse.class)
-    public ResponseEntity<List<UserResponse>> findAll() {
-        List<UserResponse> result = userService.findAllUsers();
+    @Schema(implementation = UserDto.class)
+    public ResponseEntity<List<UserDto>> findAll() {
+        List<UserDto> result = userService.findAll();
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -80,18 +79,17 @@ public class UserController {
     )
     @Operation(summary = "User 정보 수정")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User 정보가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "200", description = "User 정보가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "400", description = "같은 newEmail 또는 username을 사용하는 User가 이미 존재함", content = @Content(examples = @ExampleObject(value = "User with newEmail {newEmail} already exists"))),
             @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User with id {id} not found")))
     })
-    public ResponseEntity<UserResponse> update(
+    public ResponseEntity<UserDto> update(
             @Parameter(description = "수정할 User ID") @PathVariable UUID userId,
             @RequestPart @Valid UserUpdateRequest userUpdateRequest,
             @RequestPart(required = false) @Schema(description = "수정할 User 프로필 이미지") MultipartFile profile) {
-        User user = userService.updateUser(userId, userUpdateRequest, profile);
-        UserResponse result = createUserResponse(user);
+        UserDto user = userService.update(userId, userUpdateRequest, profile);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
     /**
@@ -103,20 +101,12 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
             @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "UserStatus with id {id} not found")))
     })
-    public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
+    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
             @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
-        UserStatus userStatus = userStatusService.updateUserStatusByUserId(userId, userStatusUpdateRequest);
+        UserStatusDto userStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-        UserStatusResponse result = new UserStatusResponse(
-                userStatus.getId(),
-                userStatus.getCreatedAt(),
-                userStatus.getUpdatedAt(),
-                userId,
-                userStatus.getLastActiveAt(),
-                userStatus.isOnlineStatus()
-        );
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(userStatus);
     }
 
     // 사용자 삭제
@@ -128,20 +118,8 @@ public class UserController {
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "삭제할 User ID") @PathVariable UUID userId) {
-        userService.deleteUser(userId);
+        userService.delete(userId);
 
         return ResponseEntity.noContent().build();
-    }
-
-    private UserResponse createUserResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getEmail(),
-                user.getUsername(),
-                user.getBirthday(),
-                user.getProfileId(),
-                userStatusService.findUserStatusByUserId(user.getId()).isOnlineStatus());
     }
 }

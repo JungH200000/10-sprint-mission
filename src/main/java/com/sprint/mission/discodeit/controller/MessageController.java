@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,12 +15,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,16 +44,15 @@ public class MessageController {
     @RequestMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, method = RequestMethod.POST)
     @Operation(summary = "Message 생성")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = MessageResponse.class))),
+            @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = MessageDto.class))),
             @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject("Channel | Author with id {channelId | authorId} not found")))
     })
-    public ResponseEntity<MessageResponse> create(
+    public ResponseEntity<MessageDto> create(
             @RequestPart @Valid MessageCreateRequest messageCreateRequest,
             @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments) {
-        Message message = messageService.createMessage(messageCreateRequest, attachments);
-        MessageResponse result = createMessageResponse(message);
+        MessageDto message = messageService.create(messageCreateRequest, attachments);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
 
     /**
@@ -57,16 +60,16 @@ public class MessageController {
      */
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "Channel의 Message 목록 조회")
-    @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
-    public ResponseEntity<List<MessageResponse>> findAllByChannelId(
-            @Parameter(description = "수정할 Channel ID") @RequestParam UUID channelId
+    @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공", content = @Content(schema = @Schema(implementation = PageResponse.class)))
+    public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+            @Parameter(description = "조회할 Channel ID") @RequestParam UUID channelId,
+            @Parameter(description = "페이징 커서 정보") @RequestParam(required = false) Instant cursor,
+            @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}")
+            @PageableDefault(size = 50, page = 0, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-        List<MessageResponse> result = messages.stream()
-                .map(m -> createMessageResponse(m))
-                .toList();
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
     }
 
     /**
@@ -78,14 +81,13 @@ public class MessageController {
             @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨"),
             @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음", content = @Content(examples = @ExampleObject("Message with id {messageId} not found")))
     })
-    public ResponseEntity<MessageResponse> update(
+    public ResponseEntity<MessageDto> update(
             @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
             @RequestBody @Valid MessageUpdateRequest messageUpdateRequest
     ) {
-        Message message = messageService.updateMessageContent(messageId, messageUpdateRequest);
-        MessageResponse result = createMessageResponse(message);
+        MessageDto message = messageService.update(messageId, messageUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
     /**
@@ -100,18 +102,7 @@ public class MessageController {
     public ResponseEntity<Void> delete(
             @Parameter(description = "삭제할 Message ID") @PathVariable UUID messageId
     ) {
-        messageService.deleteMessage(messageId);
+        messageService.delete(messageId);
         return ResponseEntity.noContent().build();
-    }
-
-    private MessageResponse createMessageResponse(Message message) {
-        return new MessageResponse(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannel().getId(),
-                message.getAuthor().getId(),
-                message.getAttachmentIds());
     }
 }

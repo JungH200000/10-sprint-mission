@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
 /**
  * 이미지, 파일 등 바이너리 데이터를 표현하는 도메인 모델로,
@@ -13,29 +11,24 @@ import java.util.UUID;
  * 수정 불가능한 도메인 모델로 간주 -> `updatedAt` 필드 정의하지 않음 <br>
  * `User`, `Message` 도메인 모델과의 의존 관계 방향성 고려하여 `id` 참조 필드를 추가
  */
+@Entity
 @Getter
-public class BinaryContent implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
-    private final String fileName;
-    private final String contentType;
-    private final byte[] bytes;
-    private final Long size;
+@NoArgsConstructor
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity {
+    @Column(nullable = false)
+    private String fileName;
+
+    @Column(nullable = false)
+    private Long size;
+
+    @Column(nullable = false)
+    private String contentType;
 
     // 생성자
-    public BinaryContent(String fileName, String contentType, byte[] bytes, Long size) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+    public BinaryContent(String fileName, String contentType, Long size) {
         this.fileName = fileName;
-        this.contentType = contentType;
-        this.bytes = bytes.clone();
         this.size = size;
-    }
-
-    // getter
-    public byte[] getBytes() {
-        return bytes.clone();
+        this.contentType = contentType;
     }
 }

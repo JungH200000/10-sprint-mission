@@ -1,23 +1,46 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository { // 데이터 관련 로직(저장, 조회, 삭제 등등) 담당
-    void save(User user);
+// 데이터 관련 로직(저장, 조회, 삭제 등등) 담당
+public interface UserRepository extends JpaRepository<User, UUID> {
+    @Query(value = "SELECT u FROM User AS u " +
+            "LEFT JOIN FETCH u.status " +
+            "LEFT JOIN FETCH u.profile " +
+            "WHERE u.id = :userId")
+    Optional<User> findByIdWithStatusAndProfile(@Param("userId") UUID userId);
 
-    Optional<User> findById(UUID userId);
-    Optional<User> findByUsername(String username);
+    @Query(value = "SELECT u FROM User AS u " +
+            "LEFT JOIN FETCH u.status " +
+            "LEFT JOIN FETCH u.profile " +
+            "WHERE u.username = :username")
+    Optional<User> findByUsernameWithStatusAndProfile(@Param("username") String username);
 
-    List<User> findAll();
+    @Query(value = "SELECT u FROM User AS u " +
+            "LEFT JOIN FETCH u.status " +
+            "LEFT JOIN FETCH u.profile ")
+    List<User> findAllWithStatusAndProfile();
 
-    void delete(UUID userId);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 
-    boolean existUserName(String newUserName);
-    boolean existEmail(String newEmail);
-    boolean isEmailUsedByOther(UUID userId, String newEmail);
-    boolean isUserNameUsedByOther(UUID userId, String newUserName);
+
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+            "FROM User AS u " +
+            "WHERE u.email = :email " +
+            "  AND u.id != :userId ")
+    boolean isEmailUsedByOther(@Param("userId") UUID userId, @Param("email") String newEmail);
+
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+            "FROM User AS u " +
+            "WHERE u.username = :username " +
+            "  AND u.id != :userId ")
+    boolean isUserNameUsedByOther(@Param("userId") UUID userId, @Param("username") String newUsername);
 }

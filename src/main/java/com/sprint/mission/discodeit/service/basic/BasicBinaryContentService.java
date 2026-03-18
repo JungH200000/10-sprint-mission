@@ -1,55 +1,64 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
-    public BinaryContent createBinaryContent(BinaryContentCreateRequest binaryContentCreateRequest) {
+    public BinaryContentDto create(BinaryContentCreateRequest binaryContentCreateRequest) {
+        byte[] bytes = binaryContentCreateRequest.bytes();
         BinaryContent binaryContent = new BinaryContent(
                 binaryContentCreateRequest.fileName(),
                 binaryContentCreateRequest.contentType(),
-                binaryContentCreateRequest.bytes(),
-                (long) binaryContentCreateRequest.bytes().length
+                (long) bytes.length
         );
         binaryContentRepository.save(binaryContent);
-        return binaryContent;
+        binaryContentStorage.put(binaryContent.getId(), bytes);
+
+        return binaryContentMapper.toDto(binaryContent);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public BinaryContent findBinaryContentById(UUID binaryContentId) {
-        return validateAndGetBinaryContentByBinaryContentId(binaryContentId);
+    public BinaryContentDto find(UUID binaryContentId) {
+        BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<BinaryContent> findAllBinaryContentByIdIn(List<UUID> binaryContentIds) {
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
         if (binaryContentIds == null || binaryContentIds.isEmpty()) return List.of();
 
-        List<BinaryContent> foundBinaryContentList = new ArrayList<>();
-        for (UUID binaryContentId : binaryContentIds) {
-            foundBinaryContentList.add(validateAndGetBinaryContentByBinaryContentId(binaryContentId));
-        }
-        return foundBinaryContentList;
+        return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
+                .map(binaryContent -> binaryContentMapper.toDto(binaryContent))
+                .toList();
     }
 
     @Override
-    public void deleteBinaryContent(UUID binaryContentId) {
+    public void delete(UUID binaryContentId) {
         validateBinaryContentByBinaryContentId(binaryContentId);
-        binaryContentRepository.delete(binaryContentId);
+        binaryContentRepository.deleteById(binaryContentId);
     }
 
     public void validateBinaryContentByBinaryContentId(UUID binaryContentId) {

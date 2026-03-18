@@ -12,9 +12,6 @@ public record UserUpdateRequest(
         String newPassword,
 
         @Pattern(regexp = "^\\S+$", message = "newUsername 공백이 허용되지 않습니다.")
-        String newUsername,
-
-        @Pattern(regexp = "^\\d{8}$", message = "birthday는 YYYYMMDD 형식이어야 합니다.")
-        String newBirthday
+        String newUsername
 ) {
 }
