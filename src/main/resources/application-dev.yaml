@@ -22,5 +22,3 @@ logging:
 #    org.springframework.transaction.interceptor: TRACE # 트랜잭션 인터셉터 로그
 #    org.springframework.transaction.support: TRACE # 트랜잭션 처리 상세 로그
 #    org.springframework.orm.jpa: TRACE # Spring ORM/JPA 상세 로그
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss:SSS} [%thread] %-5level %logger{36} - %msg%n"
