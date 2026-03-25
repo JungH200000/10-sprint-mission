@@ -17,3 +17,7 @@ discodeit:
 logging:
   level:
     root: INFO # 전체 로그 레벨 설정
+  file:
+    name: ./.logs/discodeit.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss:SSS} [%thread] %-5level %logger{36} - %msg%n"
