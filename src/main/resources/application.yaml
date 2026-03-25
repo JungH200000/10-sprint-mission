@@ -14,3 +14,6 @@ discodeit:
     local:
       root-path: ./storage/binary
 
+logging:
+  level:
+    root: INFO # 전체 로그 레벨 설정

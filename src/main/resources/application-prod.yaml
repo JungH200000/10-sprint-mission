@@ -10,4 +10,5 @@ spring:
 
 logging:
   level:
+    com.sprint.mission.discodeit: INFO
     org.hibernate.SQL: INFO
