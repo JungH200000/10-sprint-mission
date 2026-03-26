@@ -22,8 +22,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
+@Transactional
 public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
@@ -31,6 +31,8 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusDto create(UserStatusCreateRequest request) {
+        log.debug("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 시작: userId={}", request.userId());
+
         User user = userRepository.findByIdWithStatusAndProfile(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
@@ -40,6 +42,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         UserStatus userStatus = new UserStatus(user, Instant.now());
         userStatusRepository.save(userStatus);
+        log.info("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
@@ -47,27 +50,42 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional(readOnly = true)
     @Override
     public UserStatusDto find(UUID userStatusId) {
+        log.debug("[USER_STATUS_FIND] 사용자 온라인 상태 조회 시작: userStatusId={}", userStatusId);
+
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
+        log.info("[USER_STATUS_FIND] 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+
         return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional(readOnly = true)
     @Override
     public UserStatusDto findByUserId(UUID userId) {
+        log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 시작: userId={}", userId);
+
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
+        log.info("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+
         return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserStatusDto> findAll() {
-        return userStatusRepository.findAllWithUser().stream()
+        log.debug("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 시작");
+
+        List<UserStatusDto> userStatusDtoList = userStatusRepository.findAllWithUser().stream()
                 .map(userStatus -> userStatusMapper.toDto(userStatus))
                 .toList();
+        log.info("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: size={}", userStatusDtoList.size());
+
+        return userStatusDtoList;
     }
 
     @Override
     public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
+        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 시작: userStatusId={}, newLastActiveAt={}", userStatusId, request.newLastActiveAt());
+
         if (request.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
@@ -76,31 +94,35 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatus.setLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
+        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
 
     @Override
-    public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
-        log.debug("[USER_UPDATE_ONLINE_STATUS] 사용자 온라인 상태 업데이트 시작: userId={}, newLastActiveAt={}", userId, userStatusUpdateRequest.newLastActiveAt());
+    public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 업데이트 시작: userId={}, newLastActiveAt={}", userId, request.newLastActiveAt());
 
-        if (userStatusUpdateRequest.newLastActiveAt() == null) {
+        if (request.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
         validateAndGetUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
-        userStatus.setLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
+        userStatus.setLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
-        log.info("[USER_UPDATE_ONLINE_STATUS] 사용자 온라인 상태 업데이트 완료: userId={}, userStatusID={}, lastActiveAt={}, isOnline={}", userStatus.getUser().getId(), userStatus.getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 업데이트 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
 
     @Override
     public void delete(UUID userStatusId) {
+        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 시작: userStatusId={}", userStatusId);
+
         validateAndGetUserStatusByUserStatusId(userStatusId);
         userStatusRepository.deleteById(userStatusId);
+        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 완료: userStatusId={}", userStatusId);
     }
 
     /// / validation
