@@ -158,7 +158,7 @@ public class BasicUserService implements UserService {
 
     //// validation
     // user ID null & user 객체 존재 확인
-    public User validateAndGetUserByUserId(UUID userId) {
+    private User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findByIdWithStatusAndProfile(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));

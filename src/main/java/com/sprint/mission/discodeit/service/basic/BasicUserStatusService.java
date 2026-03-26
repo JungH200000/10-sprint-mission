@@ -105,19 +105,19 @@ public class BasicUserStatusService implements UserStatusService {
 
     /// / validation
     // user ID null & user 객체 존재 확인
-    public void validateAndGetUserByUserId(UUID userId) {
+    private void validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
-    public UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
+    private UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
         ValidationMethods.validateId(userStatusId);
         return userStatusRepository.findByIdWithUser(userStatusId)
                 .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
     }
 
-    public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
+    private UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userStatusRepository.findByUserIdWithUser(userId)
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
