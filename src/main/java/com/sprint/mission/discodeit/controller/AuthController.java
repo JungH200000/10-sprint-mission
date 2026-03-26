@@ -11,7 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/auth")
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Auth", description = "인증 API")
 public class AuthController {
     private final AuthService authService;
@@ -37,8 +39,11 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음", content = @Content(examples = @ExampleObject(value = "Wrong password")))
     })
     public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest loginRequest) {
-        UserDto result = authService.login(loginRequest);
+        log.debug("[AUTH_LOGIN_API] 로그인 요청: username={}", loginRequest.username());
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        UserDto user = authService.login(loginRequest);
+        log.debug("[AUTH_LOGIN_API] 로그인 응답: userId={}, isOnline={}", user.id(), user.online());
+
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 }

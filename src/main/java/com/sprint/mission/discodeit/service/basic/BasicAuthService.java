@@ -8,16 +8,20 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -25,21 +29,40 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserDto login(LoginRequest loginRequest) {
+        log.debug("[AUTH_LOGIN] 로그인 시작: username={}", loginRequest.username());
+
         // 유저 검증, 없으면 예외 발생
-        User user = userRepository.findByUsernameWithStatusAndProfile(loginRequest.username())
-                .orElseThrow(() -> new NoSuchElementException("User with username " + loginRequest.username() + " not found."));
-        if (!user.getPassword().equals(loginRequest.password())) {
-            throw new IllegalArgumentException("Wrong password");
-        }
+        User user = validateAndGetUserByUsername(loginRequest.username());
+
+        // 비밀번호 일치 검증
+        validatePassword(loginRequest.password(), user.getPassword());
 
         // 유저 존재하면
-        UserStatus userStatus = userStatusRepository.findByUserIdWithUser(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + user.getId() + " not found."));
+        UserStatus userStatus = validateAndGetUserStatusByUserId(user.getId());
 
         // 온라인 상태 업데이트
         userStatus.setLastActiveAt(Instant.now());
-//        userStatusRepository.save(userStatus);
+        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", user.getId());
 
         return userMapper.toDto(user);
+    }
+
+    //// validation
+    // user 객체 존재 확인
+    private User validateAndGetUserByUsername(String username) {
+        return userRepository.findByUsernameWithStatusAndProfile(username)
+                .orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found."));
+    }
+
+    private UserStatus validateAndGetUserStatusByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
+        return userStatusRepository.findByUserIdWithUser(userId)
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
+    }
+
+    private void validatePassword(String requestPassword, String userPassword) {
+        if (!userPassword.equals(requestPassword)) {
+            throw new IllegalArgumentException("Wrong password");
+        }
     }
 }
