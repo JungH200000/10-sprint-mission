@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
@@ -26,6 +28,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentDto create(BinaryContentCreateRequest binaryContentCreateRequest) {
+        log.debug("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 시작: fileName={}, contentType={}, size={}", binaryContentCreateRequest.fileName(), binaryContentCreateRequest.contentType(), binaryContentCreateRequest.bytes().length);
+
         byte[] bytes = binaryContentCreateRequest.bytes();
         BinaryContent binaryContent = new BinaryContent(
                 binaryContentCreateRequest.fileName(),
@@ -34,6 +38,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         );
         binaryContentRepository.save(binaryContent);
         binaryContentStorage.put(binaryContent.getId(), bytes);
+        log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: binaryContentId={}, fileName={}, contentType={}, size={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
         return binaryContentMapper.toDto(binaryContent);
     }
@@ -41,24 +46,39 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional(readOnly = true)
     @Override
     public BinaryContentDto find(UUID binaryContentId) {
+        log.debug("[BINARY_CONTENT_FIND] 바이너리 컨텐츠 조회 시작: binaryContentId={}", binaryContentId);
+
         BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
+        log.debug("[BINARY_CONTENT_FIND] 바이너리 컨텐츠 조회 완료: binaryContentId={}, fileName={}, contentType={}, size={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+
         return binaryContentMapper.toDto(binaryContent);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
-        if (binaryContentIds == null || binaryContentIds.isEmpty()) return List.of();
+        log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 시작");
 
-        return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
+        if (binaryContentIds == null || binaryContentIds.isEmpty()) {
+            log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: size=0");
+            return List.of();
+        }
+
+        List<BinaryContentDto> binaryContentDtoList = binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
                 .map(binaryContent -> binaryContentMapper.toDto(binaryContent))
                 .toList();
+        log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: size={}", binaryContentDtoList.size());
+
+        return binaryContentDtoList;
     }
 
     @Override
     public void delete(UUID binaryContentId) {
+        log.debug("[BINARY_CONTENT_DELETE] 바이너리 컨텐츠 삭제 시작: binaryContentId={}", binaryContentId);
+
         validateBinaryContentByBinaryContentId(binaryContentId);
         binaryContentRepository.deleteById(binaryContentId);
+        log.info("[BINARY_CONTENT_DELETE] 바이너리 컨텐츠 삭제 완료: binaryContentId={}", binaryContentId);
     }
 
     public void validateBinaryContentByBinaryContentId(UUID binaryContentId) {
