@@ -53,7 +53,7 @@ public class BasicUserService implements UserService {
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
 
-                log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, type={}, size={}", binaryContent.getId(), binaryContent.getContentType(), binaryContent.getSize());
+                log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, contentType={}, size={}", binaryContent.getId(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
@@ -135,7 +135,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
             binaryContentStorage.put(newProfile.getId(), bytes);
 
-            log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, type={}, size={}", newProfile.getId(), newProfile.getContentType(), newProfile.getSize());
+            log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, contentType={}, size={}", newProfile.getId(), newProfile.getContentType(), newProfile.getSize());
         }
 
         user.update(newUsername, newEmail, newPassword, newProfile);
