@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
@@ -80,6 +82,8 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
+        log.info("[USER_UPDATE_ONLINE_STATUS] 사용자 온라인 상태 업데이트 시작: userId={}, newLastActiveAt={}", userId, userStatusUpdateRequest.newLastActiveAt());
+
         if (userStatusUpdateRequest.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
@@ -88,6 +92,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatus.setLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
         userStatusRepository.save(userStatus);
+        log.info("[USER_UPDATE_ONLINE_STATUS] 사용자 온라인 상태 업데이트 완료: userId={}, userStatusID={}, lastActiveAt={}, isOnline={}", userStatus.getUser().getId(), userStatus.getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
