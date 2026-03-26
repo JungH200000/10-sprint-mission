@@ -76,16 +76,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID binaryContentId) {
         log.debug("[BINARY_CONTENT_DELETE] 바이너리 컨텐츠 삭제 시작: binaryContentId={}", binaryContentId);
 
-        validateBinaryContentByBinaryContentId(binaryContentId);
+        validateAndGetBinaryContentByBinaryContentId(binaryContentId);
         binaryContentRepository.deleteById(binaryContentId);
         log.info("[BINARY_CONTENT_DELETE] 바이너리 컨텐츠 삭제 완료: binaryContentId={}", binaryContentId);
     }
 
-    public void validateBinaryContentByBinaryContentId(UUID binaryContentId) {
-        ValidationMethods.validateId(binaryContentId);
-        binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
-    }
     public BinaryContent validateAndGetBinaryContentByBinaryContentId(UUID binaryContentId) {
         ValidationMethods.validateId(binaryContentId);
         return binaryContentRepository.findById(binaryContentId)
