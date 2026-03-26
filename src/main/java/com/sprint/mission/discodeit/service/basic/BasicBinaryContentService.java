@@ -27,13 +27,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentStorage binaryContentStorage;
 
     @Override
-    public BinaryContentDto create(BinaryContentCreateRequest binaryContentCreateRequest) {
-        log.debug("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 시작: fileName={}, contentType={}, size={}", binaryContentCreateRequest.fileName(), binaryContentCreateRequest.contentType(), binaryContentCreateRequest.bytes().length);
+    public BinaryContentDto create(BinaryContentCreateRequest request) {
+        log.debug("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 시작: fileName={}, contentType={}, size={}", request.fileName(), request.contentType(), request.bytes().length);
 
-        byte[] bytes = binaryContentCreateRequest.bytes();
+        byte[] bytes = request.bytes();
         BinaryContent binaryContent = new BinaryContent(
-                binaryContentCreateRequest.fileName(),
-                binaryContentCreateRequest.contentType(),
+                request.fileName(),
+                request.contentType(),
                 (long) bytes.length
         );
         binaryContentRepository.save(binaryContent);

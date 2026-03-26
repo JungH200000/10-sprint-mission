@@ -40,9 +40,9 @@ public class ReadStatusController {
             @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "Channel | User with id {channelId | id} not found")))
     })
     public ResponseEntity<ReadStatusDto> create(
-            @RequestBody @Valid ReadStatusCreateRequest readStatusCreateRequest
+            @RequestBody @Valid ReadStatusCreateRequest request
     ) {
-        ReadStatusDto readStatus = readStatusService.create(readStatusCreateRequest);
+        ReadStatusDto readStatus = readStatusService.create(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
     }
@@ -58,9 +58,9 @@ public class ReadStatusController {
     })
     public ResponseEntity<ReadStatusDto> update(
             @Parameter(description = "수정할 읽음 상태 ID") @PathVariable UUID readStatusId,
-            @RequestBody @Valid ReadStatusUpdateRequest readStatusUpdateRequest
+            @RequestBody @Valid ReadStatusUpdateRequest request
             ) {
-        ReadStatusDto readStatus = readStatusService.update(readStatusId, readStatusUpdateRequest);
+        ReadStatusDto readStatus = readStatusService.update(readStatusId, request);
 
         return ResponseEntity.status(HttpStatus.OK).body(readStatus);
     }

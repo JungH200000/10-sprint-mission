@@ -28,14 +28,14 @@ public class BasicAuthService implements AuthService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDto login(LoginRequest loginRequest) {
-        log.debug("[AUTH_LOGIN] 로그인 시작: username={}", loginRequest.username());
+    public UserDto login(LoginRequest request) {
+        log.debug("[AUTH_LOGIN] 로그인 시작: username={}", request.username());
 
         // 유저 검증, 없으면 예외 발생
-        User user = validateAndGetUserByUsername(loginRequest.username());
+        User user = validateAndGetUserByUsername(request.username());
 
         // 비밀번호 일치 검증
-        validatePassword(loginRequest.password(), user.getPassword());
+        validatePassword(request.password(), user.getPassword());
 
         // 유저 존재하면
         UserStatus userStatus = validateAndGetUserStatusByUserId(user.getId());

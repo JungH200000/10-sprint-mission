@@ -94,16 +94,16 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, MultipartFile profile) {
-        log.debug("[USER_UPDATE] 사용자 정보 업데이트 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, userUpdateRequest.newEmail() != null, userUpdateRequest.newUsername() != null, userUpdateRequest.newPassword() != null);
+    public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
+        log.debug("[USER_UPDATE] 사용자 정보 업데이트 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, request.newEmail() != null, request.newUsername() != null, request.newPassword() != null);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
 
         // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
-        String newEmail = changedString(userUpdateRequest.newEmail(), user.getEmail());
-        String newUsername = changedString(userUpdateRequest.newUsername(), user.getUsername());
-        String newPassword = changedString(userUpdateRequest.newPassword(), user.getPassword());
+        String newEmail = changedString(request.newEmail(), user.getEmail());
+        String newUsername = changedString(request.newUsername(), user.getUsername());
+        String newPassword = changedString(request.newPassword(), user.getPassword());
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         byte[] bytes = null;
