@@ -9,11 +9,11 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,21 +25,23 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
+        log.info("[USER_CREATE] 사용자 등록 시작: email={}, username={}", request.email(), request.username());
+
         // newEmail, newUsername 중복 확인
         validateDuplicateEmail(request.email());
         validateDuplicateUserName(request.username());
 
         BinaryContent binaryContent = null;
-        byte[] bytes = null;
+        byte[] bytes;
         if (profile != null && !profile.isEmpty()) {
             try {
                 bytes = profile.getBytes();
@@ -50,22 +52,30 @@ public class BasicUserService implements UserService {
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
+
+                log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, type={}, size={}", binaryContent.getId(), binaryContent.getContentType(), binaryContent.getSize());
+
             } catch (IOException e) {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
             }
         }
         User user = new User(request.email(), request.username(), request.password(), binaryContent);
-        UserStatus userStatus = new UserStatus(user, Instant.now());
+        new UserStatus(user, Instant.now());
 
         userRepository.save(user);
+        log.info("[USER_CREATE] 사용자 등록 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
+
         return userMapper.toDto(user);
     }
 
     @Transactional(readOnly = true)
     @Override
     public UserDto find(UUID userId) {
+        log.debug("[USER_FIND] 사용자 조회 시작"); // 단순 조회 -> DEBUG
+
         // User ID null 검증
         User user = validateAndGetUserByUserId(userId);
+        log.debug("[USER_FIND] 사용자 조회 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
 
         return userMapper.toDto(user);
     }
@@ -73,15 +83,27 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        return userRepository.findAllWithStatusAndProfile().stream()
+        log.debug("[USER_LIST_FIND] 사용자 목록 조회 시작"); // 단순 조회 -> DEBUG
+
+        List<UserDto> userDtoList = userRepository.findAllWithStatusAndProfile().stream()
                 .map(user -> userMapper.toDto(user))
                 .toList();
+        log.debug("[USER_LIST_FIND] 사용자 목록 조회 완료: size={}", userDtoList.size());
+
+        return userDtoList;
     }
 
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, MultipartFile profile) {
+        log.info("[USER_UPDATE] 사용자 정보 업데이트 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, userUpdateRequest.newEmail() != null, userUpdateRequest.newUsername() != null, userUpdateRequest.newPassword() != null);
+
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
+
+        // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
+        String newEmail = changedString(userUpdateRequest.newEmail(), user.getEmail());
+        String newUsername = changedString(userUpdateRequest.newUsername(), user.getUsername());
+        String newPassword = changedString(userUpdateRequest.newPassword(), user.getPassword());
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         byte[] bytes = null;
@@ -94,54 +116,44 @@ public class BasicUserService implements UserService {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
             }
         }
+        log.info("[USER_UPDATE] 기존 사용자 정보에 따른 입력값 중복/변경 상태: isDuplicatedNewEmail={}, isDuplicatedNewUsername={}, isDuplicatedNewPassword={}, isChangedProfile={}", newEmail == null, newUsername == null, newPassword == null, binaryContentChanged);
 
-        // newEmail or newPassword or newUsername 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-        validateAllInputDuplicateOrEmpty(userUpdateRequest, user, binaryContentChanged);
+        // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
+        validateAllRequestExistingOrNull(userUpdateRequest, binaryContentChanged);
 
-        String newEmail = userUpdateRequest.newEmail();
-        String newUsername = userUpdateRequest.newUsername();
-        String newPassword = userUpdateRequest.newPassword();
+        // 다른 사용자들과 중복 확인
+        validateDuplicateUsernameForUpdate(userId, newUsername);
+        validateDuplicateEmailForUpdate(userId, newEmail);
 
-        // filter로 중복 확인 후 업데이트(중복 확인 안하면 동일한 값을 또 업데이트함)
-        Optional.ofNullable(newEmail)
-                .filter(e -> !user.getEmail().equals(e))
-                .ifPresent(e -> {
-                    // 다른 사용자들의 email과 중복되는지 확인 후 newEmail 업데이트
-                    validateDuplicateEmailForUpdate(userId, e);
-                    user.setEmail(e);
-                });
-        Optional.ofNullable(newUsername)
-                .filter(n -> !user.getUsername().equals(n))
-                .ifPresent(n -> {
-                    // 다른 사용자들의 userName과 중복되는지 확인 후 newUsername 업데이트
-                    validateDuplicateUserNameForUpdate(userId, n);
-                    user.setUsername(n);
-                });
-        Optional.ofNullable(newPassword)
-                .filter(p -> !user.getPassword().equals(p)) // !false(중복 아닌 값) -> true
-                .ifPresent(p -> user.setPassword(p));
-
+        BinaryContent newProfile = null;
         if (binaryContentChanged) {
-            BinaryContent newProfile = new BinaryContent(
+            newProfile = new BinaryContent(
                     profile.getOriginalFilename(),
                     profile.getContentType(),
                     (long) bytes.length
             );
             binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
             binaryContentStorage.put(newProfile.getId(), bytes);
-            user.setProfile(newProfile);
+
+            log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, type={}, size={}", newProfile.getId(), newProfile.getContentType(), newProfile.getSize());
         }
-//        userRepository.save(user);
+
+        user.update(newUsername, newEmail, newPassword, newProfile);
+
+        log.info("[USER_UPDATE] 사용자 정보 업데이트 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
 
         return userMapper.toDto(user);
     }
 
     @Override
     public void delete(UUID userId) {
+        log.info("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
+
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        validateUserByUserId(userId);
+        validateAndGetUserByUserId(userId);
 
         userRepository.deleteById(userId);
+        log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
     }
 
     //// validation
@@ -151,17 +163,6 @@ public class BasicUserService implements UserService {
         return userRepository.findByIdWithStatusAndProfile(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
-    public void validateUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-    }
-    // userStatus ID null & userStatus 객체 존재 확인
-    public UserStatus validateAndGetUserStatusByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
-        return userStatusRepository.findByUserIdWithUser(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found."));
-    }
 
     // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {
@@ -169,18 +170,26 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("user with newEmail " + newEmail + " already exists");
         }
     }
+
     // userName이 이미 존재하는지 확인
-    private void validateDuplicateUserName(String newUserName) {
-        if (userRepository.existsByUsername(newUserName)) {
-            throw new IllegalArgumentException("user with userName이 " + newUserName + " already exists");
+    private void validateDuplicateUserName(String newUsername) {
+        if (userRepository.existsByUsername(newUsername)) {
+            throw new IllegalArgumentException("user with userName " + newUsername + " already exists");
         }
     }
 
-    // newEmail or newPassword or newUsername 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-    private void validateAllInputDuplicateOrEmpty(UserUpdateRequest request, User user, boolean binaryContentChanged) {
-        if ((request.newEmail() == null || user.getEmail().equals(request.newEmail()))
-                && (request.newPassword() == null || user.getPassword().equals(request.newPassword()))
-                && (request.newUsername() == null || user.getUsername().equals(request.newUsername()))
+    // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
+    private String changedString(String requestValue, String userValue) {
+        return requestValue != null && !requestValue.equals(userValue)
+                ? requestValue
+                : null;
+    }
+
+    // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
+    private void validateAllRequestExistingOrNull(UserUpdateRequest request, boolean binaryContentChanged) {
+        if (request.newEmail() == null
+                && request.newPassword() == null
+                && request.newUsername() == null
                 && !binaryContentChanged
         ) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
@@ -205,10 +214,6 @@ public class BasicUserService implements UserService {
         }
     }
 
-    // binaryContent가 null 인지, 없는지 확인
-    public boolean isBinaryContent(byte[] bytes) {
-        return bytes != null && bytes.length != 0;
-    }
     // 나를 제외한 newEmail 중에 중복된 값이 있는지 확인
     private void validateDuplicateEmailForUpdate(UUID userId, String newEmail) {
         if (userRepository.isEmailUsedByOther(userId, newEmail)) {
@@ -217,9 +222,9 @@ public class BasicUserService implements UserService {
     }
 
     // 나를 제외한 newUsername 중에 중복된 값이 있는지 확인
-    private void validateDuplicateUserNameForUpdate(UUID userId, String newUserName) {
-        if (userRepository.isUserNameUsedByOther(userId, newUserName)) {
-            throw new IllegalArgumentException("user with newUsername " + newUserName + " already exists");
+    private void validateDuplicateUsernameForUpdate(UUID userId, String newUsername) {
+        if (userRepository.isUserNameUsedByOther(userId, newUsername)) {
+            throw new IllegalArgumentException("user with newUsername " + newUsername + " already exists");
         }
     }
 }
