@@ -63,7 +63,7 @@ public class BasicReadStatusService implements ReadStatusService {
         log.debug("[READ_STATUS_FIND] 마지막 메시지 읽음 상태 조회 시작: readStatusId={}", readStatusId);
 
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
-        log.info("[READ_STATUS_FIND] 마지막 메시지 읽음 상태 조회 완료: readStatusId={}, userId={}, channelId={}, lastReadAt={}", readStatus.getId(), readStatus.getUser().getId(), readStatus.getChannel().getId(), readStatus.getLastReadAt());
+        log.debug("[READ_STATUS_FIND] 마지막 메시지 읽음 상태 조회 완료: readStatusId={}, userId={}, channelId={}, lastReadAt={}", readStatus.getId(), readStatus.getUser().getId(), readStatus.getChannel().getId(), readStatus.getLastReadAt());
 
         return readStatusMapper.toDto(readStatus);
     }
@@ -78,7 +78,7 @@ public class BasicReadStatusService implements ReadStatusService {
         List<ReadStatusDto> readStatusDtoList = readStatusRepository.findAllByUserIdWithUserAndChannel(userId).stream()
                 .map(readStatus -> readStatusMapper.toDto(readStatus))
                 .toList();
-        log.info("[READ_STATUS_LIST_FIND_BY_USERID] 마지막 메시지 읽음 상태 목록 조회 완료: size={}", readStatusDtoList.size());
+        log.debug("[READ_STATUS_LIST_FIND_BY_USERID] 마지막 메시지 읽음 상태 목록 조회 완료: size={}", readStatusDtoList.size());
 
         return readStatusDtoList;
     }

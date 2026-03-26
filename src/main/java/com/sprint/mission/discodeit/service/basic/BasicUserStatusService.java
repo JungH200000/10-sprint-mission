@@ -53,7 +53,7 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("[USER_STATUS_FIND] 사용자 온라인 상태 조회 시작: userStatusId={}", userStatusId);
 
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
-        log.info("[USER_STATUS_FIND] 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.debug("[USER_STATUS_FIND] 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
@@ -64,7 +64,7 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 시작: userId={}", userId);
 
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
-        log.info("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
@@ -77,7 +77,7 @@ public class BasicUserStatusService implements UserStatusService {
         List<UserStatusDto> userStatusDtoList = userStatusRepository.findAllWithUser().stream()
                 .map(userStatus -> userStatusMapper.toDto(userStatus))
                 .toList();
-        log.info("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: size={}", userStatusDtoList.size());
+        log.debug("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: size={}", userStatusDtoList.size());
 
         return userStatusDtoList;
     }

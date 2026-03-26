@@ -95,7 +95,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
-        log.debug("[USER_UPDATE] 사용자 정보 업데이트 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, request.newEmail() != null, request.newUsername() != null, request.newPassword() != null);
+        log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, request.newEmail() != null, request.newUsername() != null, request.newPassword() != null);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
@@ -116,7 +116,7 @@ public class BasicUserService implements UserService {
                 throw new IllegalArgumentException("profileImage 업로드 실패", e);
             }
         }
-        log.info("[USER_UPDATE] 기존 사용자 정보에 따른 입력값 중복/변경 상태: isDuplicatedNewEmail={}, isDuplicatedNewUsername={}, isDuplicatedNewPassword={}, isChangedProfile={}", newEmail == null, newUsername == null, newPassword == null, binaryContentChanged);
+        log.debug("[USER_UPDATE] 사용자 수정 입력값 변경 여부: isChangedEmail={}, isChangedUsername={}, isChangedPassword={}, isChangedProfile={}", newEmail != null, newUsername != null, newPassword != null, binaryContentChanged);
 
         // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
         validateAllRequestExistingOrNull(newEmail, newUsername, newPassword, binaryContentChanged);
@@ -139,8 +139,7 @@ public class BasicUserService implements UserService {
         }
 
         user.update(newUsername, newEmail, newPassword, newProfile);
-
-        log.info("[USER_UPDATE] 사용자 정보 업데이트 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
+        log.info("[USER_UPDATE] 사용자 정보 수정 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
 
         return userMapper.toDto(user);
     }
@@ -187,10 +186,7 @@ public class BasicUserService implements UserService {
 
     // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
     private void validateAllRequestExistingOrNull(String newEmail, String newUsername, String password, boolean binaryContentChanged) {
-        if (newEmail == null
-                && newUsername == null
-                && password == null
-                && !binaryContentChanged
+        if (newEmail == null && newUsername == null && password == null && !binaryContentChanged
         ) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
