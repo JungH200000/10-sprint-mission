@@ -95,7 +95,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
-        log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, request.newEmail() != null, request.newUsername() != null, request.newPassword() != null);
+        log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, newEmail={}, newUsername={}, isInputNewPassword={}", userId, request.newEmail(), request.newUsername(), request.newPassword() != null);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);

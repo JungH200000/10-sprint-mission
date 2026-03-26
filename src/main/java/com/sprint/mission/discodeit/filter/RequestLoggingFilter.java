@@ -30,7 +30,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
-        log.debug("[HTTP_REQUEST] 요청 시작: {} {}", method, requestUri);
+        log.debug("[HTTP_REQUEST] 요청 API 시작: {} {}", method, requestUri);
 
         try {
             filterChain.doFilter(request, response);
@@ -39,11 +39,11 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             int status = response.getStatus();
 
             if (status >= 500) {
-                log.error("[HTTP_RESPONSE] 요청 종료: {} {} | status={} | {}ms", method, requestUri, status, duration);
+                log.error("[HTTP_RESPONSE] 요청 API 종료: {} {} | status={} | {}ms", method, requestUri, status, duration);
             } else if (status >= 400) {
-                log.warn("[HTTP_RESPONSE] 요청 종료: {} {} | status={} | {}ms", method, requestUri, status, duration);
+                log.warn("[HTTP_RESPONSE] 요청 API 종료: {} {} | status={} | {}ms", method, requestUri, status, duration);
             } else {
-                log.info("[HTTP_RESPONSE] 요청 종료: {} {} | status={} | {}ms", method, requestUri, status, duration);
+                log.info("[HTTP_RESPONSE] 요청 API 종료: {} {} | status={} | {}ms", method, requestUri, status, duration);
             }
         }
     }

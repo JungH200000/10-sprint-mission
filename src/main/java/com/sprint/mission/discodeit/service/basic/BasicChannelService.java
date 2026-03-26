@@ -135,7 +135,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
-        log.debug("[CHANNEL_UPDATE] 채널 정보 수정 시작: channelId={}, isInputNewName={}, isInputNewDescription={}", channelId, request.newName(), request.newDescription());
+        log.debug("[CHANNEL_UPDATE] 채널 정보 수정 시작: channelId={}, newName={}, newDescription={}", channelId, request.newName(), request.newDescription());
 
         // channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);

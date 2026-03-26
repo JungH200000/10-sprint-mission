@@ -84,7 +84,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
-        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 시작: userStatusId={}, newLastActiveAt={}", userStatusId, request.newLastActiveAt());
+        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 수정 시작: userStatusId={}, newLastActiveAt={}", userStatusId, request.newLastActiveAt());
 
         if (request.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
@@ -94,14 +94,14 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatus.setLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
-        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 수정 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
 
     @Override
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 업데이트 시작: userId={}, newLastActiveAt={}", userId, request.newLastActiveAt());
+        log.debug("[USER_STATUS_UPDATE_BY_USERID] userId로 사용자 온라인 상태 수정 시작: userId={}, newLastActiveAt={}", userId, request.newLastActiveAt());
 
         if (request.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
@@ -111,18 +111,18 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatus.setLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
-        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 업데이트 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.info("[USER_STATUS_UPDATE_BY_USERID] userId로 사용자 온라인 상태 수정 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
 
     @Override
     public void delete(UUID userStatusId) {
-        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 시작: userStatusId={}", userStatusId);
+        log.debug("[USER_STATUS_DELETE] 사용자 온라인 상태 삭제 시작: userStatusId={}", userStatusId);
 
         validateAndGetUserStatusByUserStatusId(userStatusId);
         userStatusRepository.deleteById(userStatusId);
-        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 삭제 완료: userStatusId={}", userStatusId);
+        log.info("[USER_STATUS_DELETE] 사용자 온라인 상태 삭제 완료: userStatusId={}", userStatusId);
     }
 
     /// / validation
