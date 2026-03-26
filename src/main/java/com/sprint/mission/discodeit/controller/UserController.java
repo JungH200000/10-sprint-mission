@@ -52,9 +52,9 @@ public class UserController {
             @RequestPart @Valid UserCreateRequest userCreateRequest,
             @RequestPart(required = false) @Schema(description = "User 프로필 이미지") MultipartFile profile
     ) {
-        UserDto user = userService.create(userCreateRequest, profile);
+        UserDto userDto = userService.create(userCreateRequest, profile);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
     }
 
     /**
@@ -89,9 +89,9 @@ public class UserController {
             @RequestPart @Valid UserUpdateRequest userUpdateRequest,
             @RequestPart(required = false) @Schema(description = "수정할 User 프로필 이미지") MultipartFile profile
     ) {
-        UserDto user = userService.update(userId, userUpdateRequest, profile);
+        UserDto userDto = userService.update(userId, userUpdateRequest, profile);
 
-        return ResponseEntity.status(HttpStatus.OK).body(user);
+        return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
     /**
@@ -107,9 +107,9 @@ public class UserController {
             @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
-        UserStatusDto userStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
+        UserStatusDto userStatusDto = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userStatus);
+        return ResponseEntity.status(HttpStatus.OK).body(userStatusDto);
     }
 
     // 사용자 삭제
