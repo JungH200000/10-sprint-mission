@@ -34,7 +34,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
-        log.debug("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 시작: channelName={}, channelDescription={}", request.name(), request.description());
+        log.debug("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 시작: name={}, description={}", request.name(), request.description());
 
         Channel channel = new Channel(
                 ChannelType.PUBLIC,
@@ -42,14 +42,14 @@ public class BasicChannelService implements ChannelService {
                 request.description()
         );
         channelRepository.save(channel);
-        log.info("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 완료: channelId={}, channelType={}, channelName={}, channelDescription={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
+        log.info("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
         return channelMapper.toDto(channel);
     }
 
     @Override
     public ChannelDto createPrivateChannel(PrivateChannelCreateRequest request) {
-        log.debug("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 시작: size={}", request.participantIds() != null ? request.participantIds().size() : 0);
+        log.debug("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 시작: count={}", request.participantIds() != null ? request.participantIds().size() : 0);
 
         if (request.participantIds() == null || request.participantIds().isEmpty()) {
             throw new IllegalArgumentException("Private Channel에 참가자 필요함");
@@ -68,7 +68,7 @@ public class BasicChannelService implements ChannelService {
             ReadStatus participantReadStatus = new ReadStatus(participant, channel, now);
             readStatusRepository.save(participantReadStatus);
         });
-        log.info("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 완료: channelId={}, channelType={}, size={}", channel.getId(), channel.getType(), participants.size());
+        log.info("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 완료: channelId={}, type={}, count={}", channel.getId(), channel.getType(), participants.size());
 
         return channelMapper.toDto(channel);
     }
@@ -80,7 +80,7 @@ public class BasicChannelService implements ChannelService {
 
         // Channel ID null 검증
         Channel channel = validateAndGetChannelByChannelId(channelId);
-        log.debug("[CHANNEL_FIND] 채널 조회 완료: channelId={}, channelType={}, channelName={}, channelDescription={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
+        log.debug("[CHANNEL_FIND] 채널 조회 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
         return channelMapper.toDto(channel);
     }
@@ -128,7 +128,7 @@ public class BasicChannelService implements ChannelService {
         List<ChannelDto> channelDtoList = channels.stream()
                 .map(channel -> channelMapper.toListDto(channel, participantMap, lastMessageAtMap))
                 .toList();
-        log.debug("[CHANNEL_LIST_FIND] 채널 조회 목록 완료: size={}", channelDtoList.size());
+        log.debug("[CHANNEL_LIST_FIND] 채널 조회 목록 완료: count={}", channelDtoList.size());
 
         return channelDtoList;
     }
@@ -148,13 +148,13 @@ public class BasicChannelService implements ChannelService {
         // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
         String newName = changedString(request.newName(), channel.getName());
         String newDescription = changedString(request.newDescription(), channel.getDescription());
-        log.debug("[CHANNEL_UPDATE] 채널 수정 입력값 변경 여부: isChangedChannelName={}, isChangedChannelDescription={}", newName != null, newDescription != null);
+        log.debug("[CHANNEL_UPDATE] 채널 수정 입력값 변경 여부: isChangedName={}, isChangedDescription={}", newName != null, newDescription != null);
 
         // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
         validateAllInputDuplicateOrEmpty(newName, newDescription);
 
         channel.update(newName, newDescription);
-        log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료: channelId={}, channelType={}, channelName={}, channelDescription={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
+        log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
         return channelMapper.toDto(channel);
     }

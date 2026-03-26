@@ -78,7 +78,7 @@ public class BasicReadStatusService implements ReadStatusService {
         List<ReadStatusDto> readStatusDtoList = readStatusRepository.findAllByUserIdWithUserAndChannel(userId).stream()
                 .map(readStatus -> readStatusMapper.toDto(readStatus))
                 .toList();
-        log.debug("[READ_STATUS_LIST_FIND_BY_USERID] 마지막 메시지 읽음 상태 목록 조회 완료: size={}", readStatusDtoList.size());
+        log.debug("[READ_STATUS_LIST_FIND_BY_USERID] 마지막 메시지 읽음 상태 목록 조회 완료: count={}", readStatusDtoList.size());
 
         return readStatusDtoList;
     }
@@ -107,25 +107,25 @@ public class BasicReadStatusService implements ReadStatusService {
 
     //// validation
     // user ID null & user 객체 존재 확인
-    public User validateAndGetUserByUserId(UUID userId) {
+    private User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
-    public Channel validateAndGetChannelByChannelId(UUID channelId) {
+    private Channel validateAndGetChannelByChannelId(UUID channelId) {
         ValidationMethods.validateId(channelId);
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
-    public ReadStatus validateAndGetReadStatusByReadStatusId(UUID readStatusId) {
+    private ReadStatus validateAndGetReadStatusByReadStatusId(UUID readStatusId) {
         ValidationMethods.validateId(readStatusId);
         return readStatusRepository.findByIdWithUserAndChannel(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
     }
 
-    public void validateReadStatusByReadStatusId(UUID readStatusId) {
+    private void validateReadStatusByReadStatusId(UUID readStatusId) {
         ValidationMethods.validateId(readStatusId);
         readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));

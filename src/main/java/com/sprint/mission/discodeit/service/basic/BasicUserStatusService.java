@@ -77,7 +77,7 @@ public class BasicUserStatusService implements UserStatusService {
         List<UserStatusDto> userStatusDtoList = userStatusRepository.findAllWithUser().stream()
                 .map(userStatus -> userStatusMapper.toDto(userStatus))
                 .toList();
-        log.debug("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: size={}", userStatusDtoList.size());
+        log.debug("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: count={}", userStatusDtoList.size());
 
         return userStatusDtoList;
     }

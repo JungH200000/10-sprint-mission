@@ -28,7 +28,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentDto create(BinaryContentCreateRequest request) {
-        log.debug("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 시작: fileName={}, contentType={}, size={}", request.fileName(), request.contentType(), request.bytes().length);
+        log.debug("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 시작: fileName={}, contentType={}, bytesSize={}", request.fileName(), request.contentType(), request.bytes().length);
 
         byte[] bytes = request.bytes();
         BinaryContent binaryContent = new BinaryContent(
@@ -38,7 +38,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         );
         binaryContentRepository.save(binaryContent);
         binaryContentStorage.put(binaryContent.getId(), bytes);
-        log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: binaryContentId={}, fileName={}, contentType={}, size={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+        log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: binaryContentId={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
         return binaryContentMapper.toDto(binaryContent);
     }
@@ -49,7 +49,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.debug("[BINARY_CONTENT_FIND] 바이너리 컨텐츠 조회 시작: binaryContentId={}", binaryContentId);
 
         BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
-        log.debug("[BINARY_CONTENT_FIND] 바이너리 컨텐츠 조회 완료: binaryContentId={}, fileName={}, contentType={}, size={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+        log.debug("[BINARY_CONTENT_FIND] 바이너리 컨텐츠 조회 완료: binaryContentId={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
         return binaryContentMapper.toDto(binaryContent);
     }
@@ -60,14 +60,14 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 시작");
 
         if (binaryContentIds == null || binaryContentIds.isEmpty()) {
-            log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: size=0");
+            log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: count=0");
             return List.of();
         }
 
         List<BinaryContentDto> binaryContentDtoList = binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
                 .map(binaryContent -> binaryContentMapper.toDto(binaryContent))
                 .toList();
-        log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: size={}", binaryContentDtoList.size());
+        log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: count={}", binaryContentDtoList.size());
 
         return binaryContentDtoList;
     }
@@ -81,7 +81,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.info("[BINARY_CONTENT_DELETE] 바이너리 컨텐츠 삭제 완료: binaryContentId={}", binaryContentId);
     }
 
-    public BinaryContent validateAndGetBinaryContentByBinaryContentId(UUID binaryContentId) {
+    private BinaryContent validateAndGetBinaryContentByBinaryContentId(UUID binaryContentId) {
         ValidationMethods.validateId(binaryContentId);
         return binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
