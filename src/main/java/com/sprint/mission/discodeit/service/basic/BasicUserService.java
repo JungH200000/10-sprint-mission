@@ -119,7 +119,7 @@ public class BasicUserService implements UserService {
         log.info("[USER_UPDATE] 기존 사용자 정보에 따른 입력값 중복/변경 상태: isDuplicatedNewEmail={}, isDuplicatedNewUsername={}, isDuplicatedNewPassword={}, isChangedProfile={}", newEmail == null, newUsername == null, newPassword == null, binaryContentChanged);
 
         // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
-        validateAllRequestExistingOrNull(userUpdateRequest, binaryContentChanged);
+        validateAllRequestExistingOrNull(newEmail, newUsername, newPassword, binaryContentChanged);
 
         // 다른 사용자들과 중복 확인
         validateDuplicateUsernameForUpdate(userId, newUsername);
@@ -186,10 +186,10 @@ public class BasicUserService implements UserService {
     }
 
     // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
-    private void validateAllRequestExistingOrNull(UserUpdateRequest request, boolean binaryContentChanged) {
-        if (request.newEmail() == null
-                && request.newPassword() == null
-                && request.newUsername() == null
+    private void validateAllRequestExistingOrNull(String newEmail, String newUsername, String password, boolean binaryContentChanged) {
+        if (newEmail == null
+                && newUsername == null
+                && password == null
                 && !binaryContentChanged
         ) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
