@@ -34,7 +34,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
-        log.info("[USER_CREATE] 사용자 등록 시작: email={}, username={}", request.email(), request.username());
+        log.debug("[USER_CREATE] 사용자 등록 시작: email={}, username={}", request.email(), request.username());
 
         // newEmail, newUsername 중복 확인
         validateDuplicateEmail(request.email());
@@ -95,7 +95,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, MultipartFile profile) {
-        log.info("[USER_UPDATE] 사용자 정보 업데이트 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, userUpdateRequest.newEmail() != null, userUpdateRequest.newUsername() != null, userUpdateRequest.newPassword() != null);
+        log.debug("[USER_UPDATE] 사용자 정보 업데이트 시작: userId={}, isInputNewEmail={}, isInputNewUsername={}, isInputNewPassword={}", userId, userUpdateRequest.newEmail() != null, userUpdateRequest.newUsername() != null, userUpdateRequest.newPassword() != null);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
@@ -147,7 +147,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        log.info("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
+        log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateAndGetUserByUserId(userId);

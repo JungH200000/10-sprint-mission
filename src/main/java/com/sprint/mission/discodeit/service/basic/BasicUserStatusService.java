@@ -82,7 +82,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
-        log.info("[USER_UPDATE_ONLINE_STATUS] 사용자 온라인 상태 업데이트 시작: userId={}, newLastActiveAt={}", userId, userStatusUpdateRequest.newLastActiveAt());
+        log.debug("[USER_UPDATE_ONLINE_STATUS] 사용자 온라인 상태 업데이트 시작: userId={}, newLastActiveAt={}", userId, userStatusUpdateRequest.newLastActiveAt());
 
         if (userStatusUpdateRequest.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
