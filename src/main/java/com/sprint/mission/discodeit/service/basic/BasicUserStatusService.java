@@ -87,7 +87,7 @@ public class BasicUserStatusService implements UserStatusService {
         if (userStatusUpdateRequest.newLastActiveAt() == null) {
             throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
         }
-        validateUserByUserId(userId);
+        validateAndGetUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
         userStatus.setLastActiveAt(userStatusUpdateRequest.newLastActiveAt());
@@ -99,26 +99,21 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public void delete(UUID userStatusId) {
-        validateUserStatusByUserStatusId(userStatusId);
+        validateAndGetUserStatusByUserStatusId(userStatusId);
         userStatusRepository.deleteById(userStatusId);
     }
 
     //// validation
     // user ID null & user 객체 존재 확인
-    public void validateUserByUserId(UUID userId) {
+    public User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
     public UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
         ValidationMethods.validateId(userStatusId);
         return userStatusRepository.findByIdWithUser(userStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
-    }
-    public void validateUserStatusByUserStatusId(UUID userStatusId) {
-        ValidationMethods.validateId(userStatusId);
-        userStatusRepository.findByIdWithUser(userStatusId)
                 .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
     }
 
