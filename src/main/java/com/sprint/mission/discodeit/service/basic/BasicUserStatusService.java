@@ -103,11 +103,11 @@ public class BasicUserStatusService implements UserStatusService {
         userStatusRepository.deleteById(userStatusId);
     }
 
-    //// validation
+    /// / validation
     // user ID null & user 객체 존재 확인
-    public User validateAndGetUserByUserId(UUID userId) {
+    public void validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
-        return userRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
