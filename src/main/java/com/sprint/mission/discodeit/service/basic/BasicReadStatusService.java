@@ -90,7 +90,6 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
 
         readStatus.updateLastReadTime(readStatusUpdateRequest.newLastReadAt());
-//        readStatusRepository.save(readStatus);
         log.info("[READ_STATUS_UPDATE] 마지막 메시지 읽음 상태 수정 완료: readStatusId={}, userId={}, channelId={}, lastReadAt={}", readStatus.getId(), readStatus.getUser().getId(), readStatus.getChannel().getId(), readStatus.getLastReadAt());
 
         return readStatusMapper.toDto(readStatus);
