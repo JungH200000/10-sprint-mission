@@ -17,9 +17,14 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(DiscodeitException.class)
     public ResponseEntity<ErrorResponse> handleException(DiscodeitException e) {
-        log.warn("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}", e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails());
         ErrorCode errorCode = e.getErrorCode();
         HttpStatus status = getHttpStatus(errorCode);
+
+        if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+            log.error("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}", e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
+        } else {
+            log.warn("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}", e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
+        }
 
         ErrorResponse errorResponse = new ErrorResponse(e, status.value());
 
@@ -28,7 +33,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("[Exception] 예상하지 못한 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+        log.error("[Exception] 예상하지 못한 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
         ErrorResponse errorResponse = new ErrorResponse(e, status.value());
@@ -38,7 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
-        log.warn("[EXCEPTION] Bean Validation 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+        log.warn("[EXCEPTION] Bean Validation 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
 
         Map<String, Object> details = new HashMap<>();
         e.getBindingResult().getFieldErrors()
@@ -58,7 +63,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleException(HttpMessageNotReadableException e) {
-        log.warn("[EXCEPTION] 적합하지 않은 HTTP Request Body: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+        log.warn("[EXCEPTION] 적합하지 않은 HTTP Request Body: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now(),
