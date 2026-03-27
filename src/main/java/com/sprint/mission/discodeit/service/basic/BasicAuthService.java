@@ -64,7 +64,7 @@ public class BasicAuthService implements AuthService {
 
     private void validatePassword(String requestPassword, String userPassword) {
         if (!userPassword.equals(requestPassword)) {
-            throw new InvalidPasswordException(requestPassword);
+            throw new InvalidPasswordException();
         }
     }
 }
