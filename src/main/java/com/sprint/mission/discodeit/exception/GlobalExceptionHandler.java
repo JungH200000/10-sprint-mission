@@ -9,43 +9,81 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity handleException(IllegalArgumentException e) {
-        log.warn("[EXCEPTION] 잘못된 요청: status={}, message={}", HttpStatus.BAD_REQUEST.value(),e.getMessage(), e);
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponse> handleException(DiscodeitException e) {
+        log.warn("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}", e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails());
+        ErrorCode errorCode = e.getErrorCode();
+        HttpStatus status = getHttpStatus(errorCode);
+
+        ErrorResponse errorResponse = new ErrorResponse(e, status.value());
+
+        return ResponseEntity.status(status).body(errorResponse);
     }
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity handleException(NoSuchElementException e) {
-        log.warn("[EXCEPTION] 해당 데이터를 찾을 수 없음: status={}, message={}", HttpStatus.NOT_FOUND.value(), e.getMessage(), e);
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("[Exception] 예상하지 못한 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        ErrorResponse errorResponse = new ErrorResponse(e, status.value());
+
+        return ResponseEntity.status(status).body(errorResponse);
     }
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity handleException(IllegalStateException e) {
-        log.error("[EXCEPTION] 처리 중 오류 발생: status={}, message={}", HttpStatus.CONFLICT.value(), e.getMessage(), e);
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.getReasonPhrase(), e.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity handleException(MethodArgumentNotValidException e) {
-        log.warn("[EXCEPTION] Bean Validation 예외 발생: status={}, message={}", HttpStatus.BAD_REQUEST.value(), e.getMessage(), e);
-        String ErrorMessage = e.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), ErrorMessage);
+    public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
+        log.warn("[EXCEPTION] Bean Validation 예외 발생: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+
+        Map<String, Object> details = new HashMap<>();
+        e.getBindingResult().getFieldErrors()
+                .forEach(fe -> details.put(fe.getField(), fe.getDefaultMessage()));
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                Instant.now(),
+                "BEAN_VALIDATION",
+                "유효하지 않은 값입니다.",
+                details,
+                e.getClass().getSimpleName(),
+                HttpStatus.BAD_REQUEST.value()
+        );
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleException(HttpMessageNotReadableException e) {
-        log.warn("[EXCEPTION] 적합하지 않은 HTTP Request Body: status={}, message={}", HttpStatus.BAD_REQUEST.value(), e.getMessage(), e);
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage());
+        log.warn("[EXCEPTION] 적합하지 않은 HTTP Request Body: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                Instant.now(),
+                "INVALID_HTTP_REQUEST_BODY",
+                "적합하지 않은 HTTP Request Body입니다.",
+                new HashMap<>(),
+                e.getClass().getSimpleName(),
+                HttpStatus.BAD_REQUEST.value()
+        );
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    private HttpStatus getHttpStatus(ErrorCode errorCode) {
+        return switch (errorCode) {
+            case INVALID_INPUT, NO_CHANGE_VALUE, INVALID_PASSWORD,
+                 PROFILE_UPLOAD_FAILED, ATTACHMENTS_UPLOAD_FAILED,
+                 PRIVATE_CHANNEL_PARTICIPANT_REQUIRED -> HttpStatus.BAD_REQUEST;
+            case USER_NOT_FOUND, USER_STATUS_NOT_FOUND, READ_STATUS_NOT_FOUND,
+                MESSAGE_NOT_FOUND, CHANNEL_NOT_FOUND, BINARY_CONTENT_NOT_FOUND,
+                 PROFILE_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case PRIVATE_CHANNEL_CANNOT_BE_UPDATED -> HttpStatus.FORBIDDEN;
+            case DUPLICATED_USER_STATUS, DUPLICATED_USERNAME, DUPLICATED_EMAIL,
+                 DUPLICATED_READ_STATUS -> HttpStatus.CONFLICT;
+            case PROFILE_READ_FAILED, INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
     }
 }
