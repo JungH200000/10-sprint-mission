@@ -8,10 +8,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
-import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
-import com.sprint.mission.discodeit.exception.user.DuplicatedUsernameException;
-import com.sprint.mission.discodeit.exception.user.ProfileNotFoundException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -205,15 +202,16 @@ public class BasicUserService implements UserService {
         }
         //기존 프로필이 존재
         UUID profileId = profile.getId();
-        BinaryContent oldBinaryContent = binaryContentRepository.findById(profileId)
+        BinaryContent oldProfile = binaryContentRepository.findById(profileId)
                 .orElseThrow(() -> new ProfileNotFoundException(profileId));
+        UUID oldProfileId = oldProfile.getId();
         // 새로 들어온 BinaryContent와 비교
         // 같으면 -> false -> change 되지 않음
         try {
-            byte[] oldBytes = binaryContentStorage.get(oldBinaryContent.getId()).readAllBytes();
+            byte[] oldBytes = binaryContentStorage.get(oldProfileId).readAllBytes();
             return !Arrays.equals(oldBytes, bytes);
         } catch (IOException e) {
-            throw new IllegalArgumentException("프로필 이미지 처리 중 오류가 발생했습니다.", e);
+            throw new ProfileReadFailedException(oldProfileId, e);
         }
     }
 
