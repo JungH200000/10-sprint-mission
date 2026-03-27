@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
-        log.warn("[EXCEPTION] Bean Validation 예외 발생: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
+        log.warn("[EXCEPTION] Bean Validation 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage());
 
         Map<String, Object> details = new HashMap<>();
         e.getBindingResult().getFieldErrors()
