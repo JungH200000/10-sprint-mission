@@ -167,16 +167,16 @@ public class BasicUserService implements UserService {
     }
 
     // email이 이미 존재하는지 확인
-    private void validateDuplicateEmail(String newEmail) {
-        if (userRepository.existsByEmail(newEmail)) {
-            throw new DuplicatedEmailException(newEmail);
+    private void validateDuplicateEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new DuplicatedEmailException(email);
         }
     }
 
     // userName이 이미 존재하는지 확인
-    private void validateDuplicateUserName(String newUsername) {
-        if (userRepository.existsByUsername(newUsername)) {
-            throw new DuplicatedUsernameException(newUsername);
+    private void validateDuplicateUserName(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new DuplicatedUsernameException(username);
         }
     }
 
@@ -188,8 +188,8 @@ public class BasicUserService implements UserService {
     }
 
     // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
-    private void validateAllRequestExistingOrNull(String newEmail, String newUsername, String password, boolean binaryContentChanged) {
-        if (newEmail == null && newUsername == null && password == null && !binaryContentChanged
+    private void validateAllRequestExistingOrNull(String email, String username, String password, boolean binaryContentChanged) {
+        if (email == null && username == null && password == null && !binaryContentChanged
         ) {
             throw new NoChangeValueException("All UpdateRequestField", null);
         }
@@ -216,16 +216,16 @@ public class BasicUserService implements UserService {
     }
 
     // 나를 제외한 newEmail 중에 중복된 값이 있는지 확인
-    private void validateDuplicateEmailForUpdate(UUID userId, String newEmail) {
-        if (userRepository.isEmailUsedByOther(userId, newEmail)) {
-            throw new DuplicatedEmailException(userId, newEmail);
+    private void validateDuplicateEmailForUpdate(UUID userId, String email) {
+        if (userRepository.isEmailUsedByOther(userId, email)) {
+            throw new DuplicatedEmailException(userId, email);
         }
     }
 
     // 나를 제외한 newUsername 중에 중복된 값이 있는지 확인
-    private void validateDuplicateUsernameForUpdate(UUID userId, String newUsername) {
-        if (userRepository.isUserNameUsedByOther(userId, newUsername)) {
-            throw new DuplicatedUsernameException(userId, newUsername);
+    private void validateDuplicateUsernameForUpdate(UUID userId, String username) {
+        if (userRepository.isUserNameUsedByOther(userId, username)) {
+            throw new DuplicatedUsernameException(userId, username);
         }
     }
 }
