@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.InvalidPasswordException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -63,7 +64,7 @@ public class BasicAuthService implements AuthService {
 
     private void validatePassword(String requestPassword, String userPassword) {
         if (!userPassword.equals(requestPassword)) {
-            throw new IllegalArgumentException("Wrong password");
+            throw new InvalidPasswordException(requestPassword);
         }
     }
 }
