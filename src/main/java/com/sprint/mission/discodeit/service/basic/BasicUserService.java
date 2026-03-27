@@ -206,7 +206,7 @@ public class BasicUserService implements UserService {
             byte[] oldBytes = binaryContentStorage.get(oldBinaryContent.getId()).readAllBytes();
             return !Arrays.equals(oldBytes, bytes);
         } catch (IOException e) {
-            throw new IllegalArgumentException("기존 프로필 데이터를 읽는 중 오류가 발생했습니다.", e);
+            throw new IllegalArgumentException("기존 프로필 이미지를 읽는 중 오류가 발생했습니다.", e);
         }
     }
 
