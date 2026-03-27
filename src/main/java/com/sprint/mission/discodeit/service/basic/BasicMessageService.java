@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
+import com.sprint.mission.discodeit.exception.message.AttachmentsUploadFailedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -76,7 +77,7 @@ public class BasicMessageService implements MessageService {
 
                     message.addAttachment(binaryContent);
                 } catch (IOException e) {
-                    throw new IllegalArgumentException("attachments 업로드 실패", e);
+                    throw new AttachmentsUploadFailedException(authorId, channelId, e);
                 }
             }
         }
