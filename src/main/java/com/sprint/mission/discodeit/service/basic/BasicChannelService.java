@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequ
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -151,7 +152,7 @@ public class BasicChannelService implements ChannelService {
         log.debug("[CHANNEL_UPDATE] 채널 수정 입력값 변경 여부: isChangedName={}, isChangedDescription={}", newName != null, newDescription != null);
 
         // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
-        validateAllInputDuplicateOrEmpty(newName, newDescription);
+        validateAllRequestExistingOrNull(newName, newDescription);
 
         channel.update(newName, newDescription);
         log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
@@ -192,9 +193,9 @@ public class BasicChannelService implements ChannelService {
     }
 
     // type, name, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
-    private void validateAllInputDuplicateOrEmpty(String newName, String newDescription) {
+    private void validateAllRequestExistingOrNull(String newName, String newDescription) {
         if (newName == null && newDescription == null) {
-            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
+            throw new InvalidInputException("All UpdateRequestField", null);
         }
     }
 }

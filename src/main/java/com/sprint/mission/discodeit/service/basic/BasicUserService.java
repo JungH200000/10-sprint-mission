@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -188,7 +189,7 @@ public class BasicUserService implements UserService {
     private void validateAllRequestExistingOrNull(String newEmail, String newUsername, String password, boolean binaryContentChanged) {
         if (newEmail == null && newUsername == null && password == null && !binaryContentChanged
         ) {
-            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
+            throw new InvalidInputException("All UpdateRequestField", null);
         }
     }
 

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -134,6 +135,8 @@ public class BasicMessageService implements MessageService {
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
 
+        validateAllRequestExistingOrNull(request.newContent());
+
         message.update(request.newContent());
         log.info("[MESSAGE_UPDATE] 메시지 수정 완료: messageId={}, authorId={}, channelId={}, content={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getContent(), message.getAttachments().size());
 
@@ -177,6 +180,12 @@ public class BasicMessageService implements MessageService {
         ValidationMethods.validateId(messageId);
         return messageRepository.findByIdWithAuthorAndChannel(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+    }
+
+    private void validateAllRequestExistingOrNull(String newContent) {
+        if (newContent == null) {
+            throw new InvalidInputException("All UpdateRequestField", null);
+        }
     }
 
     // message의 author와 삭제 요청한 user가 동일한지

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateReque
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -87,7 +88,7 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 수정 시작: userStatusId={}, newLastActiveAt={}", userStatusId, request.newLastActiveAt());
 
         if (request.newLastActiveAt() == null) {
-            throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
+            throw new InvalidInputException("newLastActiveAt", null);
         }
 
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
