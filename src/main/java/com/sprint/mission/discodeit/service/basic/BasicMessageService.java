@@ -51,7 +51,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
-        log.debug("[MESSAGE_CREATE] 메시지 생성 시작: authorId={}, channelId={}, content={}", request.authorId(), request.channelId(), request.content());
+        log.debug("[MESSAGE_CREATE] 메시지 생성 시작: authorId={}, channelId={}", request.authorId(), request.channelId());
 
         UUID authorId = request.authorId();
         UUID channelId = request.channelId();
@@ -81,7 +81,7 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.save(message);
-        log.info("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, content={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getContent(), message.getAttachments().size());
+        log.info("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }
@@ -93,7 +93,7 @@ public class BasicMessageService implements MessageService {
 
         // Message ID `null` 및 존재 검증
         Message message = validateAndGetMessageByMessageId(messageId);
-        log.debug("[MESSAGE_FIND] 메시지 조회 완료: messageId={}, authorId={}, channelId={}, content={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getContent(), message.getAttachments().size());
+        log.debug("[MESSAGE_FIND] 메시지 조회 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }
@@ -133,7 +133,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
-        log.debug("[MESSAGE_UPDATE] 메시지 수정 시작: messageId={}, newContent={}", messageId, request.newContent());
+        log.debug("[MESSAGE_UPDATE] 메시지 수정 시작: messageId={}", messageId);
 
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
@@ -141,7 +141,7 @@ public class BasicMessageService implements MessageService {
         validateAllRequestExistingOrNull(request.newContent());
 
         message.update(request.newContent());
-        log.info("[MESSAGE_UPDATE] 메시지 수정 완료: messageId={}, authorId={}, channelId={}, content={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getContent(), message.getAttachments().size());
+        log.info("[MESSAGE_UPDATE] 메시지 수정 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }
