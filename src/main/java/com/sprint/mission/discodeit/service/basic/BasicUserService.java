@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -13,7 +14,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -161,7 +161,9 @@ public class BasicUserService implements UserService {
     //// validation
     // user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
+        if (userId == null) {
+            throw new InvalidInputException("userId", userId);
+        }
         return userRepository.findByIdWithStatusAndProfile(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }

@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.message.AttachmentsUploadFailedException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -21,7 +22,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -166,21 +166,27 @@ public class BasicMessageService implements MessageService {
     //// validation
     // 로그인 되어있는 user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
+        if (userId == null) {
+            throw new InvalidInputException("userId", userId);
+        }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     // Channel ID null & channel 객체 존재 확인
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
-        ValidationMethods.validateId(channelId);
+        if (channelId == null) {
+            throw new InvalidInputException("channelId", channelId);
+        }
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
     }
 
     // Message ID null & Message 객체 존재 확인
     private Message validateAndGetMessageByMessageId(UUID messageId) {
-        ValidationMethods.validateId(messageId);
+        if (messageId == null) {
+            throw new InvalidInputException("messageId", messageId);
+        }
         return messageRepository.findByIdWithAuthorAndChannel(messageId)
                 .orElseThrow(() -> new MessageNotFoundException(messageId));
     }

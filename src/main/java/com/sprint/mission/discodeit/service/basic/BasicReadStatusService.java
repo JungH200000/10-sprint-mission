@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -114,25 +113,33 @@ public class BasicReadStatusService implements ReadStatusService {
     //// validation
     // user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
+        if (userId == null) {
+            throw new InvalidInputException("userId", userId);
+        }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
-        ValidationMethods.validateId(channelId);
+        if (channelId == null) {
+            throw new InvalidInputException("channelId", channelId);
+        }
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
     }
 
     private ReadStatus validateAndGetReadStatusByReadStatusId(UUID readStatusId) {
-        ValidationMethods.validateId(readStatusId);
+        if (readStatusId == null) {
+            throw new InvalidInputException("readStatusId", readStatusId);
+        }
         return readStatusRepository.findByIdWithUserAndChannel(readStatusId)
                 .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
     }
 
     private void validateReadStatusByReadStatusId(UUID readStatusId) {
-        ValidationMethods.validateId(readStatusId);
+        if (readStatusId == null) {
+            throw new InvalidInputException("readStatusId", readStatusId);
+        }
         readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
     }

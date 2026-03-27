@@ -9,13 +9,13 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantRequiredException;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -178,13 +178,17 @@ public class BasicChannelService implements ChannelService {
     // validation
     //로그인 되어있는 user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
+        if (userId == null) {
+            throw new InvalidInputException("userId", userId);
+        }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
-        ValidationMethods.validateId(channelId);
+        if (channelId == null) {
+            throw new InvalidInputException("channelId", channelId);
+        }
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
     }

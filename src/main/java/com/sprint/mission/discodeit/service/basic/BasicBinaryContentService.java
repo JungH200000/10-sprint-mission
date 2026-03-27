@@ -4,11 +4,11 @@ import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreat
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -82,7 +82,9 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     private BinaryContent validateAndGetBinaryContentByBinaryContentId(UUID binaryContentId) {
-        ValidationMethods.validateId(binaryContentId);
+        if (binaryContentId == null) {
+            throw new InvalidInputException("binaryContentId", binaryContentId);
+        }
         return binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
     }

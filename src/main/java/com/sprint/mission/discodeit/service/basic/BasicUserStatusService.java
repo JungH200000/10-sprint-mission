@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -136,19 +135,25 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     private void validateAndGetUserByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
+        if (userId == null) {
+            throw new InvalidInputException("userId", userId);
+        }
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     private UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
-        ValidationMethods.validateId(userStatusId);
+        if (userStatusId == null) {
+            throw new InvalidInputException("userStatusId", userStatusId);
+        }
         return userStatusRepository.findByIdWithUser(userStatusId)
                 .orElseThrow(() -> new UserStatusNotFoundException("userStatusId", userStatusId));
     }
 
     private UserStatus validateAndGetUserStatusByUserId(UUID userId) {
-        ValidationMethods.validateId(userId);
+        if (userId == null) {
+            throw new InvalidInputException("userId", userId);
+        }
         return userStatusRepository.findByUserIdWithUser(userId)
                 .orElseThrow(() -> new UserStatusNotFoundException("userId", userId));
     }
