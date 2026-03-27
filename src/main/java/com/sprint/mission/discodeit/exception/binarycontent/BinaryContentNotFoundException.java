@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 
 import java.util.UUID;
 
-public class BinaryContentNotFound extends BinaryContentException {
+public class BinaryContentNotFoundException extends BinaryContentException {
 
-    public BinaryContentNotFound(UUID binaryContentId) {
+    public BinaryContentNotFoundException(UUID binaryContentId) {
         super(ErrorCode.BINARY_CONTENT_NOT_FOUND, "binaryContentId", binaryContentId);
     }
 }
