@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicatedUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -170,14 +171,14 @@ public class BasicUserService implements UserService {
     // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {
         if (userRepository.existsByEmail(newEmail)) {
-            throw new IllegalArgumentException("user with newEmail " + newEmail + " already exists");
+            throw new DuplicatedEmailException(newEmail);
         }
     }
 
     // userName이 이미 존재하는지 확인
     private void validateDuplicateUserName(String newUsername) {
         if (userRepository.existsByUsername(newUsername)) {
-            throw new IllegalArgumentException("user with userName " + newUsername + " already exists");
+            throw new DuplicatedUsernameException(newUsername);
         }
     }
 
@@ -217,14 +218,14 @@ public class BasicUserService implements UserService {
     // 나를 제외한 newEmail 중에 중복된 값이 있는지 확인
     private void validateDuplicateEmailForUpdate(UUID userId, String newEmail) {
         if (userRepository.isEmailUsedByOther(userId, newEmail)) {
-            throw new IllegalArgumentException("user with newEmail " + newEmail + " already exists");
+            throw new DuplicatedEmailException(userId, newEmail);
         }
     }
 
     // 나를 제외한 newUsername 중에 중복된 값이 있는지 확인
     private void validateDuplicateUsernameForUpdate(UUID userId, String newUsername) {
         if (userRepository.isUserNameUsedByOther(userId, newUsername)) {
-            throw new IllegalArgumentException("user with newUsername " + newUsername + " already exists");
+            throw new DuplicatedUsernameException(userId, newUsername);
         }
     }
 }
