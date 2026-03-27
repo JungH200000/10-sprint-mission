@@ -42,6 +42,8 @@ public class BasicUserService implements UserService {
         // newEmail, newUsername 중복 확인
         validateDuplicateEmail(request.email());
         validateDuplicateUserName(request.username());
+        String email = request.email();
+        String username = request.username();
 
         BinaryContent binaryContent = null;
         byte[] bytes;
@@ -55,14 +57,13 @@ public class BasicUserService implements UserService {
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
-
                 log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
-                throw new IllegalArgumentException("profileImage 업로드 실패", e);
+                throw new ProfileUploadFailedException(email, username, e);
             }
         }
-        User user = new User(request.email(), request.username(), request.password(), binaryContent);
+        User user = new User(email, username, request.password(), binaryContent);
         new UserStatus(user, Instant.now());
 
         userRepository.save(user);
@@ -116,7 +117,7 @@ public class BasicUserService implements UserService {
                 bytes = profile.getBytes();
                 binaryContentChanged = isProfileChanged(bytes, user.getProfile());
             } catch (IOException e) {
-                throw new IllegalArgumentException("profileImage 업로드 실패", e);
+                throw new ProfileUploadFailedException(userId, e);
             }
         }
         log.debug("[USER_UPDATE] 사용자 수정 입력값 변경 여부: isChangedEmail={}, isChangedUsername={}, isChangedPassword={}, isChangedProfile={}", newEmail != null, newUsername != null, newPassword != null, binaryContentChanged);
