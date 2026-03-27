@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.DuplicatedUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -34,12 +35,14 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto create(UserStatusCreateRequest request) {
         log.debug("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 시작: userId={}", request.userId());
+        UUID requestUserId = request.userId();
 
-        User user = userRepository.findByIdWithStatusAndProfile(request.userId())
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+        User user = userRepository.findByIdWithStatusAndProfile(requestUserId)
+                .orElseThrow(() -> new UserNotFoundException("userId", requestUserId));
+        UUID userId = user.getId();
 
-        if (userStatusRepository.existsUserStatusByUserId(user.getId())) {
-            throw new IllegalArgumentException("이미 존재하는 UserStatus가 있습니다.");
+        if (userStatusRepository.existsUserStatusByUserId(userId)) {
+            throw new DuplicatedUserStatusException(userId);
         }
 
         UserStatus userStatus = new UserStatus(user, Instant.now());
