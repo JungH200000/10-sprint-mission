@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
+import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -184,7 +185,7 @@ public class BasicMessageService implements MessageService {
 
     private void validateAllRequestExistingOrNull(String newContent) {
         if (newContent == null) {
-            throw new InvalidInputException("All UpdateRequestField", null);
+            throw new NoChangeValueException("All UpdateRequestField", null);
         }
     }
 

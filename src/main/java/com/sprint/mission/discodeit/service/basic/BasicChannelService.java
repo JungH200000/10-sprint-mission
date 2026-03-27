@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
+import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -195,7 +196,7 @@ public class BasicChannelService implements ChannelService {
     // type, name, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
     private void validateAllRequestExistingOrNull(String newName, String newDescription) {
         if (newName == null && newDescription == null) {
-            throw new InvalidInputException("All UpdateRequestField", null);
+            throw new NoChangeValueException("All UpdateRequestField", null);
         }
     }
 }
