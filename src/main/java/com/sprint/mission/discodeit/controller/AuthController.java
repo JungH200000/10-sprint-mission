@@ -39,10 +39,8 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음", content = @Content(examples = @ExampleObject(value = "Wrong password")))
     })
     public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest request) {
-        log.debug("[AUTH_LOGIN_API] 로그인 요청: username={}", request.username());
 
         UserDto user = authService.login(request);
-        log.debug("[AUTH_LOGIN_API] 로그인 응답: userId={}, isOnline={}", user.id(), user.online());
 
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
