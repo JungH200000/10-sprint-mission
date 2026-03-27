@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -33,12 +34,12 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusMapper readStatusMapper;
 
     @Override
-    public ReadStatusDto create(ReadStatusCreateRequest readStatusCreateRequest) {
-        log.debug("[READ_STATUS_CREATE] 마지막 메시지 읽음 상태 생성 시작: userId={}, channelId={}, lastReadAt={}", readStatusCreateRequest.userId(), readStatusCreateRequest.channelId(), readStatusCreateRequest.lastReadAt());
+    public ReadStatusDto create(ReadStatusCreateRequest request) {
+        log.debug("[READ_STATUS_CREATE] 마지막 메시지 읽음 상태 생성 시작: userId={}, channelId={}, lastReadAt={}", request.userId(), request.channelId(), request.lastReadAt());
 
-        UUID userId = readStatusCreateRequest.userId();
-        UUID channelId = readStatusCreateRequest.channelId();
-        Instant lastReadAt = readStatusCreateRequest.lastReadAt();
+        UUID userId = request.userId();
+        UUID channelId = request.channelId();
+        Instant lastReadAt = request.lastReadAt();
 
         // user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
@@ -84,12 +85,15 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest) {
-        log.debug("[READ_STATUS_UPDATE] 마지막 메시지 읽음 상태 수정 시작: readStatusId={}, newLastReadAt={}", readStatusId, readStatusUpdateRequest.newLastReadAt());
+    public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
+        log.debug("[READ_STATUS_UPDATE] 마지막 메시지 읽음 상태 수정 시작: readStatusId={}, newLastReadAt={}", readStatusId, request.newLastReadAt());
 
+        if (request.newLastReadAt() == null) {
+            throw new InvalidInputException("newLastReadAt", null);
+        }
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
 
-        readStatus.updateLastReadTime(readStatusUpdateRequest.newLastReadAt());
+        readStatus.updateLastReadTime(request.newLastReadAt());
         log.info("[READ_STATUS_UPDATE] 마지막 메시지 읽음 상태 수정 완료: readStatusId={}, userId={}, channelId={}, lastReadAt={}", readStatus.getId(), readStatus.getUser().getId(), readStatus.getChannel().getId(), readStatus.getLastReadAt());
 
         return readStatusMapper.toDto(readStatus);

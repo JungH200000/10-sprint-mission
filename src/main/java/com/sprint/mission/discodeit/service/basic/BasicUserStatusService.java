@@ -105,7 +105,7 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("[USER_STATUS_UPDATE_BY_USERID] userId로 사용자 온라인 상태 수정 시작: userId={}, newLastActiveAt={}", userId, request.newLastActiveAt());
 
         if (request.newLastActiveAt() == null) {
-            throw new IllegalArgumentException("newLastActiveAt null로 입력되었습니다.");
+            throw new InvalidInputException("newLastActiveAt", null);
         }
         validateAndGetUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
