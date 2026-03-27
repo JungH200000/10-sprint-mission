@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequ
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantRequiredException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
@@ -146,7 +147,7 @@ public class BasicChannelService implements ChannelService {
 
         // PRIVATE Channel일 경우 수정 불가
         if (ChannelType.PRIVATE.equals(channel.getType())) {
-            throw new IllegalArgumentException("Private channel cannot be updated");
+            throw new PrivateChannelCannotBeUpdatedException(channelId);
         }
 
         // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
