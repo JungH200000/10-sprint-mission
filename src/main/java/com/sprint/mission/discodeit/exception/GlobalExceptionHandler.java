@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
 
     private HttpStatus getHttpStatus(ErrorCode errorCode) {
         return switch (errorCode) {
-            case INVALID_INPUT, NO_CHANGE_VALUE, INVALID_PASSWORD,
+            case INVALID_INPUT, NO_CHANGE_VALUE, LOGIN_FAILED,
                  PROFILE_UPLOAD_FAILED, ATTACHMENTS_UPLOAD_FAILED,
                  PRIVATE_CHANNEL_PARTICIPANT_REQUIRED -> HttpStatus.BAD_REQUEST;
             case USER_NOT_FOUND, USER_STATUS_NOT_FOUND, READ_STATUS_NOT_FOUND,
