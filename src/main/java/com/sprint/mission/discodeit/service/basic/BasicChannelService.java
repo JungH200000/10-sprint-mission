@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequ
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantRequiredException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
@@ -186,7 +187,7 @@ public class BasicChannelService implements ChannelService {
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
         ValidationMethods.validateId(channelId);
         return channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
     }
 
     // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값

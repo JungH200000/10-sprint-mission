@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -174,7 +175,7 @@ public class BasicMessageService implements MessageService {
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
         ValidationMethods.validateId(channelId);
         return channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
     }
 
     // Message ID null & Message 객체 존재 확인
