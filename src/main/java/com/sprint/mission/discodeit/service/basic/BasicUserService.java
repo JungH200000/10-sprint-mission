@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicatedUsernameException;
+import com.sprint.mission.discodeit.exception.user.ProfileNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -203,8 +204,9 @@ public class BasicUserService implements UserService {
             return true; // 새로운 BinaryContent 들어옴
         }
         //기존 프로필이 존재
-        BinaryContent oldBinaryContent = binaryContentRepository.findById(profile.getId())
-                .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
+        UUID profileId = profile.getId();
+        BinaryContent oldBinaryContent = binaryContentRepository.findById(profileId)
+                .orElseThrow(() -> new ProfileNotFoundException(profileId));
         // 새로 들어온 BinaryContent와 비교
         // 같으면 -> false -> change 되지 않음
         try {
