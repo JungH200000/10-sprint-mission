@@ -12,10 +12,6 @@ import java.util.Map;
  */
 public abstract class UserStatusException extends DiscodeitException {
 
-    protected UserStatusException(ErrorCode errorCode, Map<String, Object> details) {
-        super(errorCode, details);
-    }
-
     protected UserStatusException(ErrorCode errorCode, String key, Object value) {
         super(errorCode, key, value);
     }
