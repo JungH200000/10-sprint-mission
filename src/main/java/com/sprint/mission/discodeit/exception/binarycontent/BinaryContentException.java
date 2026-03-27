@@ -13,4 +13,8 @@ public abstract class BinaryContentException extends DiscodeitException {
     protected BinaryContentException(ErrorCode errorCode, String key, Object value) {
         super(errorCode, key, value);
     }
+
+    protected BinaryContentException(ErrorCode errorCode, String key, Object value, Throwable e) {
+        super(errorCode, key, value, e);
+    }
 }
