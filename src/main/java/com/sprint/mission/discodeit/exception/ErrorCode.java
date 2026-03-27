@@ -11,7 +11,7 @@ public enum ErrorCode {
     USER_NOT_FOUND("사용자를 찾을 수 없습니다."),
     DUPLICATED_EMAIL("이미 존재하는 이메일입니다."),
     DUPLICATED_USERNAME("이미 존재하는 사용자 이름입니다."),
-    INVALID_PASSWORD("잘못된 비밀번호입니다."),
+    LOGIN_FAILED("아이디 또는 비밀번호가 잘못되었습니다."),
 
     PROFILE_UPLOAD_FAILED("프로필 이미지 업로드에 실패했습니다."),
     PROFILE_NOT_FOUND("프로필 이미지를 찾을 수 없습니다."),
