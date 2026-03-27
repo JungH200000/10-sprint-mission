@@ -8,8 +8,10 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
+import com.sprint.mission.discodeit.exception.readstatus.DuplicatedReadStatusException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.DuplicatedUserStatusException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -50,7 +52,7 @@ public class BasicReadStatusService implements ReadStatusService {
         Channel channel = validateAndGetChannelByChannelId(channelId);
 
         if (readStatusRepository.existsReadStatusByUserIdAndChannelId(userId, channelId)) {
-            throw new IllegalArgumentException("ReadStatus with id " + userId + " and channelId " + channelId + " already exists.");
+            throw new DuplicatedReadStatusException(userId, channelId);
         }
 
         ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
