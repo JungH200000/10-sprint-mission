@@ -12,3 +12,12 @@ logging:
   level:
     com.sprint.mission.discodeit: INFO
     org.hibernate.SQL: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'
+  endpoint:
+    health:
+      show-details: never
