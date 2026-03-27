@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.InvalidPasswordException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -59,7 +60,7 @@ public class BasicAuthService implements AuthService {
     private UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userStatusRepository.findByUserIdWithUser(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
+                .orElseThrow(() -> new UserStatusNotFoundException("userId", userId));
     }
 
     private void validatePassword(String requestPassword, String userPassword) {

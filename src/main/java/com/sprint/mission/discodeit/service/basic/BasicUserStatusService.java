@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.userstatus.DuplicatedUserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -35,10 +36,8 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto create(UserStatusCreateRequest request) {
         log.debug("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 시작: userId={}", request.userId());
-        UUID requestUserId = request.userId();
 
-        User user = userRepository.findByIdWithStatusAndProfile(requestUserId)
-                .orElseThrow(() -> new UserNotFoundException("userId", requestUserId));
+        User user = validateAndGetUserByUserIdWithStatusAndProfile(request.userId());
         UUID userId = user.getId();
 
         if (userStatusRepository.existsUserStatusByUserId(userId)) {
@@ -132,6 +131,11 @@ public class BasicUserStatusService implements UserStatusService {
 
     /// / validation
     // user ID null & user 객체 존재 확인
+    private User validateAndGetUserByUserIdWithStatusAndProfile(UUID userID) {
+        return userRepository.findByIdWithStatusAndProfile(userID)
+                .orElseThrow(() -> new UserNotFoundException("userId", userID));
+    }
+
     private void validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         userRepository.findById(userId)
@@ -141,12 +145,12 @@ public class BasicUserStatusService implements UserStatusService {
     private UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
         ValidationMethods.validateId(userStatusId);
         return userStatusRepository.findByIdWithUser(userStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 없습니다."));
+                .orElseThrow(() -> new UserStatusNotFoundException("userStatusId", userStatusId));
     }
 
     private UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userStatusRepository.findByUserIdWithUser(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found."));
+                .orElseThrow(() -> new UserStatusNotFoundException("userId", userId));
     }
 }
