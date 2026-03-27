@@ -12,19 +12,7 @@ import java.util.Map;
  */
 public abstract class CommonException extends DiscodeitException {
 
-    protected CommonException(ErrorCode errorCode, Map<String, Object> details) {
-        super(errorCode, details);
-    }
-
     protected CommonException(ErrorCode errorCode, String key, Object value) {
         super(errorCode, key, value);
-    }
-
-    protected CommonException(ErrorCode errorCode, Map<String, Object> details, Throwable cause) {
-        super(errorCode, details, cause);
-    }
-
-    protected CommonException(ErrorCode errorCode, String key, Object value, Throwable cause) {
-        super(errorCode, key, value, cause);
     }
 }
