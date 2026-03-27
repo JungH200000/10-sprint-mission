@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequ
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantRequiredException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -55,7 +56,7 @@ public class BasicChannelService implements ChannelService {
         log.debug("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 시작: count={}", request.participantIds() != null ? request.participantIds().size() : 0);
 
         if (request.participantIds() == null || request.participantIds().isEmpty()) {
-            throw new IllegalArgumentException("Private Channel에 참가자 필요함");
+            throw new PrivateChannelParticipantRequiredException();
         }
         // 인원 검증
         List<User> participants = request.participantIds().stream()
