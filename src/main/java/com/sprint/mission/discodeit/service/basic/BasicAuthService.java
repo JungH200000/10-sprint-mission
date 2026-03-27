@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -51,7 +52,7 @@ public class BasicAuthService implements AuthService {
     // user 객체 존재 확인
     private User validateAndGetUserByUsername(String username) {
         return userRepository.findByUsernameWithStatusAndProfile(username)
-                .orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found."));
+                .orElseThrow(() -> new UserNotFoundException("username", username));
     }
 
     private UserStatus validateAndGetUserStatusByUserId(UUID userId) {

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -131,7 +132,7 @@ public class BasicUserStatusService implements UserStatusService {
     private void validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     private UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {

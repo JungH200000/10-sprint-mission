@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -113,7 +114,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     private Channel validateAndGetChannelByChannelId(UUID channelId) {

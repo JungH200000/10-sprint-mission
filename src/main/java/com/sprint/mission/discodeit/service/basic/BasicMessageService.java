@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -166,7 +167,7 @@ public class BasicMessageService implements MessageService {
     private User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     // Channel ID null & channel 객체 존재 확인

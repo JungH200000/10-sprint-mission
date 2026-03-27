@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -177,7 +178,7 @@ public class BasicChannelService implements ChannelService {
     private User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     private Channel validateAndGetChannelByChannelId(UUID channelId) {

@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
+import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -162,7 +164,7 @@ public class BasicUserService implements UserService {
     private User validateAndGetUserByUserId(UUID userId) {
         ValidationMethods.validateId(userId);
         return userRepository.findByIdWithStatusAndProfile(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
     // email이 이미 존재하는지 확인
