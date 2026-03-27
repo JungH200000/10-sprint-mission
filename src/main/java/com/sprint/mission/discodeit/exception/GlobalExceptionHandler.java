@@ -7,6 +7,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -70,6 +71,25 @@ public class GlobalExceptionHandler {
                 "INVALID_HTTP_REQUEST_BODY",
                 "적합하지 않은 HTTP Request Body입니다.",
                 new HashMap<>(),
+                e.getClass().getSimpleName(),
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleException(MethodArgumentTypeMismatchException e) {
+        log.warn("[EXCEPTION] 요청 파라미터 타입 변환 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+
+        Map<String, Object> details = new HashMap<>();
+        details.put(e.getName(), e.getValue()); // (파라미터 필드 이름, 파라미터 필드 값)
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                Instant.now(),
+                "INVALID_PARAMETER_TYPE",
+                "요청 파라미터 타입이 올바르지 않습니다.",
+                details,
                 e.getClass().getSimpleName(),
                 HttpStatus.BAD_REQUEST.value()
         );
