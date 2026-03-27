@@ -81,7 +81,7 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.save(message);
-        log.info("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
+        log.debug("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }
