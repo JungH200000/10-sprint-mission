@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.message.AttachmentsUploadFailedException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -183,20 +184,12 @@ public class BasicMessageService implements MessageService {
     private Message validateAndGetMessageByMessageId(UUID messageId) {
         ValidationMethods.validateId(messageId);
         return messageRepository.findByIdWithAuthorAndChannel(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+                .orElseThrow(() -> new MessageNotFoundException(messageId));
     }
 
     private void validateAllRequestExistingOrNull(String newContent) {
         if (newContent == null) {
             throw new NoChangeValueException("All UpdateRequestField", null);
-        }
-    }
-
-    // message의 author와 삭제 요청한 user가 동일한지
-    private void verifyMessageAuthor(Message message, UUID userId) {
-        // message author의 id와 삭제 요청한 user id가 동일한지 확인
-        if (!message.getAuthor().getId().equals(userId)) {
-            throw new IllegalStateException("본인이 작성한 메세지만 수정 가능합니다.");
         }
     }
 }
