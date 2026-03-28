@@ -52,7 +52,7 @@ public class BasicUserService implements UserService {
                 binaryContent = new BinaryContent(
                         profile.getOriginalFilename(),
                         profile.getContentType(),
-                        (long) bytes.length
+                        profile.getSize()
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
