@@ -76,7 +76,6 @@ public class BasicUserService implements UserService {
     public UserDto find(UUID userId) {
         log.debug("[USER_FIND] 사용자 조회 시작"); // 단순 조회 -> DEBUG
 
-        // User ID null 검증
         User user = validateAndGetUserByUserId(userId);
         log.debug("[USER_FIND] 사용자 조회 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
 
