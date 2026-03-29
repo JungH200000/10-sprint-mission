@@ -311,7 +311,7 @@ class BasicUserServiceTest {
     class updateUser {
 
         @Test
-        @DisplayName("사용자 ID로 프로필을 제외한 사용자 정보를 업데이트할 수 있다.")
+        @DisplayName("사용자 ID로 프로필을 제외한 사용자 정보를 수정할 수 있다.")
         void success_update_user_without_profile() {
             // given(준비)
             UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
@@ -337,7 +337,7 @@ class BasicUserServiceTest {
         }
 
         @Test
-        @DisplayName("사용자 ID로 모든 사용자 정보를 업데이트할 수 있다.")
+        @DisplayName("사용자 ID로 모든 사용자 정보를 수정할 수 있다.")
         void success_update_user_with_profile() throws IOException {
             // given(준비)
             UUID oldProfileId = UUID.randomUUID();
