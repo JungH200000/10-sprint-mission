@@ -79,7 +79,7 @@ class BasicUserServiceTest {
     class createUser {
 
         @Test
-        @DisplayName("프로필 없는 사용자 등록에 성공해야 한다.")
+        @DisplayName("프로필 없는 사용자를 등록할 수 있다.")
         void success_create_user_without_profile() {
             // given(준비)
             UserCreateRequest request = new UserCreateRequest(email, username, password);
@@ -107,7 +107,7 @@ class BasicUserServiceTest {
         }
 
         @Test
-        @DisplayName("프로필 있는 사용자 등록에 성공해야 한다.")
+        @DisplayName("프로필 있는 사용자를 등록할 수 있다..")
         void success_create_user_with_profile() throws IOException {
             // given(준비)
             UserCreateRequest request = new UserCreateRequest(email, username, password);
