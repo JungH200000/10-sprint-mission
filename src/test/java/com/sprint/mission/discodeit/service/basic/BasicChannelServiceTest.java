@@ -206,13 +206,60 @@ class BasicChannelServiceTest {
     }
 
 
-    @Test
-    void find() {
-        // given(준비)
+    @Nested
+    @DisplayName("채널 단건 조회 테스트")
+    class findChannel {
 
-        // when(실행)
+        @Test
+        @DisplayName("채널 ID로 채널 단건 조회를 할 수 있다.")
+        void success_find_channel() {
+            // given(준비)
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, name, description);
+            ReflectionTestUtils.setField(channel, "id", channelId);
+            ChannelDto expectedChannelDto = new ChannelDto(channelId, channel.getType(), channel.getName(), channel.getDescription(), List.of(), null);
 
-        // then(검증)
+            given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+            given(channelMapper.toDto(channel)).willReturn(expectedChannelDto);
+
+            // when(실행)
+            ChannelDto result = basicChannelService.find(channelId);
+
+            // then(검증)
+            assertEquals(expectedChannelDto, result);
+            assertEquals(expectedChannelDto.type(), result.type());
+            assertEquals(expectedChannelDto.name(), result.name());
+            assertEquals(expectedChannelDto.description(), result.description());
+
+            verify(channelRepository).findById(channelId);
+            verify(channelMapper).toDto(channel);
+        }
+
+        @Test
+        @DisplayName("채널 ID가 null이면 예외가 발생한다.")
+        void fail_find_channel_when_channelId_null() {
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicChannelService.find(null));
+
+            verify(channelRepository, never()).findById(any());
+            verify(channelMapper, never()).toDto(any(Channel.class));
+        }
+
+        @Test
+        @DisplayName("해당 ID를 가진 채널을 찾을 수 없다면 예외가 발생한다.")
+        void fail_find_channel_when_channel_not_found() {
+            // given(준비)
+            UUID channelId = UUID.randomUUID();
+            given(channelRepository.findById(channelId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(ChannelNotFoundException.class,
+                    () -> basicChannelService.find(channelId));
+
+            verify(channelRepository).findById(channelId);
+            verify(channelMapper, never()).toDto(any(Channel.class));
+        }
     }
 
     @Test
