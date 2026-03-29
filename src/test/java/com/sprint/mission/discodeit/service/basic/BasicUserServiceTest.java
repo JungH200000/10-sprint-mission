@@ -212,7 +212,7 @@ class BasicUserServiceTest {
     }
 
     @Nested
-    @DisplayName("사용자 단건 조회")
+    @DisplayName("사용자 단건 조회 테스트")
     class findUser {
 
         @Test
@@ -261,7 +261,7 @@ class BasicUserServiceTest {
     }
 
     @Nested
-    @DisplayName("사용자 목록 조회")
+    @DisplayName("사용자 목록 조회 테스트")
     class findAllUserList {
 
         @Test
@@ -307,7 +307,7 @@ class BasicUserServiceTest {
     }
 
     @Nested
-    @DisplayName("사용자 정보 업데이트")
+    @DisplayName("사용자 정보 수정 테스트")
     class updateUser {
 
         @Test
@@ -638,7 +638,7 @@ class BasicUserServiceTest {
     }
 
     @Nested
-    @DisplayName("사용자 삭제")
+    @DisplayName("사용자 삭제 테스트")
     class deleteUser {
 
         @Test
