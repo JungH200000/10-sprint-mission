@@ -7,10 +7,8 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
-import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
-import com.sprint.mission.discodeit.exception.user.DuplicatedUsernameException;
-import com.sprint.mission.discodeit.exception.user.ProfileUploadFailedException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
+import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -72,8 +70,8 @@ class BasicUserServiceTest {
 
         user = new User(email, username, password, null);
         ReflectionTestUtils.setField(user, "id", userId);
-        expectedUserDto = new UserDto(userId, username, email, null, false);
 
+        expectedUserDto = new UserDto(userId, username, email, null, false);
     }
 
     @Nested
@@ -388,24 +386,252 @@ class BasicUserServiceTest {
             verify(userMapper).toDto(user);
         }
 
-        // user 객체 id = null 일 때
-        // user 객체 not found 일 때
-        // 기존 프로필 이미지 찾을 수 없음
-        // 프로필 이미지 읽기 실패
-        // 프로필 이미지 업로드 실패
-        // 입력값 전부 null 아님
-        // 기존 이메일과 새롭게 만든 게 이메일 중복
-        // 기존 사용자 이름과 새롭게 만든 사용자 입력
-
-        void update() {
+        @Test
+        @DisplayName("사용자 ID가 null 이면 예외가 발생한다.")
+        void fail_update_user_when_userId_null() {
             // given(준비)
-            User user = new User("updateEmail@gmail.com", "updateUsername", "12345", null);
-            // when(실행)
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
 
-            // then(검증)
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicUserService.update(null, request, null));
+
+            verify(userRepository, never()).findByIdWithStatusAndProfile(any());
+            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).findById(any());
+            verify(binaryContentStorage, never()).get(any());
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("해당 ID를 가진 사용자를 찾을 수 없으면 예외가 발생한다.")
+        void fail_update_user_when_user_not_found() {
+            // given(준비)
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.empty());
+
+            // when(실행),  then(검증)
+            assertThrows(UserNotFoundException.class,
+                    () -> basicUserService.update(userId, request, null));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(binaryContentRepository, never()).findById(any());
+            verify(binaryContentStorage, never()).get(any());
+
+            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("기존 프로필을 찾을 수 없으면 예외가 발생한다.")
+        void fail_update_user_when_profile_not_found() throws IOException {
+            // given(준비)
+            UUID oldProfileId = UUID.randomUUID();
+            BinaryContent oldProfile = mock(BinaryContent.class);
+
+            when(oldProfile.getId()).thenReturn(oldProfileId);
+
+            User user = new User(email, username, password, oldProfile);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+
+            MultipartFile newProfileFile = mock(MultipartFile.class);
+            byte[] newProfileBytes = "newProfile".getBytes();
+
+            given(newProfileFile.isEmpty()).willReturn(false);
+            given(newProfileFile.getBytes()).willReturn(newProfileBytes);
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(ProfileNotFoundException.class,
+                    () -> basicUserService.update(userId, request, newProfileFile));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(binaryContentRepository).findById(any());
+            verify(binaryContentStorage, never()).get(any());
+
+            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("프로필 읽는데 실패하면 예외가 발생한다.")
+        void fail_update_user_when_profile_read_fail() throws IOException {
+            // given(준비)
+            UUID oldProfileId = UUID.randomUUID();
+            BinaryContent oldProfile = mock(BinaryContent.class);
+
+            when(oldProfile.getId()).thenReturn(oldProfileId);
+
+            User user = new User(email, username, password, oldProfile);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+
+            MultipartFile newProfileFile = mock(MultipartFile.class);
+            byte[] newProfileBytes = "newProfile".getBytes();
+
+            given(newProfileFile.isEmpty()).willReturn(false);
+            given(newProfileFile.getBytes()).willReturn(newProfileBytes);
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.of(oldProfile));
+
+            InputStream inputStream = mock(InputStream.class);
+            given(binaryContentStorage.get(oldProfileId)).willReturn(inputStream);
+            given(inputStream.readAllBytes()).willThrow(new IOException("파일 읽기 실패"));
+
+            // when(실행), then(검증)
+            assertThrows(ProfileReadFailedException.class,
+                    () -> basicUserService.update(userId, request, newProfileFile));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(binaryContentRepository).findById(any());
+            verify(binaryContentStorage).get(any());
+
+            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("프로필 업로드에 실패하면 예외가 발생한다.")
+        void fail_update_user_when_profile_upload_fail() throws IOException {
+            // given(준비)
+            BinaryContent oldProfile = mock(BinaryContent.class);
+
+            User user = new User(email, username, password, oldProfile);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+
+            MultipartFile newProfileFile = mock(MultipartFile.class);
+
+            given(newProfileFile.isEmpty()).willReturn(false);
+            given(newProfileFile.getBytes()).willThrow(new IOException("파일 읽기 실패"));
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+
+            // when(실행), then(검증)
+            assertThrows(ProfileUploadFailedException.class,
+                    () -> basicUserService.update(userId, request, newProfileFile));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(binaryContentRepository, never()).findById(any());
+            verify(binaryContentStorage, never()).get(any());
+
+            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("입력값이 전부 null이면 예외가 발생한다.")
+        void fail_update_user_when_request_all_field_null() {
+            // given(준비)
+            UserUpdateRequest request = new UserUpdateRequest(null, null, null);
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+
+            // when(실행), then(검증)
+            assertThrows(NoChangeValueException.class,
+                    () -> basicUserService.update(userId, request, null));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(binaryContentRepository, never()).findById(any());
+            verify(binaryContentStorage, never()).get(any());
+
+            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("기존 사용자 이름이 입력된 사용자 이름과 중복되면 예외가 발생한다.")
+        void fail_update_user_when_duplicated_username() {
+            // given(준비)
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(true);
+
+            // when(실행, then(검증)
+            assertThrows(DuplicatedUsernameException.class,
+                    () -> basicUserService.update(userId, request, null));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(userRepository).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
+        }
+
+        @Test
+        @DisplayName("기존 이메일이 입력된 이메일과 중복되면 예외가 발생한다.")
+        void fail_update_user_when_duplicated_email() {
+            // given(준비)
+            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+
+            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(false);
+            given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(true);
+
+            // when(실행, then(검증)
+            assertThrows(DuplicatedEmailException.class,
+                    () -> basicUserService.update(userId, request, null));
+
+            verify(userRepository).findByIdWithStatusAndProfile(any());
+
+            verify(userRepository).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository).isEmailUsedByOther(any(), eq(request.newEmail()));
+
+            verify(binaryContentRepository, never()).save(any(BinaryContent.class));
+            verify(binaryContentStorage, never()).put(any(), any());
+
+            verify(userMapper, never()).toDto(any(User.class));
         }
     }
-
 
     @Nested
     @DisplayName("사용자 삭제")
