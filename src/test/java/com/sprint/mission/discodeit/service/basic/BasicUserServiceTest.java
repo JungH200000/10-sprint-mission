@@ -172,6 +172,7 @@ class BasicUserServiceTest {
             // given(준비)
             UserCreateRequest request = new UserCreateRequest(email, username, password);
 
+            given(userRepository.existsByEmail(request.email())).willReturn(false);
             given(userRepository.existsByUsername(request.username())).willReturn(true);
 
             // when(실행), then(검증)
@@ -291,6 +292,9 @@ class BasicUserServiceTest {
         @Test
         @DisplayName("사용자가 없을 때 사용자 목록 조회 시 빈 목록을 출력할 수 있다.")
         void success_findAll_userList_when_empty_userList() {
+            // give(준비)
+            given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of());
+
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
 
