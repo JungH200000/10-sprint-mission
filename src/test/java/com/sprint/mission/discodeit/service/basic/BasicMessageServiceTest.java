@@ -3,11 +3,15 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
+import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.message.AttachmentsUploadFailedException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -23,7 +27,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -66,27 +75,26 @@ class BasicMessageServiceTest {
     @InjectMocks
     private BasicMessageService basicMessageService;
 
-    UUID authorId;
-    User author;
-    UserDto authorDto;
-    UUID channelId;
-    Channel channel;
-
-    @BeforeEach
-    void setup() {
-        authorId = UUID.randomUUID();
-        author = new User("testUser@gmail.com", "testUser", "1234", null);
-        ReflectionTestUtils.setField(author, "id", authorId);
-        authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
-
-        channelId = UUID.randomUUID();
-        channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
-        ReflectionTestUtils.setField(channel, "id", channelId);
-    }
-
     @Nested
     @DisplayName("메시지 생성 테스트")
     class createMessage {
+        UUID authorId;
+        User author;
+        UserDto authorDto;
+        UUID channelId;
+        Channel channel;
+
+        @BeforeEach
+        void setupCreateMessage() {
+            authorId = UUID.randomUUID();
+            author = new User("testUser@gmail.com", "testUser", "1234", null);
+            ReflectionTestUtils.setField(author, "id", authorId);
+            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
+
+            channelId = UUID.randomUUID();
+            channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+        }
 
         @Test
         @DisplayName("첨부파일이 없는 메시지를 생성할 수 있다.")
@@ -278,7 +286,6 @@ class BasicMessageServiceTest {
         void fail_create_message_when_attachment_upload_fail() throws IOException {
             // given(준비)
             MultipartFile attachment1File = mock(MultipartFile.class);
-            byte[] attachment1Bytes = "attachment1".getBytes();
             given(attachment1File.isEmpty()).willReturn(false);
             given(attachment1File.getBytes()).willThrow(new IOException("파일 업로드 실패"));
 
@@ -307,30 +314,412 @@ class BasicMessageServiceTest {
         }
     }
 
-    @Test
-    void findAllByChannelId() {
-        // given(준비)
+    @Nested
+    @DisplayName("메시지 목록 조회 테스트")
+    class findMessageList {
+        UUID authorId;
+        User author;
+        UserDto authorDto;
 
-        // when(실행)
+        @BeforeEach
+        void setupCreateMessage() {
+            authorId = UUID.randomUUID();
+            author = new User("testUser@gmail.com", "testUser", "1234", null);
+            ReflectionTestUtils.setField(author, "id", authorId);
+            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
+        }
 
-        // then(검증)
+        @Test
+        @DisplayName("특정 채널의 전체 메시지 목록을 페이지네이션으로 조회할 수 있다.")
+        void success_find_message_list() {
+            // given(준비)
+            Instant cursor = Instant.now();
+            Pageable pageable = PageRequest.of(0, 2);
+
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+
+            given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+
+            UUID messageId1 = UUID.randomUUID();
+            UUID messageId2 = UUID.randomUUID();
+            UUID messageId3 = UUID.randomUUID();
+
+            Instant createdAt1 = Instant.parse("2026-03-30T10:00:00Z");
+            Instant createdAt2 = Instant.parse("2026-03-30T09:00:00Z");
+            Instant createdAt3 = Instant.parse("2026-03-30T08:00:00Z");
+
+            Message message1 = new Message(channel, author, "message1");
+            Message message2 = new Message(channel, author, "message2");
+            Message message3 = new Message(channel, author, "message3");
+
+            ReflectionTestUtils.setField(message1, "id", messageId1);
+            ReflectionTestUtils.setField(message2, "id", messageId2);
+            ReflectionTestUtils.setField(message3, "id", messageId3);
+
+            ReflectionTestUtils.setField(message1, "createdAt", createdAt1);
+            ReflectionTestUtils.setField(message2, "createdAt", createdAt2);
+            ReflectionTestUtils.setField(message3, "createdAt", createdAt3);
+
+            Slice<Message> messageSlice = new SliceImpl<>(List.of(message1, message2, message3), pageable, true);
+
+            given(messageRepository.findAllByChannelId(channelId, cursor, pageable)).willReturn(messageSlice);
+
+
+            MessageDto messageDto1 = new MessageDto(messageId1, message1.getCreatedAt(), null, message1.getContent(), message1.getChannel().getId(), authorDto, null);
+            MessageDto messageDto2 = new MessageDto(messageId2, message2.getCreatedAt(), null, message2.getContent(), message2.getChannel().getId(), authorDto, null);
+            MessageDto messageDto3 = new MessageDto(messageId3, message3.getCreatedAt(), null, message3.getContent(), message3.getChannel().getId(), authorDto, null);
+
+            given(messageMapper.toDto(message1)).willReturn(messageDto1);
+            given(messageMapper.toDto(message2)).willReturn(messageDto2);
+            given(messageMapper.toDto(message3)).willReturn(messageDto3);
+
+            Slice<MessageDto> messageDtoSlice = new SliceImpl<>(List.of(messageDto1, messageDto2, messageDto3), pageable, true);
+
+            PageResponse<MessageDto> expectedMessageDtoPageResponse = new PageResponse<>(messageDtoSlice.getContent(), createdAt3, messageDtoSlice.getSize(), messageDtoSlice.hasNext(), null);
+            given(pageResponseMapper.fromSlice(Mockito.<Slice<MessageDto>>any(), eq(createdAt3))).willReturn(expectedMessageDtoPageResponse);
+
+
+            // when(실행)
+            PageResponse<MessageDto> result = basicMessageService.findAllByChannelId(channelId, cursor, pageable);
+
+            // then(검증)
+            assertEquals(expectedMessageDtoPageResponse, result);
+
+            verify(channelRepository).findById(channelId);
+            verify(messageRepository).findAllByChannelId(channelId, cursor, pageable);
+
+            verify(messageMapper, times(3)).toDto(any(Message.class));
+            verify(pageResponseMapper).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(createdAt3));
+        }
+
+        @Test
+        @DisplayName("특정 채널의 빈 메시지 목록을 조회할 수 있다.")
+        void success_find_empty_message_list() {
+            // given(준비)
+            Instant cursor = Instant.now();
+            Pageable pageable = PageRequest.of(0, 2);
+
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+
+            given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+
+            Slice<Message> messageSlice = new SliceImpl<>(List.of(), pageable, false);
+
+            given(messageRepository.findAllByChannelId(channelId, cursor, pageable)).willReturn(messageSlice);
+
+            Slice<MessageDto> messageDtoSlice = new SliceImpl<>(List.of(), pageable, false);
+            PageResponse<MessageDto> expectedMessageDtoPageResponse = new PageResponse<>(messageDtoSlice.getContent(), null, messageDtoSlice.getSize(), messageDtoSlice.hasNext(), null);
+
+            given(pageResponseMapper.fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null))).willReturn(expectedMessageDtoPageResponse);
+
+            // when(실행)
+            PageResponse<MessageDto> result = basicMessageService.findAllByChannelId(channelId, cursor, pageable);
+
+            // then(검증)
+            assertEquals(expectedMessageDtoPageResponse, result);
+
+            verify(channelRepository).findById(channelId);
+            verify(messageRepository).findAllByChannelId(channelId, cursor, pageable);
+
+            verify(messageMapper, never()).toDto(any(Message.class));
+            verify(pageResponseMapper).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
+        }
+
+        @Test
+        @DisplayName("채널 ID가 null이면 예외가 발생한다.")
+        void fail_find_message_list_when_channelId_null() {
+            // given(준비)
+            Instant cursor = Instant.now();
+            Pageable pageable = PageRequest.of(0, 2);
+
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicMessageService.findAllByChannelId(null, cursor, pageable));
+
+            verify(channelRepository, never()).findById(null);
+            verify(messageRepository, never()).findAllByChannelId(null, cursor, pageable);
+
+            verify(messageMapper, never()).toDto(any(Message.class));
+            verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
+        }
+
+        @Test
+        @DisplayName("해당 채널 ID를 가진 채널이 없으면 예외가 발생한다.")
+        void fail_find_message_list_when_channel_not_found() {
+            // given(준비)
+            Instant cursor = Instant.now();
+            Pageable pageable = PageRequest.of(0, 2);
+
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+
+            given(channelRepository.findById(channelId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(ChannelNotFoundException.class,
+                    () -> basicMessageService.findAllByChannelId(channelId, cursor, pageable));
+
+            verify(channelRepository).findById(channelId);
+            verify(messageRepository, never()).findAllByChannelId(null, cursor, pageable);
+
+            verify(messageMapper, never()).toDto(any(Message.class));
+            verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
+        }
     }
 
-    @Test
-    void update() {
-        // given(준비)
+    @Nested
+    @DisplayName("메시지 수정 테스트")
+    class updateMessage {
+        UUID authorId;
+        User author;
+        UserDto authorDto;
+        UUID channelId;
+        Channel channel;
 
-        // when(실행)
+        @BeforeEach
+        void setupCreateMessage() {
+            authorId = UUID.randomUUID();
+            author = new User("testUser@gmail.com", "testUser", "1234", null);
+            ReflectionTestUtils.setField(author, "id", authorId);
+            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
 
-        // then(검증)
+            channelId = UUID.randomUUID();
+            channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+        }
+
+        @Test
+        @DisplayName("메시지 ID로 메시지를 수정할 수 있다.")
+        void success_update_message() {
+            // given(준비)
+            MessageUpdateRequest request = new MessageUpdateRequest("수정된 testMessageContent입니다.");
+
+            UUID messageId = UUID.randomUUID();
+            Message message = new Message(channel, author, "testMessageContent입니다.");
+            ReflectionTestUtils.setField(message, "id", messageId);
+
+            MessageDto expectedMessageDto = new MessageDto(messageId, message.getCreatedAt(), message.getUpdatedAt(), message.getContent(), message.getChannel().getId(), authorDto, null);
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn(Optional.of(message));
+            given(messageMapper.toDto(any(Message.class))).willReturn(expectedMessageDto);
+
+            // when(실행)
+            MessageDto result = basicMessageService.update(messageId, request);
+
+            // then(검증)
+            assertEquals(expectedMessageDto, result);
+
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(messageMapper).toDto(any(Message.class));
+        }
+
+        @Test
+        @DisplayName("메시지 ID가 null이면 예외가 발생한다.")
+        void fail_update_message_when_messageId_null() {
+            // given(준비)
+            MessageUpdateRequest request = new MessageUpdateRequest("수정된 testMessageContent입니다.");
+
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicMessageService.update(null, request));
+
+            verify(messageRepository, never()).findByIdWithAuthorAndChannel(any());
+            verify(messageMapper, never()).toDto(any(Message.class));
+        }
+
+        @Test
+        @DisplayName("메시지 ID로 메시지를 찾을 수 없으면 예외가 발생한다.")
+        void fail_update_message_when_message_not_found() {
+            // given(준비)
+            MessageUpdateRequest request = new MessageUpdateRequest("수정된 testMessageContent입니다.");
+
+            UUID messageId = UUID.randomUUID();
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(MessageNotFoundException.class,
+                    () -> basicMessageService.update(messageId, request));
+
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(messageMapper, never()).toDto(any(Message.class));
+        }
+
+        @Test
+        @DisplayName("입력된 메시지 내용이 null이면 예외가 발생한다.")
+        void fail_update_message_when_message_content_null() {
+            // given(준비)
+            MessageUpdateRequest request = new MessageUpdateRequest(null);
+
+            UUID messageId = UUID.randomUUID();
+            Message message = new Message(channel, author, request.newContent());
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn(Optional.of(message));
+
+            // when(실행), then(검증)
+            assertThrows(NoChangeValueException.class,
+                    () -> basicMessageService.update(messageId, request));
+
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(messageMapper, never()).toDto(any(Message.class));
+        }
     }
 
-    @Test
-    void delete() {
-        // given(준비)
+    @Nested
+    @DisplayName("메시지 삭제 테스트")
+    class deleteMessage {
+        UUID authorId;
+        User author;
+        UUID messageId;
 
-        // when(실행)
+        @BeforeEach
+        void setupDeleteMessage() {
+            authorId = UUID.randomUUID();
+            author = new User("testUser@gmail.com", "testUser", "1234", null);
+            ReflectionTestUtils.setField(author, "id", authorId);
 
-        // then(검증)
+            messageId = UUID.randomUUID();
+        }
+
+        @Test
+        @DisplayName("메시지 ID로 첨부파일이 없는 메시지를 삭제할 수 있다.")
+        void success_delete_message_without_attachments() {
+            // given(준비)
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+
+            Message message = new Message(channel, author, "testMessageContent입니다.");
+            ReflectionTestUtils.setField(message, "id", messageId);
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn((Optional.of(message)));
+            given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+
+            // when(실행)
+            basicMessageService.delete(messageId);
+
+            // then(검증)
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(channelRepository).findById(channelId);
+
+            verify(messageRepository).deleteById(messageId);
+        }
+
+        @Test
+        @DisplayName("메시지 ID로 첨부파일이 있는 메시지를 삭제할 수 있다.")
+        void success_delete_message_with_attachments() {
+            // given(준비)
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+
+            Message message = new Message(channel, author, "testMessageContent입니다.");
+            ReflectionTestUtils.setField(message, "id", messageId);
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn((Optional.of(message)));
+            given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+
+            BinaryContent attachment1 = mock(BinaryContent.class);
+            BinaryContent attachment2 = mock(BinaryContent.class);
+            message.addAttachment(attachment1);
+            message.addAttachment(attachment2);
+
+            // when(실행)
+            basicMessageService.delete(messageId);
+
+            // then(검증)
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(channelRepository).findById(channelId);
+
+            verify(binaryContentRepository).deleteAll(message.getAttachments());
+            verify(messageRepository).deleteById(messageId);
+        }
+
+        @Test
+        @DisplayName("메시지 ID가 null이면 예외가 발생한다.")
+        void fail_delete_message_when_messageId_null() {
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicMessageService.delete(null));
+
+            verify(messageRepository, never()).findByIdWithAuthorAndChannel(null);
+            verify(channelRepository, never()).findById(any());
+
+            verify(binaryContentRepository, never()).deleteAll(anyList());
+            verify(messageRepository, never()).deleteById(any());
+        }
+
+        @Test
+        @DisplayName("해당 ID로 메시지를 찾을 없으면 예외가 발생한다.")
+        void fail_delete_message_when_message_not_found() {
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(MessageNotFoundException.class,
+                    () -> basicMessageService.delete(messageId));
+
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(channelRepository, never()).findById(any());
+
+            verify(binaryContentRepository, never()).deleteAll(anyList());
+            verify(messageRepository, never()).deleteById(any());
+
+        }
+
+        @Test
+        @DisplayName("채널 ID가 null이면 예외가 발생한다.")
+        void fail_delete_message_when_channelId_null() {
+            // given(준비)
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", null);
+
+            Message message = new Message(channel, author, "testMessageContent입니다.");
+            ReflectionTestUtils.setField(message, "id", messageId);
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn(Optional.of(message));
+
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicMessageService.delete(messageId));
+
+
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(channelRepository, never()).findById(any());
+
+            verify(binaryContentRepository, never()).deleteAll(anyList());
+            verify(messageRepository, never()).deleteById(any());
+        }
+
+        @Test
+        @DisplayName("해당 ID로 채널을 찾을 없으면 예외가 발생한다.")
+        void fail_delete_message_when_channel_not_found() {
+            // given(준비)
+            UUID channelId = UUID.randomUUID();
+            Channel channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
+            ReflectionTestUtils.setField(channel, "id", channelId);
+
+            Message message = new Message(channel, author, "testMessageContent입니다.");
+            ReflectionTestUtils.setField(message, "id", messageId);
+
+            given(messageRepository.findByIdWithAuthorAndChannel(messageId)).willReturn(Optional.of(message));
+            given(channelRepository.findById(channelId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(ChannelNotFoundException.class,
+                    () -> basicMessageService.delete(messageId));
+
+
+            verify(messageRepository).findByIdWithAuthorAndChannel(messageId);
+            verify(channelRepository).findById(channelId);
+
+            verify(binaryContentRepository, never()).deleteAll(anyList());
+            verify(messageRepository, never()).deleteById(any());
+        }
+
     }
 }
