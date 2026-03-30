@@ -443,10 +443,10 @@ class BasicMessageServiceTest {
                     () -> basicMessageService.findAllByChannelId(null, cursor, pageable));
 
             verify(channelRepository, never()).findById(any());
-            verify(messageRepository, never()).findAllByChannelId(any(), eq(cursor), eq(pageable));
+            verify(messageRepository, never()).findAllByChannelId(any(), any(), any());
 
             verify(messageMapper, never()).toDto(any(Message.class));
-            verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
+            verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), any());
         }
 
         @Test
@@ -467,10 +467,10 @@ class BasicMessageServiceTest {
                     () -> basicMessageService.findAllByChannelId(channelId, cursor, pageable));
 
             verify(channelRepository).findById(channelId);
-            verify(messageRepository, never()).findAllByChannelId(null, cursor, pageable);
+            verify(messageRepository, never()).findAllByChannelId(any(), any(), any());
 
             verify(messageMapper, never()).toDto(any(Message.class));
-            verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
+            verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), any());
         }
     }
 
