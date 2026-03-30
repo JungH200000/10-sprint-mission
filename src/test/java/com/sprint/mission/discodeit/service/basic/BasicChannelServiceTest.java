@@ -358,6 +358,38 @@ class BasicChannelServiceTest {
         }
 
         @Test
+        @DisplayName("특정 사용자에게 볼 수 있는 채널이 없을 때 빈 채널 목록을 출력할 수 있다.")
+        void success_find_empty_channel_list() {
+            // given(준비)
+            UUID userId = UUID.randomUUID();
+
+            User user = new User("test@gmail.com", "test", "1234", null);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            UserDto userDto = new UserDto(userId, user.getUsername(), user.getEmail(), null, true);
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+            given(channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId)).willReturn(List.of());
+            given(messageRepository.findLastMessageAtDtoByChannelIds(List.of())).willReturn(List.of());
+            given(readStatusRepository.findAllByChannelIdsWithUserAndChannel(List.of())).willReturn(List.of());
+
+            List<ChannelDto> expectedChannelDtoList = List.of();
+
+            // when(실행)
+            List<ChannelDto> result = basicChannelService.findAllByUserId(userId);
+
+            // then(검증)
+            assertEquals(expectedChannelDtoList, result);
+
+            verify(userRepository).findById(userId);
+            verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
+            verify(messageRepository).findLastMessageAtDtoByChannelIds(anyList());
+            verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(anyList());
+            verify(userMapper, never()).toDto(any(User.class));
+            verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
+        }
+
+        @Test
         @DisplayName("사용자 ID가 null이면 예외가 발생한다.")
         void fail_channel_list_when_userId_null() {
             // when(실행), then(검증)
