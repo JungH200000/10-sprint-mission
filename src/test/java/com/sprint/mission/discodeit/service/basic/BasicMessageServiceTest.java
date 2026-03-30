@@ -395,7 +395,7 @@ class BasicMessageServiceTest {
         }
 
         @Test
-        @DisplayName("특정 채널의 빈 메시지 목록을 조회할 수 있다.")
+        @DisplayName("특정 채널에 메시지가 없을 때 목록 조회 시 빈 메시지 목록을 출력할 수 있다.")
         void success_find_empty_message_list() {
             // given(준비)
             Instant cursor = Instant.now();
@@ -440,8 +440,8 @@ class BasicMessageServiceTest {
             assertThrows(InvalidInputException.class,
                     () -> basicMessageService.findAllByChannelId(null, cursor, pageable));
 
-            verify(channelRepository, never()).findById(null);
-            verify(messageRepository, never()).findAllByChannelId(null, cursor, pageable);
+            verify(channelRepository, never()).findById(any());
+            verify(messageRepository, never()).findAllByChannelId(any(), eq(cursor), eq(pageable));
 
             verify(messageMapper, never()).toDto(any(Message.class));
             verify(pageResponseMapper, never()).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
