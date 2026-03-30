@@ -316,7 +316,7 @@ class BasicUserServiceTest {
         UserUpdateRequest request;
 
         @BeforeEach
-        void setupUpdateUser() {
+        void setUpUpdateUser() {
             request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
         }
 

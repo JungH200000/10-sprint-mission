@@ -85,7 +85,7 @@ class BasicMessageServiceTest {
         Channel channel;
 
         @BeforeEach
-        void setupCreateMessage() {
+        void setUpCreateMessage() {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);
@@ -322,7 +322,7 @@ class BasicMessageServiceTest {
         UserDto authorDto;
 
         @BeforeEach
-        void setupCreateMessage() {
+        void setUpCreateMessage() {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);
@@ -484,7 +484,7 @@ class BasicMessageServiceTest {
         Channel channel;
 
         @BeforeEach
-        void setupCreateMessage() {
+        void setUpCreateMessage() {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);
@@ -580,7 +580,7 @@ class BasicMessageServiceTest {
         UUID messageId;
 
         @BeforeEach
-        void setupDeleteMessage() {
+        void setUpDeleteMessage() {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);

@@ -68,7 +68,7 @@ class BasicChannelServiceTest {
     private String description;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         name = "testChannel";
         description = "test channel 입니다.";
     }
@@ -111,7 +111,7 @@ class BasicChannelServiceTest {
         private User user2;
 
         @BeforeEach
-        void setupPrivateChannel() {
+        void setUpPrivateChannel() {
             user1 = new User("test1@gmail.com", "test1", "1234", null);
             user2 = new User("test2@gmail.com", "test2", "1234", null);
         }
@@ -537,7 +537,7 @@ class BasicChannelServiceTest {
         UUID channelId;
 
         @BeforeEach
-        void setupDeleteChannel() {
+        void setUpDeleteChannel() {
             channelId = UUID.randomUUID();
         }
 
