@@ -113,23 +113,27 @@ class BasicUserServiceTest {
             UserCreateRequest request = new UserCreateRequest(email, username, password);
 
             // profile Mock
-            MultipartFile profile = mock(MultipartFile.class);
+            MultipartFile profileFile = mock(MultipartFile.class);
             byte[] profileBytes = "test".getBytes();
 
-            given(profile.isEmpty()).willReturn(false);
-            given(profile.getBytes()).willReturn(profileBytes);
-            given(profile.getOriginalFilename()).willReturn("profile");
-            given(profile.getContentType()).willReturn("image/png");
+            given(profileFile.isEmpty()).willReturn(false);
+            given(profileFile.getBytes()).willReturn(profileBytes);
+            given(profileFile.getOriginalFilename()).willReturn("profile");
+            given(profileFile.getContentType()).willReturn("image/png");
 
-            BinaryContentDto profileDto = new BinaryContentDto(null, profile.getOriginalFilename(), profile.getSize(), profile.getContentType());
-            UserDto expectedUserDto = new UserDto(null, "test1", "test1@gmail.com", profileDto, false);
+            UUID profileId = UUID.randomUUID();
+            BinaryContent profile = new BinaryContent(profileFile.getOriginalFilename(), profileFile.getContentType(), profileFile.getSize());
+            ReflectionTestUtils.setField(profile, "id", profileId);
+
+            BinaryContentDto profileDto = new BinaryContentDto(profileId, profileFile.getOriginalFilename(), profileFile.getSize(), profileFile.getContentType());
+            UserDto expectedUserDto = new UserDto(userId, request.username(), request.email(), profileDto, false);
 
             given(userRepository.existsByEmail(request.email())).willReturn(false);
             given(userRepository.existsByUsername(request.username())).willReturn(false);
             given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
 
             // when(실행)
-            UserDto result = basicUserService.create(request, profile);
+            UserDto result = basicUserService.create(request, profileFile);
 
             // then(검증)
             assertEquals(expectedUserDto, result);
