@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.ChannelLastMessageAtDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -31,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -265,13 +267,129 @@ class BasicChannelServiceTest {
         }
     }
 
-    @Test
-    void findAllByUserId() {
-        // given(준비)
+    @Nested
+    @DisplayName("사용자가 볼 수 있는 채널 목록 조회 테스트")
+    class findChannelList {
 
-        // when(실행)
+        @Test
+        @DisplayName("특정 사용자가 채널 목록을 조회할 수 있다.")
+        void success_find_channel_list() {
+            // given(준비)
+            UUID userId = UUID.randomUUID();
 
-        // then(검증)
+            User user = new User("test@gmail.com", "test", "1234", null);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            UserDto userDto = new UserDto(userId, user.getUsername(), user.getEmail(), null, true);
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+            UUID channelId1 = UUID.randomUUID();
+            UUID channelId2 = UUID.randomUUID();
+            UUID channelId3 = UUID.randomUUID();
+            UUID channelId4 = UUID.randomUUID();
+
+            Channel channel1 = new Channel(ChannelType.PUBLIC, "testChannel1", "test channel1입니다.");
+            Channel channel2 = new Channel(ChannelType.PUBLIC, "testChannel2", "test channel2입니다.");
+            Channel channel3 = new Channel(ChannelType.PRIVATE, null, null);
+            Channel channel4 = new Channel(ChannelType.PRIVATE, null, null);
+
+            ReflectionTestUtils.setField(channel1, "id", channelId1);
+            ReflectionTestUtils.setField(channel2, "id", channelId2);
+            ReflectionTestUtils.setField(channel3, "id", channelId3);
+            ReflectionTestUtils.setField(channel4, "id", channelId4);
+
+            List<Channel> channelList = List.of(channel1, channel2, channel3, channel4);
+            List<UUID> channelIds = List.of(channelId1, channelId2, channelId3, channelId4);
+            List<UUID> privateChannelIds = List.of(channelId3, channelId4);
+
+            given(channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId)).willReturn(channelList);
+
+            List<ChannelLastMessageAtDto> channelLastMessageAtDtoList = List.of(
+                    new ChannelLastMessageAtDto(channelId1, Instant.now()),
+                    new ChannelLastMessageAtDto(channelId2, Instant.now()),
+                    new ChannelLastMessageAtDto(channelId3, Instant.now()),
+                    new ChannelLastMessageAtDto(channelId4, Instant.now())
+            );
+
+            given(messageRepository.findLastMessageAtDtoByChannelIds(channelIds)).willReturn(channelLastMessageAtDtoList);
+
+            UUID readStatusId3 = UUID.randomUUID();
+            UUID readStatusId4 = UUID.randomUUID();
+
+            ReadStatus readStatus3 = new ReadStatus(user, channel3, null);
+            ReadStatus readStatus4 = new ReadStatus(user, channel4, Instant.now());
+
+            ReflectionTestUtils.setField(readStatus3, "id", readStatusId3);
+            ReflectionTestUtils.setField(readStatus4, "id", readStatusId4);
+            List<ReadStatus> readStatusList = List.of(readStatus3, readStatus4);
+
+            given(readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds)).willReturn(readStatusList);
+
+            given(userMapper.toDto(user)).willReturn(userDto);
+
+            ChannelDto channelDto1 = new ChannelDto(channelId1, channel1.getType(), channel1.getName(), channel1.getDescription(), List.of(), Instant.now());
+            ChannelDto channelDto2 = new ChannelDto(channelId2, channel2.getType(), channel2.getName(), channel2.getDescription(), List.of(), null);
+            ChannelDto channelDto3 = new ChannelDto(channelId3, channel3.getType(), channel3.getName(), channel3.getDescription(), List.of(userDto), Instant.now());
+            ChannelDto channelDto4 = new ChannelDto(channelId4, channel4.getType(), channel4.getName(), channel4.getDescription(), List.of(userDto), null);
+
+            given(channelMapper.toListDto(eq(channel1), anyMap(), anyMap())).willReturn(channelDto1);
+            given(channelMapper.toListDto(eq(channel2), anyMap(), anyMap())).willReturn(channelDto2);
+            given(channelMapper.toListDto(eq(channel3), anyMap(), anyMap())).willReturn(channelDto3);
+            given(channelMapper.toListDto(eq(channel4), anyMap(), anyMap())).willReturn(channelDto4);
+            List<ChannelDto> expectedChannelDtoList = List.of(channelDto1, channelDto2, channelDto3, channelDto4);
+
+            // when(실행)
+            List<ChannelDto> result = basicChannelService.findAllByUserId(userId);
+
+            // then(검증)
+            assertEquals(expectedChannelDtoList, result);
+            assertEquals(expectedChannelDtoList.get(0), result.get(0));
+            assertEquals(expectedChannelDtoList.get(1), result.get(1));
+            assertEquals(expectedChannelDtoList.get(2), result.get(2));
+            assertEquals(expectedChannelDtoList.get(3), result.get(3));
+
+            verify(userRepository).findById(userId);
+            verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
+            verify(messageRepository).findLastMessageAtDtoByChannelIds(channelIds);
+            verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(privateChannelIds);
+            verify(userMapper, times(2)).toDto(user);
+            verify(channelMapper, times(4)).toListDto(any(Channel.class), anyMap(), anyMap());
+        }
+
+        @Test
+        @DisplayName("사용자 ID가 null이면 예외가 발생한다.")
+        void fail_channel_list_when_userId_null() {
+            // when(실행), then(검증)
+            assertThrows(InvalidInputException.class,
+                    () -> basicChannelService.findAllByUserId(null));
+
+            verify(userRepository, never()).findById(any());
+            verify(channelRepository, never()).findChannelByUserId(eq(ChannelType.PUBLIC), any());
+            verify(messageRepository, never()).findLastMessageAtDtoByChannelIds(any());
+            verify(readStatusRepository, never()).findAllByChannelIdsWithUserAndChannel(any());
+            verify(userMapper, never()).toDto(any(User.class));
+            verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
+        }
+
+        @Test
+        @DisplayName("해당 ID로 사용자를 찾을 수 없으면 예외가 발생한다.")
+        void fail_channel_list_when_user_not_found() {
+            // given(준비)
+            UUID userId = UUID.randomUUID();
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+            // when(실행), then(검증)
+            assertThrows(UserNotFoundException.class,
+                    () -> basicChannelService.findAllByUserId(userId));
+
+            verify(userRepository).findById(userId);
+            verify(channelRepository, never()).findChannelByUserId(eq(ChannelType.PUBLIC), any());
+            verify(messageRepository, never()).findLastMessageAtDtoByChannelIds(any());
+            verify(readStatusRepository, never()).findAllByChannelIdsWithUserAndChannel(any());
+            verify(userMapper, never()).toDto(any(User.class));
+            verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
+        }
     }
 
     @Nested
