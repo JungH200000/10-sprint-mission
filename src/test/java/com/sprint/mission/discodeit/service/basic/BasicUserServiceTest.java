@@ -313,12 +313,17 @@ class BasicUserServiceTest {
     @Nested
     @DisplayName("사용자 정보 수정 테스트")
     class updateUser {
+        UserUpdateRequest request;
+
+        @BeforeEach
+        void setupUpdateUser() {
+            request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
+        }
 
         @Test
         @DisplayName("사용자 ID로 프로필을 제외한 사용자 정보를 수정할 수 있다.")
         void success_update_user_without_profile() {
             // given(준비)
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
             UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", null, false);
 
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
@@ -352,8 +357,6 @@ class BasicUserServiceTest {
 
             User user = new User(email, username, password, oldProfile);
             ReflectionTestUtils.setField(user, "id", userId);
-
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
 
             MultipartFile newProfileFile = mock(MultipartFile.class);
             byte[] newProfileBytes = "newProfile".getBytes();
@@ -397,9 +400,6 @@ class BasicUserServiceTest {
         @Test
         @DisplayName("사용자 ID가 null 이면 예외가 발생한다.")
         void fail_update_user_when_userId_null() {
-            // given(준비)
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
-
             // when(실행), then(검증)
             assertThrows(InvalidInputException.class,
                     () -> basicUserService.update(null, request, null));
@@ -420,9 +420,6 @@ class BasicUserServiceTest {
         @Test
         @DisplayName("해당 ID를 가진 사용자를 찾을 수 없으면 예외가 발생한다.")
         void fail_update_user_when_user_not_found() {
-            // given(준비)
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
-
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.empty());
 
             // when(실행),  then(검증)
@@ -454,8 +451,6 @@ class BasicUserServiceTest {
 
             User user = new User(email, username, password, oldProfile);
             ReflectionTestUtils.setField(user, "id", userId);
-
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
 
             MultipartFile newProfileFile = mock(MultipartFile.class);
             byte[] newProfileBytes = "newProfile".getBytes();
@@ -495,8 +490,6 @@ class BasicUserServiceTest {
 
             User user = new User(email, username, password, oldProfile);
             ReflectionTestUtils.setField(user, "id", userId);
-
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
 
             MultipartFile newProfileFile = mock(MultipartFile.class);
             byte[] newProfileBytes = "newProfile".getBytes();
@@ -538,8 +531,6 @@ class BasicUserServiceTest {
             User user = new User(email, username, password, oldProfile);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
-
             MultipartFile newProfileFile = mock(MultipartFile.class);
 
             given(newProfileFile.isEmpty()).willReturn(false);
@@ -569,7 +560,7 @@ class BasicUserServiceTest {
         @DisplayName("입력값이 전부 null이면 예외가 발생한다.")
         void fail_update_user_when_request_all_field_null() {
             // given(준비)
-            UserUpdateRequest request = new UserUpdateRequest(null, null, null);
+            request = new UserUpdateRequest(null, null, null);
 
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
 
@@ -595,8 +586,6 @@ class BasicUserServiceTest {
         @DisplayName("기존 사용자 이름이 입력된 사용자 이름과 중복되면 예외가 발생한다.")
         void fail_update_user_when_duplicated_username() {
             // given(준비)
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
-
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(true);
 
@@ -619,8 +608,6 @@ class BasicUserServiceTest {
         @DisplayName("기존 이메일이 입력된 이메일과 중복되면 예외가 발생한다.")
         void fail_update_user_when_duplicated_email() {
             // given(준비)
-            UserUpdateRequest request = new UserUpdateRequest("updateEmail@gmail.com", "12345", "updateUsername");
-
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(true);
