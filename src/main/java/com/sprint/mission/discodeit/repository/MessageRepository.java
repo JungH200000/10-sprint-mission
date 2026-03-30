@@ -40,13 +40,4 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             "WHERE c.id = :channelId AND m.createdAt < :createdAt " +
             "ORDER BY m.createdAt DESC, m.id DESC")
     Slice<Message> findAllByChannelId(@Param("channelId") UUID channelId, @Param("createdAt") Instant createdAt, Pageable pageable);
-
-    @Query(value = "SELECT DISTINCT m FROM Message AS m " +
-            "LEFT JOIN FETCH m.channel " +
-            "LEFT JOIN FETCH m.author " +
-            "LEFT JOIN FETCH m.attachments " +
-            "WHERE m.author.id = :authorId")
-    List<Message> findAllByAuthorId(@Param("authorId") UUID authorId);
-
-    void deleteAllByChannelId(UUID channelId);
 }
