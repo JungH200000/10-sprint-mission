@@ -386,6 +386,7 @@ class BasicMessageServiceTest {
 
             // then(검증)
             assertEquals(expectedMessageDtoPageResponse, result);
+            assertEquals(3, result.content().size());
 
             verify(channelRepository).findById(channelId);
             verify(messageRepository).findAllByChannelId(channelId, cursor, pageable);
@@ -421,6 +422,7 @@ class BasicMessageServiceTest {
 
             // then(검증)
             assertEquals(expectedMessageDtoPageResponse, result);
+            assertEquals(0, result.content().size());
 
             verify(channelRepository).findById(channelId);
             verify(messageRepository).findAllByChannelId(channelId, cursor, pageable);

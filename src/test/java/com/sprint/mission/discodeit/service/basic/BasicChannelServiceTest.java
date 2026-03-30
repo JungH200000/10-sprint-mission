@@ -344,6 +344,8 @@ class BasicChannelServiceTest {
 
             // then(검증)
             assertEquals(expectedChannelDtoList, result);
+            assertEquals(4, result.size());
+
             assertEquals(expectedChannelDtoList.get(0), result.get(0));
             assertEquals(expectedChannelDtoList.get(1), result.get(1));
             assertEquals(expectedChannelDtoList.get(2), result.get(2));
@@ -380,6 +382,7 @@ class BasicChannelServiceTest {
 
             // then(검증)
             assertEquals(expectedChannelDtoList, result);
+            assertEquals(0, result.size());
 
             verify(userRepository).findById(userId);
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
