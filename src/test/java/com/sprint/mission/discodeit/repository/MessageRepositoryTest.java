@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.dto.message.ChannelLastMessageAtDto;
 import com.sprint.mission.discodeit.entity.*;
+import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,16 +63,15 @@ class MessageRepositoryTest {
         userRepository.deleteAll();
 
         now = Instant.now();
-        nowMinus5 = now.minusSeconds(5);
-        nowMinus10 = now.minusSeconds(10);
+        nowMinus5 = now.minus(5, ChronoUnit.MINUTES);
+        nowMinus10 = now.minus(10, ChronoUnit.MINUTES);
     }
 
     private User createUser(String email, String username, String password, BinaryContent profile, Instant lastActiveAt) {
         User author = new User(email, username, password, profile);
 
         if (lastActiveAt != null) {
-            UserStatus userStatus = new UserStatus(author, lastActiveAt);
-//            userStatusRepository.save(userStatus);
+            new UserStatus(author, lastActiveAt);
         }
 
         return userRepository.save(author);
@@ -118,14 +118,12 @@ class MessageRepositoryTest {
         testEntityManager.clear();
 
         // when(실행)
-        Optional<Message> result = messageRepository.findByIdWithAuthorAndChannel(message.getId());
+        Message result = messageRepository.findByIdWithAuthorAndChannel(message.getId()).orElseThrow();
 
-        // then(검증)
-        assertThat(result).isPresent();
-        assertEquals(result.get().getId(), message.getId());
-        assertEquals(message.getAuthor().getId(), result.get().getAuthor().getId());
-        assertEquals(message.getChannel().getId(), result.get().getChannel().getId());
-        assertEquals(message.getAttachments().size(), result.get().getAttachments().size());
+        // then(검증)(fetch join) - 지금 이 연관 객체/컬렉션이 이미 초기화되어 있는지 검증
+        assertThat(Hibernate.isInitialized(result.getAuthor())).isTrue();
+        assertThat(Hibernate.isInitialized(result.getChannel())).isTrue();
+        assertThat(Hibernate.isInitialized(result.getAttachments())).isTrue();
     }
 
     @Test
@@ -139,10 +137,10 @@ class MessageRepositoryTest {
         Channel channel2 = createChannel(ChannelType.PRIVATE, "test2Channel", "test2Channel입니다.");
         Channel channel3 = createChannel(ChannelType.PRIVATE, "test3Channel", "test3Channel입니다.");
 
-        createMessage(channel1, author1, "test1MessageContent", null);
-        createMessage(channel1, author2, "test2MessageContent", null);
-        createMessage(channel2, author1, "test3MessageContent", null);
-        createMessage(channel2, author1, "test4MessageContent", null);
+        Message message1 = createMessage(channel1, author1, "test1MessageContent", null);
+        Message message2 = createMessage(channel1, author2, "test2MessageContent", null);
+        Message message3 = createMessage(channel2, author1, "test3MessageContent", null);
+        Message message4 = createMessage(channel2, author1, "test4MessageContent", null);
 
         List<UUID> channelIds = List.of(channel1.getId(), channel2.getId());
 
@@ -163,7 +161,7 @@ class MessageRepositoryTest {
 
     @Test
     @DisplayName("특정 채널의 메시지 목록을 페이지네이션으로 조회할 수 있다.")
-    void find_All_message_by_channelIds() {
+    void find_All_message_by_channelIds() throws InterruptedException {
         // given(준비)
         User author1 = createUser("test1@gmail.com", "test1", "1234", createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length), nowMinus5);
         User author2 = createUser("test2@gmail.com", "test2", "1234", null, now);
@@ -177,16 +175,23 @@ class MessageRepositoryTest {
                 createBinaryContent("test3Binary", "image/png", (long) "test3".getBytes().length)
         );
         Message message1 = messageRepository.save(createMessage(channel1, author1, "test1MessageContent", attachments));
+        Thread.sleep(10);
         Message message2 = messageRepository.save(createMessage(channel1, author1, "test2MessageContent", null));
+        Thread.sleep(10);
         Message message3 = messageRepository.save(createMessage(channel1, author2, "test3MessageContent", null));
-        Message message4 = messageRepository.save(createMessage(channel2, author1, "test4MessageContent", null));
-
-        Instant cursor = Instant.parse("2026-03-31T12:30:00Z");
-        Pageable pageable = PageRequest.of(0, 10);
+        Thread.sleep(10);
+        Message message4 = messageRepository.save(createMessage(channel1, author1, "test4MessageContent", null));
+        Thread.sleep(10);
+        Message message5 = messageRepository.save(createMessage(channel2, author1, "test4MessageContent", null));
 
         // 영속성 해제
         testEntityManager.flush();
         testEntityManager.clear();
+
+        // 나노초가 DB에서 잘리기 때문에 db에서 받아온 message 사용하기
+        Message reloadMessage4 = messageRepository.findById(message4.getId()).orElseThrow();
+        Instant cursor = reloadMessage4.getCreatedAt();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when(실행)
         Slice<Message> result = messageRepository.findAllByChannelId(channel1.getId(), cursor, pageable);
@@ -196,7 +201,7 @@ class MessageRepositoryTest {
         assertThat(result)
                 .extracting(message -> message.getId())
                 .containsExactly(message3.getId(), message2.getId(), message1.getId())
-                .doesNotContain(message4.getId());
+                .doesNotContain(message4.getId(), message5.getId());
         assertThat(result)
                 .extracting(message -> message.getChannel().getId())
                 .contains(channel1.getId())
@@ -209,5 +214,9 @@ class MessageRepositoryTest {
                 .extracting(message -> message.getAuthor().getStatus().getId())
                 .contains(author1.getStatus().getId(), author2.getStatus().getId())
                 .doesNotContain(author3.getStatus().getId());
+        // sort 비교
+        List<Message> messageList = result.getContent();
+        assertThat(messageList.get(0).getCreatedAt()).isAfterOrEqualTo(messageList.get(1).getCreatedAt());
+        assertThat(messageList.get(1).getCreatedAt()).isAfterOrEqualTo(messageList.get(2).getCreatedAt());
     }
 }
