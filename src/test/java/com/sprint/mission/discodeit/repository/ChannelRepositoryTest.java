@@ -45,8 +45,7 @@ class ChannelRepositoryTest {
         User author = new User(email, username, password, profile);
 
         if (lastActiveAt != null) {
-            UserStatus userStatus = new UserStatus(author, lastActiveAt);
-//            userStatusRepository.save(userStatus);
+            new UserStatus(author, lastActiveAt);
         }
 
         return userRepository.save(author);
