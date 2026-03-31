@@ -225,7 +225,7 @@ public class BasicUserService implements UserService {
 
     // 나를 제외한 newUsername 중에 중복된 값이 있는지 확인
     private void validateDuplicateUsernameForUpdate(UUID userId, String username) {
-        if (userRepository.isUserNameUsedByOther(userId, username)) {
+        if (userRepository.isUsernameUsedByOther(userId, username)) {
             throw new DuplicatedUsernameException(userId, username);
         }
     }

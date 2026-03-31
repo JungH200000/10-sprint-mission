@@ -42,5 +42,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "FROM User AS u " +
             "WHERE u.username = :username " +
             "  AND u.id != :userId ")
-    boolean isUserNameUsedByOther(@Param("userId") UUID userId, @Param("username") String newUsername);
+    boolean isUsernameUsedByOther(@Param("userId") UUID userId, @Param("username") String newUsername);
 }
