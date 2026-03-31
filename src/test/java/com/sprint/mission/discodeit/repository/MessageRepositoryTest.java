@@ -30,22 +30,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class MessageRepositoryTest {
 
     @Autowired
-    MessageRepository messageRepository;
+    private MessageRepository messageRepository;
 
     @Autowired
-    ChannelRepository channelRepository;
+    private ChannelRepository channelRepository;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    BinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Autowired
-    ReadStatusRepository readStatusRepository;
-
-    @Autowired
-    private UserStatusRepository userStatusRepository;
+    private ReadStatusRepository readStatusRepository;
 
     @Autowired
     private TestEntityManager testEntityManager;
@@ -137,10 +134,10 @@ class MessageRepositoryTest {
         Channel channel2 = createChannel(ChannelType.PRIVATE, "test2Channel", "test2Channel입니다.");
         Channel channel3 = createChannel(ChannelType.PRIVATE, "test3Channel", "test3Channel입니다.");
 
-        Message message1 = createMessage(channel1, author1, "test1MessageContent", null);
-        Message message2 = createMessage(channel1, author2, "test2MessageContent", null);
-        Message message3 = createMessage(channel2, author1, "test3MessageContent", null);
-        Message message4 = createMessage(channel2, author1, "test4MessageContent", null);
+        createMessage(channel1, author1, "test1MessageContent", null);
+        createMessage(channel1, author2, "test2MessageContent", null);
+        createMessage(channel2, author1, "test3MessageContent", null);
+        createMessage(channel2, author1, "test4MessageContent", null);
 
         List<UUID> channelIds = List.of(channel1.getId(), channel2.getId());
 
