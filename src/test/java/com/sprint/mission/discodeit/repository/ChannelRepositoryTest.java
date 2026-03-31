@@ -58,7 +58,7 @@ class ChannelRepositoryTest {
     }
 
     @Test
-    @DisplayName("채널 type이 PUBLIC이거나 해당 userId를 가진 참가자가 있는 채널 목록을 조회할 수 있다.")
+    @DisplayName("채널 type이 PUBLIC이거나 사용자 ID와 연관된 ReadStatus가 존재하는 채널 목록을 조회할 수 있다.")
     void find_channel_list_with_userId_or_public_channel() {
         // given(준비)
         User user1 = createUser("test1@gmail.com", "test1", "1234", null, null);
@@ -90,7 +90,7 @@ class ChannelRepositoryTest {
     }
 
     @Test
-    @DisplayName("채널 type이 PUBLIC이거나 해당 userId를 가진 참가자가 없는 경우 빈 채널 목록을 조회할 수 있다.")
+    @DisplayName("채널 type이 PUBLIC이거나 사용자 ID와 연관된 ReadStatus가 없는 경우 빈 채널 목록을 조회할 수 있다.")
     void find_empty_channel_list_without_userId_or_public_channel() {
         // given(준비)
         User user1 = createUser("test1@gmail.com", "test1", "1234", null, null);
