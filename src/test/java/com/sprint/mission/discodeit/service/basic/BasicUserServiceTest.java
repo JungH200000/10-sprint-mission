@@ -328,7 +328,7 @@ class BasicUserServiceTest {
 
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(false);
-            given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(false);
+            given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userMapper.toDto(user)).willReturn(expectedUpdateUserDto);
 
             // when(실행)
@@ -341,7 +341,7 @@ class BasicUserServiceTest {
 
             verify(userRepository).findByIdWithStatusAndProfile(userId);
             verify(userRepository).isEmailUsedByOther(userId, request.newEmail());
-            verify(userRepository).isUserNameUsedByOther(userId, request.newUsername());
+            verify(userRepository).isUsernameUsedByOther(userId, request.newUsername());
             verify(userMapper).toDto(user);
         }
 
@@ -372,7 +372,7 @@ class BasicUserServiceTest {
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.of(oldProfile));
             given(binaryContentStorage.get(oldProfileId)).willReturn(new ByteArrayInputStream(oldProfileBytes));
-            given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(false);
+            given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(false);
             given(userMapper.toDto(user)).willReturn(expectedUpdateUserDto);
             
@@ -385,7 +385,7 @@ class BasicUserServiceTest {
             assertEquals(expectedUpdateUserDto.username(), result.username());
 
             verify(userRepository).findByIdWithStatusAndProfile(userId);
-            verify(userRepository).isUserNameUsedByOther(userId, request.newUsername());
+            verify(userRepository).isUsernameUsedByOther(userId, request.newUsername());
             verify(userRepository).isEmailUsedByOther(userId, request.newEmail());
 
             verify(binaryContentRepository).findById(oldProfileId);
@@ -405,7 +405,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.update(null, request, null));
 
             verify(userRepository, never()).findByIdWithStatusAndProfile(any());
-            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).findById(any());
@@ -431,7 +431,7 @@ class BasicUserServiceTest {
             verify(binaryContentRepository, never()).findById(any());
             verify(binaryContentStorage, never()).get(any());
 
-            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
@@ -470,7 +470,7 @@ class BasicUserServiceTest {
             verify(binaryContentRepository).findById(any());
             verify(binaryContentStorage, never()).get(any());
 
-            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
@@ -513,7 +513,7 @@ class BasicUserServiceTest {
             verify(binaryContentRepository).findById(any());
             verify(binaryContentStorage).get(any());
 
-            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
@@ -547,7 +547,7 @@ class BasicUserServiceTest {
             verify(binaryContentRepository, never()).findById(any());
             verify(binaryContentStorage, never()).get(any());
 
-            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
@@ -573,7 +573,7 @@ class BasicUserServiceTest {
             verify(binaryContentRepository, never()).findById(any());
             verify(binaryContentStorage, never()).get(any());
 
-            verify(userRepository, never()).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
@@ -587,7 +587,7 @@ class BasicUserServiceTest {
         void fail_update_user_when_duplicated_username() {
             // given(준비)
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
-            given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(true);
+            given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(true);
 
             // when(실행, then(검증)
             assertThrows(DuplicatedUsernameException.class,
@@ -595,7 +595,7 @@ class BasicUserServiceTest {
 
             verify(userRepository).findByIdWithStatusAndProfile(any());
 
-            verify(userRepository).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
@@ -609,7 +609,7 @@ class BasicUserServiceTest {
         void fail_update_user_when_duplicated_email() {
             // given(준비)
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
-            given(userRepository.isUserNameUsedByOther(userId, request.newUsername())).willReturn(false);
+            given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(true);
 
             // when(실행, then(검증)
@@ -618,7 +618,7 @@ class BasicUserServiceTest {
 
             verify(userRepository).findByIdWithStatusAndProfile(any());
 
-            verify(userRepository).isUserNameUsedByOther(any(), eq(request.newUsername()));
+            verify(userRepository).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
