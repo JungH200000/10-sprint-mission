@@ -113,7 +113,7 @@ class MessageControllerTest {
     class createMessage {
 
         @Test
-        @DisplayName("메시지를 생성하면 201 상태코드와 메시지 정보를 반환한다.")
+        @DisplayName("메시지를 생성하면 201 상태 코드와 메시지 정보를 반환한다.")
         void success_create_message() throws Exception {
             // given(준비)
             BinaryContentDto profileDto = createBinaryContent("profileFile", "ProfileFileContentType", 1L);
@@ -155,7 +155,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("Channel을 찾을 수 없으면 404 상태코드와 ChannelNotFoundException 예외 응답이 발생한다.")
+        @DisplayName("Channel을 찾을 수 없으면 404 상태 코드와 ChannelNotFoundException 예외 응답이 발생한다.")
         void fail_create_message_when_channel_not_found() throws Exception {
             // given(준비)
             UserDto userDto = createUserDto("test", "test", null, true);
@@ -180,7 +180,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("User를 찾을 수 없으면 404 상태코드와 UserNotFoundException 예외 응답이 발생한다.")
+        @DisplayName("User를 찾을 수 없으면 404 상태 코드와 UserNotFoundException 예외 응답이 발생한다.")
         void fail_create_message_when_user_not_found() throws Exception {
             // given(준비)
             UUID userId = UUID.randomUUID();
@@ -209,7 +209,7 @@ class MessageControllerTest {
     @DisplayName("메시지 목록 API 테스트")
     class findMessageListByChannelId {
         @Test
-        @DisplayName("특정 채널의 메시지 목록을 조회하면 200 상태코드와 메시지 목록이 반환된다.")
+        @DisplayName("특정 채널의 메시지 목록을 조회하면 200 상태 코드와 메시지 목록이 반환된다.")
         void success_find_message_list_by_channelId() throws Exception {
             // given(준비)
             UUID requestChannelId = UUID.randomUUID();
@@ -254,7 +254,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("특정 채널의 메시지 목록을 조회 시 메시지가 하나도 없을 경우 200 상태코드와 빈 메시지 목록을 반환한다.")
+        @DisplayName("특정 채널의 메시지 목록을 조회 시 메시지가 하나도 없을 경우 200 상태 코드와 빈 메시지 목록을 반환한다.")
         void success_find_empty_message_list_by_channelId() throws Exception {
             // given(준비)
             UUID requestChannelId = UUID.randomUUID();
@@ -349,7 +349,7 @@ class MessageControllerTest {
     class deleteMessageByMessageId {
 
         @Test
-        @DisplayName("특정 메시지를 삭제하면 204 상태코드를 반환한다.")
+        @DisplayName("특정 메시지를 삭제하면 204 상태 코드를 반환한다.")
         void success_delete_message_by_id() throws Exception {
             // given(준비)
             UUID requestMessageId = UUID.randomUUID();
@@ -365,7 +365,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("메시지를 찾지 못하면 404 상태코드와 MessageNotFoundException 예외 응답을 반환한다.")
+        @DisplayName("메시지를 찾지 못하면 404 상태 코드와 MessageNotFoundException 예외 응답을 반환한다.")
         void fail_delete_message_by_id_when_message_not_found() throws Exception {
             // given(준비)
             UUID requestMessageId = UUID.randomUUID();
