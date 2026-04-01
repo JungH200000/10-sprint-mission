@@ -130,12 +130,14 @@ class MessageControllerTest {
             Instant createdAt = now;
             Instant updatedAt = now;
             MessageDto expectedMessageDto = createMessageDto(request.content(), createdAt, updatedAt, channelDto.id(), authorDto, attachments);
-
+            
+            // `mockMvc.perform(...)`에서 multipart 요청을 만들고,
+            // 이 요청이 controller의 `create` 메서드 파라미터로 바인딩 하기 위해 만듦
             MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
             MockMultipartFile attachment1 = new MockMultipartFile("attachments", "image1.png", MediaType.IMAGE_PNG_VALUE, "image1".getBytes());
             MockMultipartFile attachment2 = new MockMultipartFile("attachments", "image2.png", MediaType.IMAGE_PNG_VALUE, "image2".getBytes());
 
-            given(messageService.create(any(MessageCreateRequest.class), anyList())).willReturn(expectedMessageDto);
+            given(messageService.create(eq(request), anyList())).willReturn(expectedMessageDto);
 
             // when(실행), then(검증)
             mockMvc.perform(multipart("/api/messages")
