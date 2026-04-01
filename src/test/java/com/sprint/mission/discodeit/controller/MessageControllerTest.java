@@ -345,7 +345,7 @@ class MessageControllerTest {
     }
 
     @Nested
-    @DisplayName("메시지 삭제 테스트")
+    @DisplayName("메시지 삭제 API 테스트")
     class deleteMessageByMessageId {
 
         @Test
