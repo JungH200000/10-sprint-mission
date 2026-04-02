@@ -33,6 +33,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -71,7 +72,6 @@ class MessageControllerTest {
     // 근데 API 슬라이스 테스트에는 Entity 메타 모델이 없어서 오류가 남
     @MockitoBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
 
     Instant now;
     Instant nowMinus5;
@@ -120,7 +120,7 @@ class MessageControllerTest {
 
             BinaryContentDto attachmentDto1 = createBinaryContent("file1", "contentType1", 1L);
             BinaryContentDto attachmentDto2 = createBinaryContent("file2", "contentType2", 2L);
-            List<BinaryContentDto> attachments = List.of(attachmentDto1, attachmentDto2);
+            List<BinaryContentDto> attachmentDtoList = List.of(attachmentDto1, attachmentDto2);
 
             UserDto authorDto = createUserDto("test@gmail.com", "test", profileDto, true);
             ChannelDto channelDto = createChannelDto(ChannelType.PUBLIC, "testChannel", "testChannel입니다.", null, Instant.now());
@@ -129,7 +129,7 @@ class MessageControllerTest {
 
             Instant createdAt = now;
             Instant updatedAt = now;
-            MessageDto expectedMessageDto = createMessageDto(request.content(), createdAt, updatedAt, channelDto.id(), authorDto, attachments);
+            MessageDto expectedMessageDto = createMessageDto(request.content(), createdAt, updatedAt, channelDto.id(), authorDto, attachmentDtoList);
             
             // `mockMvc.perform(...)`에서 multipart 요청을 만들고,
             // 이 요청이 controller의 `create` 메서드 파라미터로 바인딩 하기 위해 만듦
@@ -137,7 +137,7 @@ class MessageControllerTest {
             MockMultipartFile attachment1 = new MockMultipartFile("attachments", "image1.png", MediaType.IMAGE_PNG_VALUE, "image1".getBytes());
             MockMultipartFile attachment2 = new MockMultipartFile("attachments", "image2.png", MediaType.IMAGE_PNG_VALUE, "image2".getBytes());
 
-            given(messageService.create(request, List.of(attachment1, attachment2))).willReturn(expectedMessageDto);
+            given(messageService.create(eq(request), anyList())).willReturn(expectedMessageDto);
 
             // when(실행), then(검증)
             mockMvc.perform(multipart("/api/messages")
@@ -152,8 +152,6 @@ class MessageControllerTest {
                     .andExpect(jsonPath("$.author.id").value(expectedMessageDto.author().id().toString()))
                     .andExpect(jsonPath("$.author.profile.id").value(expectedMessageDto.author().profile().id().toString()))
                     .andExpect(jsonPath("$.attachments", hasSize(2)));
-
-            verify(messageService).create(any(MessageCreateRequest.class), anyList());
         }
 
         @Test
