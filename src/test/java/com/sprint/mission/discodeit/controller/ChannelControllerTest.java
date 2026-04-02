@@ -91,7 +91,7 @@ class ChannelControllerTest {
     class createChannel {
 
         @Test
-        @DisplayName("공개 채널을 생성하면 201 상태코드와 공개 채널 정보를 반환한다.")
+        @DisplayName("공개 채널을 생성하면 201 상태 코드와 공개 채널 정보를 반환한다.")
         void success_create_public_channel() throws Exception {
             // given(준비)
             PublicChannelCreateRequest request = new PublicChannelCreateRequest("testPublicChannel", "test public channel입니다.");
@@ -113,7 +113,7 @@ class ChannelControllerTest {
         }
 
         @Test
-        @DisplayName("비공개 채널을 생성하면 201 상태코드와 비공개 채널 정보를 반환한다.")
+        @DisplayName("비공개 채널을 생성하면 201 상태 코드와 비공개 채널 정보를 반환한다.")
         void success_create_private_channel() throws Exception {
             // given(준비)
             UserDto userDto1 = createUserDto("test1@gmail.com", "test1", null, true);
@@ -143,7 +143,7 @@ class ChannelControllerTest {
     }
 
     @Nested
-    @DisplayName("채널 목록 조회 API 메서드")
+    @DisplayName("채널 목록 조회 API 테스트")
     class findAllChannelList {
 
         @Test
