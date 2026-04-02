@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -87,11 +86,6 @@ class ChannelControllerTest {
         return new ChannelDto(channelId, type, name, description, participants, lastMessageAt);
     }
 
-    private BinaryContentDto createBinaryContent(String fileName, String contentType, Long size) {
-        UUID binaryContentId = UUID.randomUUID();
-        return new BinaryContentDto(binaryContentId, fileName, size, contentType);
-    }
-
     @Nested
     @DisplayName("공개/비공개 채널 생성 API 테스트")
     class createChannel {
@@ -102,8 +96,7 @@ class ChannelControllerTest {
             // given(준비)
             PublicChannelCreateRequest request = new PublicChannelCreateRequest("testPublicChannel", "test public channel입니다.");
 
-            UUID channelId = UUID.randomUUID();
-            ChannelDto expectedChannelDto = new ChannelDto(channelId, ChannelType.PUBLIC, request.name(), request.description(), null, null);
+            ChannelDto expectedChannelDto = createChannelDto(ChannelType.PUBLIC, request.name(), request.description(), null, null);
 
             given(channelService.createPublicChannel(request)).willReturn(expectedChannelDto);
 
@@ -133,8 +126,7 @@ class ChannelControllerTest {
 
             PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
 
-            UUID channelId = UUID.randomUUID();
-            ChannelDto expectedChannelDto = new ChannelDto(channelId, ChannelType.PRIVATE, null, null, participants, null);
+            ChannelDto expectedChannelDto = createChannelDto(ChannelType.PRIVATE, null, null, participants, null);
 
             given(channelService.createPrivateChannel(request)).willReturn(expectedChannelDto);
 
@@ -162,12 +154,9 @@ class ChannelControllerTest {
             UserDto userDto2 = createUserDto("test2@gmail.com", "test2", null, true);
             List<UserDto> participants = List.of(userDto1, userDto2);
 
-            UUID channelId1 = UUID.randomUUID();
-            UUID channelId2 = UUID.randomUUID();
-            UUID channelId3 = UUID.randomUUID();
-            ChannelDto channelDto1 = new ChannelDto(channelId1, ChannelType.PUBLIC, "test1Channel", "test1 Channel입니다.", null, now);
-            ChannelDto channelDto2 = new ChannelDto(channelId2, ChannelType.PRIVATE, null, null, participants, nowMinus15);
-            ChannelDto channelDto3 = new ChannelDto(channelId3, ChannelType.PRIVATE, null, null, participants, nowMinus5);
+            ChannelDto channelDto1 = createChannelDto(ChannelType.PUBLIC, "test1Channel", "test1 Channel입니다.", null, now);
+            ChannelDto channelDto2 = createChannelDto(ChannelType.PRIVATE, null, null, participants, nowMinus15);
+            ChannelDto channelDto3 = createChannelDto(ChannelType.PRIVATE, null, null, participants, nowMinus5);
             List<ChannelDto> channelDtoList = List.of(channelDto1, channelDto2, channelDto3);
 
             UUID requestUserId = userDto1.id();
@@ -200,8 +189,7 @@ class ChannelControllerTest {
             UUID requestChannelId = UUID.randomUUID();
             PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("updateTestName", "updateTestDescription");
 
-            UUID channelId = UUID.randomUUID();
-            ChannelDto channelDto = new ChannelDto(channelId, ChannelType.PUBLIC, "testChannel", "test Channel입니다.", null, now);
+            ChannelDto channelDto = createChannelDto(ChannelType.PUBLIC, "testChannel", "test Channel입니다.", null, now);
 
             ChannelDto expectedChannelDto = new ChannelDto(channelDto.id(), channelDto.type(), request.newName(), request.newDescription(), null, channelDto.lastMessageAt());
 
