@@ -157,7 +157,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("Channel을 찾을 수 없으면 404 상태 코드와 ChannelNotFoundException 예외 응답이 발생한다.")
+        @DisplayName("채널을 찾을 수 없으면 404 상태 코드와 ChannelNotFoundException 예외 응답이 발생한다.")
         void fail_create_message_when_channel_not_found() throws Exception {
             // given(준비)
             UserDto userDto = createUserDto("test", "test", null, true);
@@ -182,7 +182,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("User를 찾을 수 없으면 404 상태 코드와 UserNotFoundException 예외 응답이 발생한다.")
+        @DisplayName("사용자를 찾을 수 없으면 404 상태 코드와 UserNotFoundException 예외 응답이 발생한다.")
         void fail_create_message_when_user_not_found() throws Exception {
             // given(준비)
             UUID userId = UUID.randomUUID();
@@ -325,7 +325,7 @@ class MessageControllerTest {
         }
 
         @Test
-        @DisplayName("Message를 찾을 수 없으면 404 상태 코드와 MessageNotFoundException 예외 응답을 반환한다.")
+        @DisplayName("메시지를 찾을 수 없으면 404 상태 코드와 MessageNotFoundException 예외 응답을 반환한다.")
         void fail_update_message_by_id_when_message_not_found() throws Exception {
             // given(준비)
             UUID requestMessageId = UUID.randomUUID();
