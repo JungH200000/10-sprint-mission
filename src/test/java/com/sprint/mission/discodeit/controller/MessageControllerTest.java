@@ -384,7 +384,4 @@ class MessageControllerTest {
                     .andExpect(jsonPath("$.details.messageId").value(requestMessageId.toString()));
         }
     }
-
-
-
 }
