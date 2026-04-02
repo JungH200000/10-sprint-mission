@@ -137,7 +137,7 @@ class MessageControllerTest {
             MockMultipartFile attachment1 = new MockMultipartFile("attachments", "image1.png", MediaType.IMAGE_PNG_VALUE, "image1".getBytes());
             MockMultipartFile attachment2 = new MockMultipartFile("attachments", "image2.png", MediaType.IMAGE_PNG_VALUE, "image2".getBytes());
 
-            given(messageService.create(eq(request), anyList())).willReturn(expectedMessageDto);
+            given(messageService.create(request, List.of(attachment1, attachment2))).willReturn(expectedMessageDto);
 
             // when(실행), then(검증)
             mockMvc.perform(multipart("/api/messages")
