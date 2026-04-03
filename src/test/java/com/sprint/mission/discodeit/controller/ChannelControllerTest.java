@@ -176,6 +176,23 @@ class ChannelControllerTest {
                     .andExpect(jsonPath("$[1].participants[0].id").value(channelDto2.participants().get(0).id().toString()))
                     .andExpect(jsonPath("$[2].participants[0].id").value(channelDto3.participants().get(0).id().toString()));
         }
+
+        @Test
+        @DisplayName("채널 메시지 목록을 조회 시 채널이 하나도 없을 경우 200 상태 코드와 빈 채널 목록이 반환된다.")
+        void success_find_empty_channel_list() throws Exception {
+            // given(준비)
+            UUID requestUserId = UUID.randomUUID();
+
+            given(channelService.findAllByUserId(requestUserId)).willReturn(List.of());
+
+            // when(실행), then(검증)
+            mockMvc.perform(get("/api/channels")
+                            .param("userId", requestUserId.toString())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
     }
 
     @Nested
