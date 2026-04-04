@@ -15,7 +15,7 @@ import java.io.IOException;
  * <br>
  * HTTP 요청마다 Request와 Response를 공통으로 로깅
  */
-@Component
+//@Component // Spring Bean 등록
 @Slf4j
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
