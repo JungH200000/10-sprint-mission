@@ -50,7 +50,7 @@ public class MessageController {
             @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject("Channel | Author with id {channelId | authorId} not found")))
     })
     public ResponseEntity<MessageDto> create(
-            @RequestPart @Valid MessageCreateRequest request,
+            @RequestPart("messageCreateRequest") @Valid MessageCreateRequest request,
             @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments
     ) {
         MessageDto message = messageService.create(request, attachments);

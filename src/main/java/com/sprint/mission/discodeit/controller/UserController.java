@@ -49,7 +49,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "같은 email이나 username을 사용하는 User가 이미 존재함", content = @Content(examples = @ExampleObject(value = "User with newEmail {newEmail} already exists")))
     })
     public ResponseEntity<UserDto> create(
-            @RequestPart @Valid UserCreateRequest request,
+            @RequestPart("userCreateRequest") @Valid UserCreateRequest request,
             @RequestPart(required = false) @Schema(description = "User 프로필 이미지") MultipartFile profile
     ) {
         UserDto userDto = userService.create(request, profile);
@@ -86,7 +86,7 @@ public class UserController {
     })
     public ResponseEntity<UserDto> update(
             @Parameter(description = "수정할 User ID") @PathVariable UUID userId,
-            @RequestPart @Valid UserUpdateRequest request,
+            @RequestPart("userUpdateRequest") @Valid UserUpdateRequest request,
             @RequestPart(required = false) @Schema(description = "수정할 User 프로필 이미지") MultipartFile profile
     ) {
         UserDto userDto = userService.update(userId, request, profile);
