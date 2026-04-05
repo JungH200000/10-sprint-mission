@@ -99,7 +99,7 @@ class UserControllerTest {
 
             UserDto expectedUserDto = createUserDto(null, request.email(), request.username(), profileDto, false);
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userCreateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
             MockMultipartFile profile = new MockMultipartFile("profile", "image.png", MediaType.IMAGE_PNG_VALUE, "image".getBytes());
 
             given(userService.create(request, profile)).willReturn(expectedUserDto);
@@ -123,7 +123,7 @@ class UserControllerTest {
             String existingEmail = "test@gmail.com";
             UserCreateRequest request = new UserCreateRequest(existingEmail, "test", "1234");
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userCreateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
             MockMultipartFile profile = new MockMultipartFile("profile", "image.png", MediaType.IMAGE_PNG_VALUE, "image".getBytes());
 
             given(userService.create(request, profile)).willThrow(new DuplicatedEmailException(request.email()));
@@ -148,7 +148,7 @@ class UserControllerTest {
             String existingUsername = "test";
             UserCreateRequest request = new UserCreateRequest("test@gmail.com", existingUsername, "1234");
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userCreateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
             MockMultipartFile profile = new MockMultipartFile("profile", "image.png", MediaType.IMAGE_PNG_VALUE, "image".getBytes());
 
             given(userService.create(request, profile)).willThrow(new DuplicatedUsernameException(request.username()));
@@ -226,7 +226,7 @@ class UserControllerTest {
             BinaryContentDto expectedProfile = createBinaryContent("testFileName", "image/png", 5L);
             UserDto expectedUserDto = createUserDto(existingUserDto.id(), request.newEmail(), request.newUsername(), expectedProfile, true);
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userUpdateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
             MockMultipartFile profile = new MockMultipartFile("profile", "updateImage.png", MediaType.IMAGE_PNG_VALUE, "updateImage".getBytes());
 
             given(userService.update(requestUserId, request, profile)).willReturn(expectedUserDto);
@@ -257,7 +257,7 @@ class UserControllerTest {
             UUID requestUserId = existingUserDto.id();
             UserUpdateRequest request = new UserUpdateRequest("existingEmail@gmail.com", null, null);
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userUpdateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
 
             given(userService.update(eq(requestUserId), eq(request), isNull())).willThrow(new DuplicatedEmailException(requestUserId, request.newEmail()));
 
@@ -287,7 +287,7 @@ class UserControllerTest {
             UUID requestUserId = existingUserDto.id();
             UserUpdateRequest request = new UserUpdateRequest(null, null, "existingUsername");
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userUpdateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
 
             given(userService.update(eq(requestUserId), eq(request), isNull())).willThrow(new DuplicatedUsernameException(requestUserId, request.newUsername()));
 
@@ -315,7 +315,7 @@ class UserControllerTest {
             UUID requestUserId = UUID.randomUUID();
             UserUpdateRequest request = new UserUpdateRequest(null, null, "existingUsername");
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("userUpdateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
 
             given(userService.update(eq(requestUserId), eq(request), isNull())).willThrow(new UserNotFoundException("userId", requestUserId));
 

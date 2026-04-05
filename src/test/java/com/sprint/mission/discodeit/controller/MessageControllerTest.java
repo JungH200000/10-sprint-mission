@@ -133,7 +133,7 @@ class MessageControllerTest {
             
             // `mockMvc.perform(...)`에서 multipart 요청을 만들고,
             // 이 요청이 controller의 `create` 메서드 파라미터로 바인딩 하기 위해 만듦
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("messageCreateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
             MockMultipartFile attachment1 = new MockMultipartFile("attachments", "image1.png", MediaType.IMAGE_PNG_VALUE, "image1".getBytes());
             MockMultipartFile attachment2 = new MockMultipartFile("attachments", "image2.png", MediaType.IMAGE_PNG_VALUE, "image2".getBytes());
 
@@ -163,7 +163,7 @@ class MessageControllerTest {
 
             MessageCreateRequest request = new MessageCreateRequest(userDto.id(), channelId, "testMessageContent");
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("messageCreateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
 
             given(messageService.create(any(MessageCreateRequest.class), isNull())).willThrow(new ChannelNotFoundException(channelId));
 
@@ -188,7 +188,7 @@ class MessageControllerTest {
 
             MessageCreateRequest request = new MessageCreateRequest(userId, channelDto.id(), "testMessageContent");
 
-            MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
+            MockMultipartFile requestPart = new MockMultipartFile("messageCreateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
 
             given(messageService.create(any(MessageCreateRequest.class), isNull())).willThrow(new UserNotFoundException("userId", userId));
 
