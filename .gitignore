@@ -88,3 +88,4 @@ FileIOTestStorage/
 ../../../../../../../../../../Downloads/discodeit/discodeit/HELP.md
 storage
 .logs
+.env
