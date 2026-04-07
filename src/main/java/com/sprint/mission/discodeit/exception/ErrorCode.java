@@ -26,6 +26,7 @@ public enum ErrorCode {
     BINARY_CONTENT_SAVE_FAILED("바이너리 컨텐츠 저장에 실패했습니다."),
     BINARY_CONTENT_READ_FAILED("바이너리 컨텐츠 조회에 실패했습니다."),
     BINARY_CONTENT_STORAGE_INIT_FAILED("디렉터리 초기화에 실패했습니다."),
+    PRESIGNED_URL_CREATE_FAILED("Presigned URL 생성에 실패했습니다."),
 
     // Channel
     PRIVATE_CHANNEL_PARTICIPANT_REQUIRED("비공개 채널에는 참가자가 있어야 합니다."),
