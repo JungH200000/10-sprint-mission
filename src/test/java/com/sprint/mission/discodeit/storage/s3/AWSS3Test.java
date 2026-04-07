@@ -69,7 +69,7 @@ public class AWSS3Test {
     @Test
     @DisplayName("S3에 파일 업로드 테스트")
     void upload() {
-        String key = createKey("upload");
+        String key = resolveKey("upload");
         byte[] content = "Amazon S3 File Upload Test".getBytes(StandardCharsets.UTF_8);
 
         try {
@@ -94,7 +94,7 @@ public class AWSS3Test {
     @DisplayName("S3에서 파일 다운로드 테스트")
     void download_file() {
         // S3에 파일 업로드
-        String key = createKey("download");
+        String key = resolveKey("download");
         byte[] content = "Amazon S3 File Download Test".getBytes(StandardCharsets.UTF_8);
         uploadFile(key, content);
 
@@ -121,7 +121,7 @@ public class AWSS3Test {
     @DisplayName("Presigned Url 생성 테스트")
     void create_presign_url() {
         // S3에 파일 업로드
-        String key = createKey("PresignUrl");
+        String key = resolveKey("PresignUrl");
         byte[] content = "Create Presign Url Test".getBytes(StandardCharsets.UTF_8);
         uploadFile(key, content);
 
@@ -167,7 +167,7 @@ public class AWSS3Test {
         }
     }
 
-    private String createKey(String method) {
+    private String resolveKey(String method) {
         return "test/" + method + "/" + UUID.randomUUID().toString() + ".txt";
     }
 }
