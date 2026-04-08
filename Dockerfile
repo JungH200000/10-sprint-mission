@@ -6,14 +6,18 @@ FROM amazoncorretto:17 AS builder
 WORKDIR /app
 
 # 1-3. 레이어 캐시를 고려해, 자주 변경되지 않는 Gradle 관련 파일 먼저 복사
+# COPY 원본_경로 컨테이너_안의_목적지_경로
 COPY gradlew ./
 COPY gradle ./gradle
 COPY build.gradle settings.gradle ./
 
 # 1-4. `gradlew` 파일에 실행 권한 부여
+# `chmod` : 파일의 권한을 변경하는 리눅스 명령어
+# `+x` : `chmod`와 함께 쓰이며, 실행 권한을 추가하는 명령어
 RUN chmod +x ./gradlew
 
 # 1-5. Gradle 의존성 관련 레이어를 먼저 생성하여 캐시 활용
+# `--no-daemon` : 백그라운드 상주 프로세스(daemon) 없이 한 번만 실행하고 끝내라는 명령어
 RUN ./gradlew dependencies --no-daemon
 # 즉, 소스코드만 바뀌고, Gradle 관련 설정이 안 바뀌면, 이 앞의 레이어 재사용 가능해짐
 
