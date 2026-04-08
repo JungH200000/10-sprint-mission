@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+//@Disabled // s3 미연결 시 오류 발생하지 않게 설정
 @DisplayName("AWS S3 연결 확인 테스트(실제 파일 사용 X)")
 public class AWSS3Test {
 
