@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -81,7 +80,7 @@ class UserControllerTest {
         return new UserDto(userId, username, email, profile, isOnline);
     }
 
-    private BinaryContentDto createBinaryContent(String fileName, String contentType, Long size) {
+    private BinaryContentDto createBinaryContentDto(String fileName, String contentType, Long size) {
         UUID binaryContentId = UUID.randomUUID();
         return new BinaryContentDto(binaryContentId, fileName, size, contentType);
     }
@@ -94,7 +93,7 @@ class UserControllerTest {
         @DisplayName("사용자를 생성하면 201 상태 코드와 사용자 정보를 반환한다.")
         void success_create_user() throws Exception {
             // given(준비)
-            BinaryContentDto profileDto = createBinaryContent("profileFile", "ProfileFileContentType", 1L);
+            BinaryContentDto profileDto = createBinaryContentDto("profileFile", "ProfileFileContentType", 1L);
             UserCreateRequest request = new UserCreateRequest("test@gmail.com", "test", "1234");
 
             UserDto expectedUserDto = createUserDto(null, request.email(), request.username(), profileDto, false);
@@ -176,7 +175,7 @@ class UserControllerTest {
         @DisplayName("사용자 목록을 조회하면 200 상태 코드와 사용자 목록이 반환된다.")
         void success_find_all_user_list() throws Exception {
             // given(준비)
-            BinaryContentDto profile = createBinaryContent("testFileName", "image/png", 5L);
+            BinaryContentDto profile = createBinaryContentDto("testFileName", "image/png", 5L);
             UserDto userDto1 = createUserDto(null, "test1@gmail.com", "test1", null, true);
             UserDto userDto2 = createUserDto(null, "test2@gmail.com", "test2", profile, true);
             List<UserDto> userDtoList = List.of(userDto1, userDto2);
@@ -217,13 +216,13 @@ class UserControllerTest {
         @DisplayName("특정 사용자 정보를 수정하면 200 상태 코드와 수정된 사용자 정보를 반환한다.")
         void success_update_user_by_id() throws Exception {
             // given(준비)
-            BinaryContentDto existingProfile = createBinaryContent("testFileName", "image/png", 5L);
+            BinaryContentDto existingProfile = createBinaryContentDto("testFileName", "image/png", 5L);
             UserDto existingUserDto = createUserDto(null, "test@gmail.com", "test", existingProfile, true);
 
             UUID requestUserId = existingUserDto.id();
             UserUpdateRequest request = new UserUpdateRequest("updateTestEmail@gmail.com", "12345", "updateTest");
 
-            BinaryContentDto expectedProfile = createBinaryContent("testFileName", "image/png", 5L);
+            BinaryContentDto expectedProfile = createBinaryContentDto("testFileName", "image/png", 5L);
             UserDto expectedUserDto = createUserDto(existingUserDto.id(), request.newEmail(), request.newUsername(), expectedProfile, true);
 
             MockMultipartFile requestPart = new MockMultipartFile("userUpdateRequest", "", MediaType.APPLICATION_JSON_VALUE, om.writeValueAsBytes(request));
