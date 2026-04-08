@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -10,6 +11,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3") // s3일 때만 로드되게 설정
 public class S3Config {
 
     private final AwsProperties awsProperties;
@@ -20,15 +22,15 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
-        if (awsProperties.getCredentials().getAccessKey() != null
-                && !awsProperties.getCredentials().getAccessKey().isBlank()) {
+        if (awsProperties.getAccessKey() != null
+                && !awsProperties.getAccessKey().isBlank()) {
             return S3Client.builder()
                     .region(Region.of(awsProperties.getRegion()))
                     .credentialsProvider(
                             StaticCredentialsProvider.create(
                                     AwsBasicCredentials.create(
-                                            awsProperties.getCredentials().getAccessKey(),
-                                            awsProperties.getCredentials().getSecretKey()
+                                            awsProperties.getAccessKey(),
+                                            awsProperties.getSecretKey()
                                     )
                             )
                     ).build();
@@ -41,15 +43,15 @@ public class S3Config {
 
     @Bean
     public S3Presigner s3Presigner() {
-        if (awsProperties.getCredentials().getSecretKey() != null
-        && !awsProperties.getCredentials().getSecretKey().isBlank()) {
+        if (awsProperties.getAccessKey() != null
+        && !awsProperties.getAccessKey().isBlank()) {
             return S3Presigner.builder()
                     .region(Region.of(awsProperties.getRegion()))
                     .credentialsProvider(
                             StaticCredentialsProvider.create(
                                     AwsBasicCredentials.create(
-                                            awsProperties.getCredentials().getAccessKey(),
-                                            awsProperties.getCredentials().getSecretKey()
+                                            awsProperties.getAccessKey(),
+                                            awsProperties.getSecretKey()
                                     )
                             )
                     ).build();
