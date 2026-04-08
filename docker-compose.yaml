@@ -12,7 +12,7 @@ services:
       - "8081:80"
     volumes:  # 애플리케이션 볼륨 구성
       # 컨테이너가 재시작되어도 `BinaryContentStorage` 데이터 유지
-      - binary-content-data:/app/storage/binary
+      - binary-content-data:/app/.discodeit/storage
     depends_on:  # 서비스간 의존성 설정
       postgres:
         # PostgreSQL 서비스가 정상 상태(healthy)가 된 후 app 서비스가 실행되도록 설정
