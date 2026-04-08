@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -69,7 +68,10 @@ public class BinaryContentController {
      */
     @RequestMapping(value = "/{binaryContentId}/download", method = RequestMethod.GET)
     @Operation(summary = "파일 다운로드")
-    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공", content = @Content(schema = @Schema(format = "binary")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로컬에서 파일 다운로드 성공", content = @Content(schema = @Schema(format = "binary"))),
+            @ApiResponse(responseCode = "302", description = "S3 Presigned URL로 리다이렉트", content = @Content(schema = @Schema(format = "binary")))
+    })
     public ResponseEntity<?> download(
             @Parameter(description = "다운로드할 파일 ID") @PathVariable UUID binaryContentId
     ) {
