@@ -87,7 +87,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         String key = resolveKey(binaryContentDto.id());
 
         try {
-            String signedUrl = generatePresignedUrl(key, binaryContentDto.fileName(), binaryContentDto.contentType());
+            String signedUrl = generatePresignedUrl(key, binaryContentDto.contentType());
 
             return ResponseEntity.status(HttpStatus.FOUND) // 리다이렉트 -> 302 FOUND
                     .location(URI.create(signedUrl))
@@ -103,13 +103,13 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         return binaryContentId.toString();
     }
 
-    private String generatePresignedUrl(String key, String fileName, String contentType) {
+    private String generatePresignedUrl(String key, String contentType) {
         // 어떤 파일을 가져올지 담는 요청 객체 생성
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(awsProperties.getBucket())
                 .key(key)
                 .responseContentType(contentType)
-                .responseContentDisposition("attachment; filename=\"" + fileName + "\"")
+                .responseContentDisposition("attachment")
                 .build();
 
         GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
