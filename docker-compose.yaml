@@ -29,7 +29,7 @@ services:
       - backend
 
   postgres:  # PostgreSQL 서비스
-    image: postgres:18.3  # `postgres:18.3` 이미지 사용
+    image: postgres:17  # `postgres:17` 이미지 사용
     environment:  # 환경변수 바인딩
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -38,8 +38,8 @@ services:
       - "5433:5432"
     volumes:  # PostgreSQL 볼륨 구성
       # 컨테이너 재시작되어도 PostgreSQL 데이터가 유지되도록 설정
-      - postgres-data:/var/lib/postgresql
-#      - postgres-data:/var/lib/postgresql/data  # 17버전 이하
+#      - postgres-data:/var/lib/postgresql
+      - postgres-data:/var/lib/postgresql/data  # 17버전 이하
       # 서비스 실행 후 `schema.sql`이 자동으로 실행되도록 구성
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:  # PostgreSQL 서비스 상태 확인을 위한 healthcheck 구성
