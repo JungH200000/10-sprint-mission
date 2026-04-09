@@ -18,6 +18,9 @@ jobs:  # 실행할 작업(job)들을 정의
           java-version: '17'
           distribution: 'temurin'
 
+      - name: 실행 권한 부여
+        run: chmod +x gradlew
+
       - name: test 실행 및 JaCoCo report 생성
         run: ./gradlew clean test jacocoTestReport
 
