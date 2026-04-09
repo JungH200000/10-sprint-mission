@@ -89,4 +89,5 @@ FileIOTestStorage/
 /storage
 .logs
 .env
+*.env
 .discodeit
