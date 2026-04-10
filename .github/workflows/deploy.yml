@@ -113,12 +113,12 @@ jobs:  # 실행할 작업(job)들을 정의
           --task-definition ${{ vars.ECS_TASK_DEFINITION }} \
           --query taskDefinition > task-definition.json
 
-      # 3) 사용할 image tag 존재 확인
-      - name: image tag 확인
-        run: |
-          echo "IMAGE TAG = [${{ needs.docker-image-build-and-push.outputs.image_tag }}]"
+#      # 사용할 image tag 존재 확인
+#      - name: image tag 확인
+#        run: |
+#          echo "IMAGE TAG = [${{ needs.docker-image-build-and-push.outputs.image_tag }}]"
 
-      # 4) 위에서 다운로드한 태스크 정의 JSON에서 컨테이너 이미지 URI만 새 이미지로 교체
+      # 3) 위에서 다운로드한 태스크 정의 JSON에서 컨테이너 이미지 URI만 새 이미지로 교체
       # `task-definition` : 수정할 원본 태스크 정의 파일
       # `container-name` : 이미지 값을 바꿀 컨테이너 이름(태스크 정의 안에 들어있는 실제 컨테이너 이름)
       # `image` : 새로 배포할 이미지 URI
@@ -130,7 +130,7 @@ jobs:  # 실행할 작업(job)들을 정의
           container-name: discodeit-app
           image: ${{ vars.ECR_REPOSITORY_URI }}:${{ needs.docker-image-build-and-push.outputs.image_tag }}
 
-      # 5) 기존애 구동 중인 ECS 서비스를 중단
+      # 4) 기존애 구동 중인 ECS 서비스를 중단
       # `--desired-count` : 서비스가 유지하려고 하는 태스크 개수
       # `--desired-count 0`이면 실행 중인 태스크 수를 0개로 맞춤 (모두 중지)
       - name: 기존 ECS 서비스 중지
@@ -140,7 +140,7 @@ jobs:  # 실행할 작업(job)들을 정의
           --service ${{ vars.ECS_SERVICE }} \
           --desired-count 0
 
-      # 6) 새 이미지가 반영된 테스크 정의로 ECS 서비스 업데이트
+      # 5) 새 이미지가 반영된 테스크 정의로 ECS 서비스 업데이트
       # `definition` : 위 step에서 새 이미지가 반영된 태스크 정의 파일
       # `wait-for-service-stability` : 배포 후 서비스가 안정 상태가 될 때까지 기다림
       - name: ECS 서비스 업데이트
@@ -151,7 +151,7 @@ jobs:  # 실행할 작업(job)들을 정의
           service: ${{ vars.ECS_SERVICE }}
           wait-for-service-stability: true
 
-      # 7) 컨테이너 다시 실행하여 CES 서비스 다시 실행
+      # 6) 컨테이너 다시 실행하여 CES 서비스 다시 실행
       - name: ECS 서비스 다시 시작
         run: |
           aws ecs update-service \
