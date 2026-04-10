@@ -7,6 +7,7 @@ on:  # 워크플로우 실행 조건(트리거 이벤트) 정의
     branches: [ "main" ]  # main branch에 push될 때만 실행
 
 jobs:  # 실행할 작업(job)들을 정의
+  # Codecov로 테스트 커버리지 report 업로드 
   codecov:  # "codecov"라는 이름의 job
     runs-on: ubuntu-latest  # 실행 환경 설정(codecov라는 job이 이 환경에서 실행됨)
 
@@ -34,7 +35,7 @@ jobs:  # 실행할 작업(job)들을 정의
         run: ./gradlew clean test jacocoTestReport
 
       # 5) Codecov로 JaCoCo report 파일 업로드
-      - name: Codecov 테스트 커버리지 report 업로드
+      - name: Codecov로 테스트 커버리지 report 업로드
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
