@@ -1,0 +1,77 @@
+name: Docker 이미지 build 및 push & ECS service 업데이트
+
+on:  # 워크플로우 실행 조건(트리거 이벤트) 정의
+  push:  # push 이벤트 발생 시 실행
+    branches: [ "release" ]  # release 브랜치에 push될 때만 실행
+
+jobs:  # 실행할 작업(job)들을 정의
+  docker-image-build-and-push:  # "docker-image-build-and-push" 라는 이름의 job
+    runs-on: ubuntu-latest  # 실행 환경 설정(docker-image-build-and-push job이 이 환경에서 실행됨)
+
+    permissions:  # 작업(job)에서 자동으로 발급되는 `GITHUB_TOKEN`의 권한 범위를 제한하는 설정
+      contents: read  # 읽기만 가능
+
+    steps:  # job 안에서 실행될 단계
+      # 1) 현재 repo의 소스코드를 checkout(가저옴)
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # 2) JDK 설정
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3) Gradle 캐시
+      # GitHub Actions가 Gradle build를 더 빠르게 하도록 Gradle 관련 캐시를 설정
+      # 매번 CI/CD 실행 시 의존성이나 Gradle 관련 상태를 처음부터 다시 받지 않도록,
+      # 이전에 내려받은 것들을 저장했다가 다음 실행에서 재사용
+      - name: Gradle 캐시
+        uses: gradle/actions/setup-gradle@v3
+
+      # 4) Gradle 실행 권한 설정
+      # `chmod` : 파일의 권한을 변경하는 리눅스 명령어
+      # `+x` : `chmod`와 함께 쓰이며, 실행 권한을 추가하는 명령어
+      - name: 실행 권한 부여
+        run: chmod +x gradlew
+
+      # 5) 애플리케이션 build (`JAR` 파일 생성)
+      - name: build JAR
+        run: ./gradlew clean bootjar  # 또는 ./gradlew clean build
+
+      # 6) AWS CLI 설정 (Secrets 사용)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      # 7) Public ECR 로그인
+      - name: ECR 로그인
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+          | docker login --username AWS --password-stdin public.ecr.aws
+
+      # 8) Docker 이미지 tag 구성 (커밋 해시 7자리)
+      - name: Prepare tags
+        id: prep
+        run: |
+          echo "IMAGE_TAG=${GITHUB_SHA}" >> "$GITHUB_ENV" 
+          echo "REPO_URI=${{ vars.ECR_REPOSITORY_URI }}" >> "$GITHUB_ENV"
+
+      # 9) Docker build (앞 단계("5)")에서 만든 `JAR`을 이미지에 복사)
+      # tag = 커밋 해시 7자리 + latest
+      - name: Docker build
+        run: |
+          docker build \
+          -t "$REPO_URI:$IMAGE_TAG" \
+          -t "$REPO_URI:latest" \
+          .
+
+      # 10) ECR push
+      - name: Docker push
+        run: |
+            docker push "$REPO_URI:$IMAGE_TAG"
+            docker push "$REPO_URI:latest"
