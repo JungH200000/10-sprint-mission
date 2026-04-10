@@ -9,7 +9,12 @@ jobs:  # 실행할 작업(job)들을 정의
   docker-image-build-and-push:  # job 이름
     runs-on: ubuntu-latest  # 실행 환경 설정(docker-image-build-and-push job이 이 환경에서 실행됨)
 
-    permissions:  # 작업(job)에서 자동으로 발급되는 `GITHUB_TOKEN`의 권한 범위를 제한하는 설정
+    # job의 결과(output)를 다른 job에서 사용할 수 있게 설정
+    outputs:
+      image_tag: ${{ steps.prep.outputs.image_tag }}
+
+    # 작업(job)에서 자동으로 발급되는 `GITHUB_TOKEN`의 권한 범위를 제한하는 설정
+    permissions:
       contents: read  # 읽기만 가능
 
     steps:  # job 안에서 실행될 단계
@@ -55,7 +60,8 @@ jobs:  # 실행할 작업(job)들을 정의
           aws ecr-public get-login-password --region us-east-1 \
           | docker login --username AWS --password-stdin public.ecr.aws
 
-      # 8) Docker 이미지 tag 구성 (커밋 해시 7자리)
+      # 8) Docker 이미지 tag 구성 (커밋 해시)
+      # `id` : 이름표를 붙여서 나중에 참조할 때 사용
       # `echo ... >> "GITHUB_OUTPUT"` : 현재 step에서 만든 값(step output)을 다른 step이나 job에서 참조할 수 있게 저장하는 코드
       - name: Prepare tags
         id: prep
