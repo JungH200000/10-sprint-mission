@@ -56,11 +56,13 @@ jobs:  # 실행할 작업(job)들을 정의
           | docker login --username AWS --password-stdin public.ecr.aws
 
       # 8) Docker 이미지 tag 구성 (커밋 해시 7자리)
+      # `echo ... >> "GITHUB_OUTPUT"` : 현재 step에서 만든 값(step output)을 다른 step이나 job에서 참조할 수 있게 저장하는 코드
       - name: Prepare tags
         id: prep
         run: |
           echo "IMAGE_TAG=${GITHUB_SHA}" >> "$GITHUB_ENV" 
           echo "REPO_URI=${{ vars.ECR_REPOSITORY_URI }}" >> "$GITHUB_ENV"
+          echo "image_tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       # 9) Docker build (앞 단계("5)")에서 만든 `JAR`을 이미지에 복사)
       # tag = 커밋 해시 7자리 + latest
