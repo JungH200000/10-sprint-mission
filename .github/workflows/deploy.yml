@@ -102,8 +102,8 @@ jobs:  # 실행할 작업(job)들을 정의
       - name: 현재 태스크 정의 다운로드
         run: |
           aws ecs describe-task-definition \
-          -- task-definition ${{ vars.ECS_TASK_DEFINITION }}
-          -- query taskDefinition > task-definition.json
+          --task-definition ${{ vars.ECS_TASK_DEFINITION }}
+          --query taskDefinition > task-definition.json
 
       # 3) 위에서 다운로드한 태스크 정의 JSON에서 컨테이너 이미지 URI만 새 이미지로 교체
       # `task-definition` : 수정할 원본 태스크 정의 파일
