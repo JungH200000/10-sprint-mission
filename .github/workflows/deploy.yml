@@ -71,7 +71,7 @@ jobs:  # 실행할 작업(job)들을 정의
           echo "image_tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       # 9) Docker build (앞 단계("5)")에서 만든 `JAR`을 이미지에 복사)
-      # tag = 커밋 해시 7자리 + latest
+      # tag = 커밋 해시 + latest
       - name: Docker build
         run: |
           docker build \
@@ -151,7 +151,7 @@ jobs:  # 실행할 작업(job)들을 정의
           service: ${{ vars.ECS_SERVICE }}
           wait-for-service-stability: true
 
-      # 6) 컨테이너 다시 실행하여 CES 서비스 다시 실행
+      # 6) 컨테이너 다시 실행하여 ECS 서비스 다시 실행
       - name: ECS 서비스 다시 시작
         run: |
           aws ecs update-service \
