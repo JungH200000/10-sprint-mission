@@ -56,7 +56,7 @@ public class BasicUserService implements UserService {
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
-                log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+                log.info("[USER_CREATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
                 throw new ProfileUploadFailedException(email, username, e);
@@ -137,7 +137,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
             binaryContentStorage.put(newProfile.getId(), bytes);
 
-            log.info("[PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
+            log.info("[USER_UPDATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
         }
 
         user.update(newUsername, newEmail, newPassword, newProfile);
