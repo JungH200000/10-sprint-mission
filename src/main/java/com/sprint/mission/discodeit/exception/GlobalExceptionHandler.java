@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentTypeMismatchException e) {
-        log.warn("[EXCEPTION] 요청 파라미터 타입 변환 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+        log.warn("[EXCEPTION] 요청 파라미터 타입 형식 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
 
         Map<String, Object> details = new HashMap<>();
         details.put(e.getName(), e.getValue()); // (파라미터 필드 이름, 파라미터 필드 값)
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now(),
                 "INVALID_PARAMETER_TYPE",
-                "요청 파라미터 타입이 올바르지 않습니다.",
+                "요청 파라미터 형식이 올바르지 않습니다.",
                 details,
                 e.getClass().getSimpleName(),
                 HttpStatus.BAD_REQUEST.value()
