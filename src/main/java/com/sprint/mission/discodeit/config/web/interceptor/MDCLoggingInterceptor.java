@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.config;
+package com.sprint.mission.discodeit.config.web.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Component
 @Slf4j
+// MVC Interceptor
 public class MDCLoggingInterceptor implements HandlerInterceptor {
 
     private static final String MDC_REQUEST_ID = "requestId";
