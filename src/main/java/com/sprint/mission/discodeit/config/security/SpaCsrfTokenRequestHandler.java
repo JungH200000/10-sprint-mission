@@ -30,12 +30,12 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
                 ? this.csrf
                 : this.xorCsrf;
 
-        // handler를 통해 요청에서 CSRF 토큰을 꺼내고, 저장소에 있는 토큰과 비교
+        // handler를 통해 요청에서 CSRF 토큰을 꺼냄
         return csrfTokenRequestHandler.resolveCsrfTokenValue(request, csrfToken);
     }
 
     @Override
-    // CSRF 토큰을 요청 처리 과정에서 사용할 수 있도록 준비하는 메서드
+    // 서버 내부에서 현재 요청의 CSRF 토큰을 사용할 수 있도록 준비하는 메서드
     public void handle(
             HttpServletRequest request,
             HttpServletResponse response,
