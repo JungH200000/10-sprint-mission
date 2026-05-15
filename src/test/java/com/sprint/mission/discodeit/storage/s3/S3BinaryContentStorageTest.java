@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import com.sprint.mission.discodeit.config.AwsProperties;
+import com.sprint.mission.discodeit.config.aws.AwsProperties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.exception.binarycontent.AwsServerConnectFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentReadFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentSaveFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.PresignedUrlCreateFailedException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

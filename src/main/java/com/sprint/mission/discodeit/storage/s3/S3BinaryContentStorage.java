@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import com.sprint.mission.discodeit.config.AwsProperties;
+import com.sprint.mission.discodeit.config.aws.AwsProperties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.exception.binarycontent.AwsServerConnectFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentReadFailedException;
