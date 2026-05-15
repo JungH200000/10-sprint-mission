@@ -10,7 +10,7 @@ spring:
       ddl-auto: none  # Entity를 보고 Table 자동 생성 여부 설정
     open-in-view: false
   profiles:
-    active: prod
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 discodeit:
   storage: # 파일 저장소 관련 설정
