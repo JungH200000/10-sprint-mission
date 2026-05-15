@@ -16,6 +16,7 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
     private final CsrfTokenRequestHandler xorCsrf = new XorCsrfTokenRequestAttributeHandler();
 
     @Override
+    // 클라이언트가 요청을 담아 보낸 CSRF 토큰 값을 꺼내는 메서드
     public String resolveCsrfTokenValue(
             HttpServletRequest request,
             CsrfToken csrfToken
@@ -34,6 +35,7 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
     }
 
     @Override
+    // CSRF 토큰을 요청 처리 과정에서 사용할 수 있도록 준비하는 메서드
     public void handle(
             HttpServletRequest request,
             HttpServletResponse response,
