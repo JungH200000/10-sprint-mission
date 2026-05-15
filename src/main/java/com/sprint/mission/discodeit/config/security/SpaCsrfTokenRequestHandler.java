@@ -20,12 +20,16 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
             HttpServletRequest request,
             CsrfToken csrfToken
     ) {
+        // CSRF 토큰이 기대하는 요청 헤더 이름이 있는지 확인
         String header = request.getHeader(csrfToken.getHeaderName());
 
+        // CSR/SPA 요청인지 판단
+        // 없으면 xor handler 사용
         CsrfTokenRequestHandler csrfTokenRequestHandler = StringUtils.hasText(header)
                 ? this.csrf
                 : this.xorCsrf;
 
+        // handler를 통해 요청에서 CSRF 토큰을 꺼내고, 저장소에 있는 토큰과 비교
         return csrfTokenRequestHandler.resolveCsrfTokenValue(request, csrfToken);
     }
 
@@ -35,7 +39,7 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
             HttpServletResponse response,
             Supplier<CsrfToken> csrfToken
     ) {
-
+        // request attribute에 CSRF 토큰 노출 시 기본적으로 xor handler 사용
         this.xorCsrf.handle(request, response, csrfToken);
 
         // 지연 로딩된 토큰을 강제 로드
