@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,8 @@ public class BasicAuthService implements AuthService {
     private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserDto login(LoginRequest request) {
         log.debug("[AUTH_LOGIN] 로그인 시작: username={}", request.username());
@@ -35,7 +38,7 @@ public class BasicAuthService implements AuthService {
         // 유저 검증, 없으면 예외 발생
         User user = validateAndGetUserByUsername(request.username());
 
-        // 비밀번호 일치 검증
+        // 해시된 비밀번호와 입력된 평문 비밀번호 일치 여부 확인
         validatePassword(request.password(), user.getPassword());
 
         // 유저 존재하면
@@ -63,8 +66,9 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(() -> new UserStatusNotFoundException("userId", userId));
     }
 
-    private void validatePassword(String requestPassword, String userPassword) {
-        if (!userPassword.equals(requestPassword)) {
+    // 해시된 비밀번호와 입력된 평문 비밀번호 일치 여부 확인
+    private void validatePassword(String requestPassword, String userEncodedPassword) {
+        if (!passwordEncoder.matches(requestPassword, userEncodedPassword)) {
             throw new LoginFailedException();
         }
     }
