@@ -39,7 +39,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
-        log.debug("[USER_CREATE] 사용자 등록 시작: email={}, username={}", request.email(), request.username());
+        log.debug("[USER_CREATE] 사용자 등록 시작: email={}, username={}",
+                request.email(), request.username());
 
         // newEmail, newUsername 중복 확인
         validateDuplicateEmail(request.email());
@@ -60,8 +61,10 @@ public class BasicUserService implements UserService {
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
+
                 log.info("[USER_CREATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
                         binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+
             } catch (IOException e) {
                 throw new ProfileUploadFailedException(email, username, e);
             }
@@ -87,7 +90,9 @@ public class BasicUserService implements UserService {
         log.debug("[USER_FIND] 사용자 조회 시작"); // 단순 조회 -> DEBUG
 
         User user = validateAndGetUserByUserId(userId);
-        log.debug("[USER_FIND] 사용자 조회 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
+
+        log.debug("[USER_FIND] 사용자 조회 완료: userId={}, email={}, username={}, profileId={}",
+                user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
 
         return userMapper.toDto(user);
     }
@@ -100,14 +105,17 @@ public class BasicUserService implements UserService {
         List<UserDto> userDtoList = userRepository.findAllWithStatusAndProfile().stream()
                 .map(user -> userMapper.toDto(user))
                 .toList();
-        log.debug("[USER_LIST_FIND] 사용자 목록 조회 완료: count={}", userDtoList.size());
+
+        log.debug("[USER_LIST_FIND] 사용자 목록 조회 완료: count={}",
+                userDtoList.size());
 
         return userDtoList;
     }
 
     @Override
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
-        log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, newEmail={}, newUsername={}, isInputNewPassword={}", userId, request.newEmail(), request.newUsername(), request.newPassword() != null);
+        log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, newEmail={}, newUsername={}, isInputNewPassword={}",
+                userId, request.newEmail(), request.newUsername(), request.newPassword() != null);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
@@ -128,7 +136,9 @@ public class BasicUserService implements UserService {
                 throw new ProfileUploadFailedException(userId, e);
             }
         }
-        log.debug("[USER_UPDATE] 사용자 수정 입력값 변경 여부: isChangedEmail={}, isChangedUsername={}, isChangedPassword={}, isChangedProfile={}", newEmail != null, newUsername != null, newPassword != null, binaryContentChanged);
+
+        log.debug("[USER_UPDATE] 사용자 수정 입력값 변경 여부: isChangedEmail={}, isChangedUsername={}, isChangedPassword={}, isChangedProfile={}",
+                newEmail != null, newUsername != null, newPassword != null, binaryContentChanged);
 
         // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
         validateAllRequestExistingOrNull(newEmail, newUsername, newPassword, binaryContentChanged);
@@ -147,24 +157,29 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
             binaryContentStorage.put(newProfile.getId(), bytes);
 
-            log.info("[USER_UPDATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
+            log.info("[USER_UPDATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+                    newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
         }
 
         user.update(newUsername, newEmail, newPassword, newProfile);
-        log.info("[USER_UPDATE] 사용자 정보 수정 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
+
+        log.info("[USER_UPDATE] 사용자 정보 수정 완료: userId={}, profileId={}",
+                user.getId(), user.getProfile() != null ? user.getProfile().getId() : null);
 
         return userMapper.toDto(user);
     }
 
     @Override
     public void delete(UUID userId) {
-        log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
+        log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}",
+                userId);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateAndGetUserByUserId(userId);
 
         userRepository.deleteById(userId);
-        log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
+        log.info("[USER_DELETE] 사용자 삭제 완료: userId={}",
+                userId);
     }
 
     //// validation
@@ -173,6 +188,7 @@ public class BasicUserService implements UserService {
         if (userId == null) {
             throw new InvalidInputException("userId", userId);
         }
+
         return userRepository.findByIdWithStatusAndProfile(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
@@ -211,11 +227,13 @@ public class BasicUserService implements UserService {
         if (profile == null) { // 기존에 BinaryContent 없을 때
             return true; // 새로운 BinaryContent 들어옴
         }
+
         //기존 프로필이 존재
         UUID profileId = profile.getId();
         BinaryContent oldProfile = binaryContentRepository.findById(profileId)
                 .orElseThrow(() -> new ProfileNotFoundException(profileId));
         UUID oldProfileId = oldProfile.getId();
+
         // 새로 들어온 BinaryContent와 비교
         // 같으면 -> false -> change 되지 않음
         try {

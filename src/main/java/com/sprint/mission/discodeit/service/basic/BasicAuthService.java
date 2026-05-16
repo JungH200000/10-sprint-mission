@@ -33,7 +33,8 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserDto login(LoginRequest request) {
-        log.debug("[AUTH_LOGIN] 로그인 시작: username={}", request.username());
+        log.debug("[AUTH_LOGIN] 로그인 시작: username={}",
+                request.username());
 
         // 유저 검증, 없으면 예외 발생
         User user = validateAndGetUserByUsername(request.username());
@@ -46,7 +47,8 @@ public class BasicAuthService implements AuthService {
 
         // 온라인 상태 업데이트
         userStatus.setLastActiveAt(Instant.now());
-        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", user.getId());
+        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}",
+                user.getId());
 
         return userMapper.toDto(user);
     }
