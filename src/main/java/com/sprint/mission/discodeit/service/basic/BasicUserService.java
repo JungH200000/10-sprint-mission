@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,8 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
         log.debug("[USER_CREATE] 사용자 등록 시작: email={}, username={}", request.email(), request.username());
@@ -41,6 +44,7 @@ public class BasicUserService implements UserService {
         // newEmail, newUsername 중복 확인
         validateDuplicateEmail(request.email());
         validateDuplicateUserName(request.username());
+
         String email = request.email();
         String username = request.username();
 
@@ -56,17 +60,23 @@ public class BasicUserService implements UserService {
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
                 binaryContentStorage.put(binaryContent.getId(), bytes);
-                log.info("[USER_CREATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
-
+                log.info("[USER_CREATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+                        binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
             } catch (IOException e) {
                 throw new ProfileUploadFailedException(email, username, e);
             }
         }
-        User user = new User(email, username, request.password(), binaryContent);
+
+        // PasswordEncoder를 이용해 비밀번호 해시 처리
+        String encodedPassword = passwordEncoder.encode(request.password());
+        User user = new User(email, username, encodedPassword, binaryContent);
+
         new UserStatus(user, Instant.now());
 
         userRepository.save(user);
-        log.info("[USER_CREATE] 사용자 등록 완료: userId={}, email={}, username={}, profileId={}", user.getId(), user.getEmail(), user.getUsername(), user.getProfile() != null ? user.getProfile().getId() : null);
+
+        log.info("[USER_CREATE] 사용자 등록 완료: userId={}, profileId={}",
+                user.getId(), user.getProfile() != null ? user.getProfile().getId() : null);
 
         return userMapper.toDto(user);
     }
