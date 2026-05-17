@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.config.security;
 
+import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +14,11 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
 
     @Bean
     // SecurityFilterChain Bean 등록
@@ -20,7 +27,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()));
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                .formLogin(login -> login
+                        .loginProcessingUrl("/api/auth/login")
+                        .successHandler(loginSuccessHandler)
+                        .failureHandler(loginFailureHandler))
+                ;
 
         SecurityFilterChain chain = http.build();
 
