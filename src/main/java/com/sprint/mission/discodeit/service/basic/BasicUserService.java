@@ -30,6 +30,7 @@ import java.util.*;
 @Slf4j
 @Transactional
 public class BasicUserService implements UserService {
+
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
