@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @Tag(name = "Auth", description = "인증 API")
 public class AuthController {
+
     private final AuthService authService;
 
     /**

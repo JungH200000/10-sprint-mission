@@ -25,6 +25,7 @@ import java.util.UUID;
 @Transactional
 @Slf4j
 public class BasicAuthService implements AuthService {
+
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
