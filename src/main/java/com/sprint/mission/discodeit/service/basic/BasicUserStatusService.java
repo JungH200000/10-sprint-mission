@@ -162,7 +162,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     private void validateAndGetUserByUserId(UUID userId) {
         if (userId == null) {
-            throw new InvalidInputException("userId", userId);
+            throw new InvalidInputException("userId", null);
         }
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
@@ -171,7 +171,7 @@ public class BasicUserStatusService implements UserStatusService {
     // 사용자 상태 정보(UserStatus) 존재 확인
     private UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
         if (userStatusId == null) {
-            throw new InvalidInputException("userStatusId", userStatusId);
+            throw new InvalidInputException("userStatusId", null);
         }
         return userStatusRepository.findByIdWithUser(userStatusId)
                 .orElseThrow(() -> new UserStatusNotFoundException("userStatusId", userStatusId));
