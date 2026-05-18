@@ -27,13 +27,15 @@ import java.util.UUID;
 @Slf4j
 @Transactional
 public class BasicUserStatusService implements UserStatusService {
+
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
     private final UserStatusMapper userStatusMapper;
 
     @Override
     public UserStatusDto create(UserStatusCreateRequest request) {
-        log.debug("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 시작: userId={}", request.userId());
+        log.debug("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 시작: userId={}",
+                request.userId());
 
         User user = validateAndGetUserByUserIdWithStatusAndProfile(request.userId());
         UUID userId = user.getId();
@@ -44,7 +46,8 @@ public class BasicUserStatusService implements UserStatusService {
 
         UserStatus userStatus = new UserStatus(user, Instant.now());
         userStatusRepository.save(userStatus);
-        log.info("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.info("[USER_STATUS_CREATE] 사용자 온라인 상태 생성 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}",
+                userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
@@ -55,7 +58,8 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("[USER_STATUS_FIND] 사용자 온라인 상태 조회 시작: userStatusId={}", userStatusId);
 
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
-        log.debug("[USER_STATUS_FIND] 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.debug("[USER_STATUS_FIND] 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}",
+                userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
@@ -63,10 +67,12 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional(readOnly = true)
     @Override
     public UserStatusDto findByUserId(UUID userId) {
-        log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 시작: userId={}", userId);
+        log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 시작: userId={}",
+                userId);
 
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
-        log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+        log.debug("[USER_STATUS_FIND_BY_USERID] userId로 사용자 온라인 상태 조회 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}",
+                userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
@@ -79,14 +85,16 @@ public class BasicUserStatusService implements UserStatusService {
         List<UserStatusDto> userStatusDtoList = userStatusRepository.findAllWithUser().stream()
                 .map(userStatus -> userStatusMapper.toDto(userStatus))
                 .toList();
-        log.debug("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: count={}", userStatusDtoList.size());
+        log.debug("[USER_STATUS_LIST_FIND] 사용자 온라인 상태 목록 조회 완료: count={}",
+                userStatusDtoList.size());
 
         return userStatusDtoList;
     }
 
     @Override
     public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
-        log.debug("[USER_STATUS_UPDATE] 사용자 온라인 상태 수정 시작: userStatusId={}, newLastActiveAt={}", userStatusId, request.newLastActiveAt());
+        log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE] 사용자 온라인 상태 수정 시작: userStatusId={}, newLastActiveAt={}",
+                userStatusId, request.newLastActiveAt());
 
         if (request.newLastActiveAt() == null) {
             throw new InvalidInputException("newLastActiveAt", null);
@@ -95,15 +103,17 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = validateAndGetUserStatusByUserStatusId(userStatusId);
 
         userStatus.setLastActiveAt(request.newLastActiveAt());
-        userStatusRepository.save(userStatus);
-        log.info("[USER_STATUS_UPDATE] 사용자 온라인 상태 수정 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+
+        log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE] 사용자 온라인 상태 수정 완료: userStatusId={}, userId={}, lastActiveAt={}, isOnline={}",
+                userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
     }
 
     @Override
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-        log.debug("[USER_STATUS_UPDATE_BY_USERID] userId로 사용자 온라인 상태 수정 시작: userId={}, newLastActiveAt={}", userId, request.newLastActiveAt());
+        log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE_BY_USERID] 사용자 온라인 상태 수정 시작: userId={}, newLastActiveAt={}",
+                userId, request.newLastActiveAt());
 
         if (request.newLastActiveAt() == null) {
             throw new InvalidInputException("newLastActiveAt", null);
@@ -112,10 +122,26 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
         userStatus.setLastActiveAt(request.newLastActiveAt());
-        userStatusRepository.save(userStatus);
-        log.info("[USER_STATUS_UPDATE_BY_USERID] userId로 사용자 온라인 상태 수정 완료: userStatusID={}, userId={}, lastActiveAt={}, isOnline={}", userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
+
+        log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE_BY_USERID] 사용자 온라인 상태 수정 완료: userStatusId={}, userId={}, lastActiveAt={}, isOnline={}",
+                userStatus.getId(), userStatus.getUser().getId(), userStatus.getLastActiveAt(), userStatus.isOnlineStatus());
 
         return userStatusMapper.toDto(userStatus);
+    }
+
+    @Override
+    public void updateLastActiveAtOnLogin(UUID userId) {
+        log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE_ON_LOGIN] 로그인 성공 후 사용자 온라인 상태 갱신 시작: userId={}",
+                userId);
+
+        // 사용자 상태 정보 존재 확인
+        UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
+
+        // 사용자 온라인 상태 업데이트
+        userStatus.setLastActiveAt(Instant.now());
+
+        log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE_ON_LOGIN] 로그인 성공 후 사용자 온라인 상태 갱신 완료: userId={}, lastActiveAt={}",
+                userId, userStatus.getLastActiveAt());
     }
 
     @Override
@@ -127,8 +153,8 @@ public class BasicUserStatusService implements UserStatusService {
         log.info("[USER_STATUS_DELETE] 사용자 온라인 상태 삭제 완료: userStatusId={}", userStatusId);
     }
 
-    /// / validation
-    // user ID null & user 객체 존재 확인
+    // ===== [validation] =====
+    // 사용자 존재 확인
     private User validateAndGetUserByUserIdWithStatusAndProfile(UUID userID) {
         return userRepository.findByIdWithStatusAndProfile(userID)
                 .orElseThrow(() -> new UserNotFoundException("userId", userID));
@@ -142,6 +168,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 
+    // 사용자 상태 정보(UserStatus) 존재 확인
     private UserStatus validateAndGetUserStatusByUserStatusId(UUID userStatusId) {
         if (userStatusId == null) {
             throw new InvalidInputException("userStatusId", userStatusId);
@@ -152,7 +179,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     private UserStatus validateAndGetUserStatusByUserId(UUID userId) {
         if (userId == null) {
-            throw new InvalidInputException("userId", userId);
+            throw new InvalidInputException("userId", null);
         }
         return userStatusRepository.findByUserIdWithUser(userId)
                 .orElseThrow(() -> new UserStatusNotFoundException("userId", userId));
