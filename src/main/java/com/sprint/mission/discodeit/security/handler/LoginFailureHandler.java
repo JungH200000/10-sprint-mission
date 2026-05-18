@@ -16,10 +16,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+// 로그인 인증 실패 후 실행되는 핸들러 클래스
 @Component
 @Slf4j
 @RequiredArgsConstructor
-// 로그인 인증 실패 후 실행되는 핸들러 클래스
 public class LoginFailureHandler implements AuthenticationFailureHandler {
 
     private final ObjectMapper objectMapper;

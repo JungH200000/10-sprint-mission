@@ -11,10 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// 로그인할 때 입력된 username으로 사용자를 조회하고,
+// 조회한 사용자 정보를 인증에 필요한 UserDetails로 변환해 반환
 @Service
 @RequiredArgsConstructor
 @Transactional
-// 로그인할 때 입력된 username으로 사용자를 조회하고, 조회 결과를 UserDetails로 변환해 Spring Security로 넘김
 public class DiscodeitUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;

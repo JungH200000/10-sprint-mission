@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+// 로그인 인증 성공 후 실행되는 핸들러 클래스로, 사용자 인증이 성공했을 때 어떻게 처리할지를 정하는 객체
 @Component
 @Slf4j
 @RequiredArgsConstructor
-// 로그인 인증 성공 후 실행되는 핸들러 클래스로, 사용자 인증이 성공했을 때 어떻게 처리할지를 정하는 객체
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserStatusService userStatusService;

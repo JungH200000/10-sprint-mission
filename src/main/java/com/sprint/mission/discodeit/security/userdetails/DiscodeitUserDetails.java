@@ -10,10 +10,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
-@RequiredArgsConstructor
 // Spring Security의 formLogin 인증 과정에서 사용되는 사용자 정보 객체
 // 사용자가 인증에 성공 시, 이 객체가 Authentication의 principal로 저장됨
+@Getter
+@RequiredArgsConstructor
 public class DiscodeitUserDetails implements UserDetails {
 
     private final UserDto userDto;

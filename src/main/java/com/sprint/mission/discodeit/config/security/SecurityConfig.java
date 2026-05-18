@@ -22,9 +22,9 @@ public class SecurityConfig {
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
 
-    @Bean
     // SecurityFilterChain Bean 등록
     // HttpSecurity를 통해 HTTP 요청에 대한 보안 설정 구성
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
@@ -51,9 +51,9 @@ public class SecurityConfig {
         return chain;
     }
 
-    @Bean
     // PasswordEncoder Bean 등록
     // 비밀번호를 bcrypt 알고리즘으로 해시 처리 - 같은 비밀번호라도 다른 해시값 생성
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
