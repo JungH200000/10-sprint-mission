@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.security.core.AuthenticationException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Getter
 public class ErrorResponse {
+
     private Instant timestamp;
     private String code;
     private String message;
@@ -33,5 +35,17 @@ public class ErrorResponse {
         this.details = new HashMap<>();
         this.exceptionType = e.getClass().getSimpleName();
         this.status = status;
+    }
+
+    // 로그인 실패 전용 정적 메서드
+    public static ErrorResponse authenticationFailure(AuthenticationException e, int status) {
+        return new ErrorResponse(
+                Instant.now(),
+                "LOGIN_FAILED",
+                "아이디 또는 비밀번호가 올바르지 않습니다.",
+                new HashMap<>(),
+                e.getClass().getSimpleName(),
+                status
+        );
     }
 }
