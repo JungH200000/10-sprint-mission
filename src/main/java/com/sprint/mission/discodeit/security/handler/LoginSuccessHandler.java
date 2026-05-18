@@ -42,7 +42,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         UserDto userDto = userDetails.getUserDto();
 
         // lastActiveAt 업데이트
-        userStatusService.updateLastActiveAtOnLogin(userDto.id());
+        userStatusService.refreshLastActiveAtByUserId(userDto.id());
 
         log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", userDto.id());
 

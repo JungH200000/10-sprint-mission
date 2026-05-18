@@ -21,7 +21,7 @@ public interface UserStatusService {
     // update
     UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request);
     UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request);
-    void updateLastActiveAtOnLogin(UUID userId);
+    void refreshLastActiveAtByUserId(UUID userId);
 
     // delete
     void delete(UUID userStatusId);

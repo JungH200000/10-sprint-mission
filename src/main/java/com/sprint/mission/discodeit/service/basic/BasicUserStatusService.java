@@ -130,7 +130,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public void updateLastActiveAtOnLogin(UUID userId) {
+    public void refreshLastActiveAtByUserId(UUID userId) {
         log.debug("[USER_STATUS_LAST_ACTIVE_AT_UPDATE_ON_LOGIN] 로그인 성공 후 사용자 온라인 상태 갱신 시작: userId={}",
                 userId);
 
@@ -153,7 +153,7 @@ public class BasicUserStatusService implements UserStatusService {
         log.info("[USER_STATUS_DELETE] 사용자 온라인 상태 삭제 완료: userStatusId={}", userStatusId);
     }
 
-    // ===== [validation] =====
+    // validation
     // 사용자 존재 확인
     private User validateAndGetUserByUserIdWithStatusAndProfile(UUID userID) {
         return userRepository.findByIdWithStatusAndProfile(userID)
