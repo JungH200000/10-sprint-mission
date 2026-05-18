@@ -88,7 +88,7 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     @Override
     public UserDto find(UUID userId) {
-        log.debug("[USER_FIND] 사용자 조회 시작"); // 단순 조회 -> DEBUG
+        log.debug("[USER_FIND] 사용자 조회 시작");
 
         User user = validateAndGetUserByUserId(userId);
 
@@ -101,7 +101,7 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        log.debug("[USER_LIST_FIND] 사용자 목록 조회 시작"); // 단순 조회 -> DEBUG
+        log.debug("[USER_LIST_FIND] 사용자 목록 조회 시작");
 
         List<UserDto> userDtoList = userRepository.findAllWithStatusAndProfile().stream()
                 .map(user -> userMapper.toDto(user))
