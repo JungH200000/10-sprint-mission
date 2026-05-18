@@ -25,7 +25,7 @@ public class AuthController {
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
         String token = csrfToken.getToken();
 
-        log.debug("[CSRF_TOKEN_REQUEST] CSRF 토큰 요청: csrfToken={}", token);
+        log.debug("[CSRF_TOKEN_REQUEST] CSRF 토큰 요청");
 
         return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
     }
