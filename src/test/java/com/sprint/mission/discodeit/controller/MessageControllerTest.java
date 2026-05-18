@@ -90,7 +90,7 @@ class MessageControllerTest {
 
     private UserDto createUserDto(String email, String username, BinaryContentDto profile, boolean isOnline) {
         UUID authorId = UUID.randomUUID();
-        return new UserDto(authorId, username, email, profile, isOnline);
+        return new UserDto(authorId, username, email, profile, isOnline, Role.USER);
     }
 
     private ChannelDto createChannelDto(ChannelType type, String name, String description,  List<UserDto> participants, Instant lastMessageAt) {

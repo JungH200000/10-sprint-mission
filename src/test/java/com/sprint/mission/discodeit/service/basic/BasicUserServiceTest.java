@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
@@ -75,7 +76,7 @@ class BasicUserServiceTest {
         user = new User(email, username, password, null);
         ReflectionTestUtils.setField(user, "id", userId);
 
-        expectedUserDto = new UserDto(userId, username, email, null, false);
+        expectedUserDto = new UserDto(userId, username, email, null, false, Role.USER);
     }
 
     @Nested
@@ -133,7 +134,7 @@ class BasicUserServiceTest {
             ReflectionTestUtils.setField(profile, "id", profileId);
 
             BinaryContentDto profileDto = new BinaryContentDto(profileId, profileFile.getOriginalFilename(), profileFile.getSize(), profileFile.getContentType());
-            UserDto expectedUserDto = new UserDto(userId, request.username(), request.email(), profileDto, false);
+            UserDto expectedUserDto = new UserDto(userId, request.username(), request.email(), profileDto, false, Role.USER);
 
             given(userRepository.existsByEmail(request.email())).willReturn(false);
             given(userRepository.existsByUsername(request.username())).willReturn(false);
@@ -281,8 +282,8 @@ class BasicUserServiceTest {
             // given(준비)
             User user1 = new User("test1@gmail.com", "test1", "1234", null);
             User user2 = new User("test2@gmail.com", "test2", "1234", null);
-            UserDto expectedUserDto1 = new UserDto(null, "test1", "test1@gmail.com", null, false);
-            UserDto expectedUserDto2 = new UserDto(null, "test2", "test2@gmail.com", null, false);
+            UserDto expectedUserDto1 = new UserDto(null, "test1", "test1@gmail.com", null, false, Role.USER);
+            UserDto expectedUserDto2 = new UserDto(null, "test2", "test2@gmail.com", null, false, Role.USER);
 
             given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of(user1, user2));
             given(userMapper.toDto(user1)).willReturn(expectedUserDto1);
@@ -331,7 +332,7 @@ class BasicUserServiceTest {
         @DisplayName("사용자 ID로 프로필을 제외한 사용자 정보를 수정할 수 있다.")
         void success_update_user_without_profile() {
             // given(준비)
-            UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", null, false);
+            UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", null, false, Role.USER);
 
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(false);
@@ -374,7 +375,7 @@ class BasicUserServiceTest {
             given(newProfileFile.getContentType()).willReturn("image/png");
 
             BinaryContentDto newProfileDto = new BinaryContentDto(null, newProfileFile.getOriginalFilename(), newProfileFile.getSize(), newProfileFile.getContentType());
-            UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", newProfileDto, false);
+            UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", newProfileDto, false, Role.USER);
 
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.of(oldProfile));

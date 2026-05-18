@@ -124,8 +124,8 @@ class BasicChannelServiceTest {
             UUID userId2 = UUID.randomUUID();
             ReflectionTestUtils.setField(user1, "id", userId1);
             ReflectionTestUtils.setField(user2, "id", userId2);
-            UserDto userDto1 = new UserDto(userId1, user1.getUsername(), user1.getEmail(), null, false);
-            UserDto userDto2 = new UserDto(userId2, user2.getUsername(), user2.getEmail(), null, false);
+            UserDto userDto1 = new UserDto(userId1, user1.getUsername(), user1.getEmail(), null, false, user1.getRole());
+            UserDto userDto2 = new UserDto(userId2, user2.getUsername(), user2.getEmail(), null, false, user2.getRole());
 
             List<UUID> participantIds = List.of(userId1, userId2);
             PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
@@ -280,7 +280,7 @@ class BasicChannelServiceTest {
             User user = new User("test@gmail.com", "test", "1234", null);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            UserDto userDto = new UserDto(userId, user.getUsername(), user.getEmail(), null, true);
+            UserDto userDto = new UserDto(userId, user.getUsername(), user.getEmail(), null, true, user.getRole());
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
@@ -367,8 +367,6 @@ class BasicChannelServiceTest {
 
             User user = new User("test@gmail.com", "test", "1234", null);
             ReflectionTestUtils.setField(user, "id", userId);
-
-            UserDto userDto = new UserDto(userId, user.getUsername(), user.getEmail(), null, true);
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId)).willReturn(List.of());

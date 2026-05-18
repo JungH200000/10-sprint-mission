@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
@@ -77,7 +78,7 @@ class UserControllerTest {
 
     private UserDto createUserDto(UUID id, String email, String username, BinaryContentDto profile, boolean isOnline) {
         UUID userId = id == null ? UUID.randomUUID() : id;
-        return new UserDto(userId, username, email, profile, isOnline);
+        return new UserDto(userId, username, email, profile, isOnline, Role.USER);
     }
 
     private BinaryContentDto createBinaryContentDto(String fileName, String contentType, Long size) {

@@ -67,6 +67,6 @@ class BasicAuthServiceTest {
             profileDto = new BinaryContentDto(profile.getId(), profile.getFileName(), profile.getSize(), profile.getContentType());
         }
 
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), profileDto, true);
+        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), profileDto, true, user.getRole());
     }
 }

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -78,7 +79,7 @@ class ChannelControllerTest {
 
     private UserDto createUserDto(String email, String username, BinaryContentDto profile, boolean isOnline) {
         UUID authorId = UUID.randomUUID();
-        return new UserDto(authorId, username, email, profile, isOnline);
+        return new UserDto(authorId, username, email, profile, isOnline, Role.USER);
     }
 
     private ChannelDto createChannelDto(ChannelType type, String name, String description, List<UserDto> participants, Instant lastMessageAt) {

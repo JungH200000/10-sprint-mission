@@ -89,7 +89,7 @@ class BasicMessageServiceTest {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);
-            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
+            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true, author.getRole());
 
             channelId = UUID.randomUUID();
             channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
@@ -326,7 +326,7 @@ class BasicMessageServiceTest {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);
-            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
+            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true, author.getRole());
         }
 
         @Test
@@ -488,7 +488,7 @@ class BasicMessageServiceTest {
             authorId = UUID.randomUUID();
             author = new User("testUser@gmail.com", "testUser", "1234", null);
             ReflectionTestUtils.setField(author, "id", authorId);
-            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true);
+            authorDto = new UserDto(author.getId(), author.getUsername(), author.getEmail(), null, true, author.getRole());
 
             channelId = UUID.randomUUID();
             channel = new Channel(ChannelType.PUBLIC, "channelName", "channelDescription");
