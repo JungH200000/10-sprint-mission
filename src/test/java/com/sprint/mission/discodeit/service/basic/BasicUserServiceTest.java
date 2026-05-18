@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,6 +51,9 @@ class BasicUserServiceTest {
 
     @Mock
     private BinaryContentStorage binaryContentStorage;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private BasicUserService basicUserService;
@@ -86,6 +90,7 @@ class BasicUserServiceTest {
 
             given(userRepository.existsByEmail(request.email())).willReturn(false);
             given(userRepository.existsByUsername(request.username())).willReturn(false);
+            given(passwordEncoder.encode(request.password())).willReturn("encodedPassword");
             given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
 
             // when(실행)
@@ -102,7 +107,9 @@ class BasicUserServiceTest {
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
             verify(binaryContentStorage, never()).put(any(), any());
 
-            verify(userRepository).save(any(User.class));
+            verify(userRepository).save(argThat(user ->
+                    user.getPassword().equals("encodedPassword")));
+
             verify(userMapper).toDto(any(User.class));
         }
 
@@ -589,7 +596,7 @@ class BasicUserServiceTest {
             given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(true);
 
-            // when(실행, then(검증)
+            // when(실행), then(검증)
             assertThrows(DuplicatedUsernameException.class,
                     () -> basicUserService.update(userId, request, null));
 
@@ -612,7 +619,7 @@ class BasicUserServiceTest {
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(true);
 
-            // when(실행, then(검증)
+            // when(실행), then(검증)
             assertThrows(DuplicatedEmailException.class,
                     () -> basicUserService.update(userId, request, null));
 
