@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,15 +31,30 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
-                        .failureHandler(loginFailureHandler))
+                        .failureHandler(loginFailureHandler)
+                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(
-                                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+                                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                )
+                .authorizeHttpRequests(auth -> auth
+                        // Auth
+                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        // 회원가입
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        // 그 외 나머지 `/api/**` 요청
+                        .requestMatchers("/api/**").authenticated()
+                        // `/api/**` 가 아닌 요청 (`/swagger-ui.html`, `/actuator/**` 등)
+                        .anyRequest().permitAll()
+                )
         ;
 
         SecurityFilterChain chain = http.build();
