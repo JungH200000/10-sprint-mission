@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 // 로그인할 때 입력된 username으로 사용자를 조회하고, 조회 결과를 UserDetails로 변환해 Spring Security로 넘김
 public class DiscodeitUserDetailsService implements UserDetailsService {
 
