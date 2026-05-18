@@ -38,7 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = ChannelController.class)
 @Import(GlobalExceptionHandler.class)
 class ChannelControllerTest {

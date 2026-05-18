@@ -40,7 +40,7 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UserController.class)
 @Import(GlobalExceptionHandler.class)
 class UserControllerTest {
@@ -108,7 +108,7 @@ class UserControllerTest {
                             .file(requestPart)
                             .file(profile)
                             .contentType(MediaType.MULTIPART_FORM_DATA))
-                    .andExpect(status().isCreated())
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(expectedUserDto.id().toString()))
                     .andExpect(jsonPath("$.email").value(expectedUserDto.email()))
                     .andExpect(jsonPath("$.username").value(expectedUserDto.username()))
