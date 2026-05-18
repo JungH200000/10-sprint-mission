@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -31,7 +32,7 @@ public class DiscodeitUserDetails implements UserDetails {
     @Override
     // 인증된 사용자가 가진 권한 목록 반환
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + userDto.role()));
     }
 
     @Override
