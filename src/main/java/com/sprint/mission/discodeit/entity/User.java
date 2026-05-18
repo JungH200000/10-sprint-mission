@@ -27,12 +27,22 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     private UserStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     // 생성자
-    public User(String email, String username, String password, BinaryContent profile) {
+    public User(
+            String email,
+            String username,
+            String password,
+            BinaryContent profile
+    ) {
         this.email = email;
         this.username = username;
-        this.password = password; // 해싱?
+        this.password = password;
         this.profile = profile;
+        this.role = Role.USER; // 기본 권한
     }
 
     public void setStatus(UserStatus status) {
@@ -49,5 +59,9 @@ public class User extends BaseUpdatableEntity {
         if (email != null) this.email = email;
         if (password != null) this.password = password;
         if (profile != null) this.profile = profile;
+    }
+
+    public void updateRole(Role role) {
+        if (role != null) this.role = role;
     }
 }
