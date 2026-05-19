@@ -70,6 +70,15 @@ public class SecurityConfig {
                         // 인증이 되었지만 권한이 부족한 사용자가 접근했을 때 실행
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
+                .sessionManagement(management -> management
+                        .sessionConcurrency(concurrency -> concurrency
+                                // 같은 계정으로 유지 가능한 최대 세션 수
+                                .maximumSessions(1)
+                                // 최대 세션 수 도달한 경우 새 로그인 차단
+                                .maxSessionsPreventsLogin(true)
+
+                        )
+                )
         ;
 
         SecurityFilterChain chain = http.build();
