@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -48,6 +50,8 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
+
+    private final UserSessionManager userSessionManager;
 
     @Override
     public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
@@ -106,6 +110,7 @@ public class BasicMessageService implements MessageService {
         List<MessageDto> messageDtoList = messageRepository.findAll().stream()
                 .map(message -> messageMapper.toDto(message))
                 .toList();
+
         log.debug("[MESSAGE_LIST_FIND] 메시지 목록 조회 완료: count={}", messageDtoList.size());
 
         return messageDtoList;
@@ -119,13 +124,16 @@ public class BasicMessageService implements MessageService {
         // Channel ID null & channel 객체 존재 확인
         validateAndGetChannelByChannelId(channelId);
 
+        Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
+
         Instant createdAt = Optional.ofNullable(cursor)
                 .orElse(Instant.now());
 
         Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, createdAt, pageable)
-                .map(message -> messageMapper.toDto(message));
+                .map(message -> messageMapper.toDto(message, onlineUserIds));
 
         Instant nextCursor = !slice.getContent().isEmpty() ? slice.getContent().get(slice.getContent().size() - 1).createdAt() : null;
+
         log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 완료: channelId={}, messageCount={}, nextCursor={}, hasNext={}", channelId, slice.getSize(), nextCursor, slice.hasNext());
 
         return pageResponseMapper.fromSlice(slice, nextCursor);
