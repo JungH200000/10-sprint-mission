@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -69,7 +70,9 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "User 권한이 성공적으로 업데이트됨"),
             @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User with id {id} not found")))
     })
-    public ResponseEntity<UserDto> updateUserRole(@RequestBody UserRoleUpdateRequest request) {
+    public ResponseEntity<UserDto> updateUserRole(
+            @RequestBody @Valid UserRoleUpdateRequest request
+    ) {
         UserDto userDto = authService.updateUserRole(request);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
