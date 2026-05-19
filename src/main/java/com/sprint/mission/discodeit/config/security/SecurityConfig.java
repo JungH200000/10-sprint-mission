@@ -96,7 +96,7 @@ public class SecurityConfig {
 
     // Method Security 표현식을 처리하는 핸들러 설정
     @Bean
-    public MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         // @PreAuthorize, @PostAuthorize 같은 Method Security 표현식을 처리하는 핸들러
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
 
