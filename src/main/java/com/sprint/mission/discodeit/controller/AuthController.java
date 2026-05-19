@@ -35,6 +35,7 @@ public class AuthController {
 
     // csrf 토큰 생성 API
     @RequestMapping(value = "/csrf-token", method = RequestMethod.GET)
+    @ApiResponse(responseCode = "203", description = "CSRF 토큰 요청이 성공적으로 수행됨")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
         String token = csrfToken.getToken();
 
