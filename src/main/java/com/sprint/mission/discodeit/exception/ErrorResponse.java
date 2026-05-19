@@ -37,7 +37,7 @@ public class ErrorResponse {
         this.status = status;
     }
 
-    // 로그인 실패 전용 정적 메서드
+    // 로그인 실패 전용 정적 팩토리 메서드
     public static ErrorResponse authenticationFailure(AuthenticationException e, int status) {
         return new ErrorResponse(
                 Instant.now(),
