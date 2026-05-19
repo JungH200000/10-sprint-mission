@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.config.security;
 
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +26,8 @@ public class SecurityConfig {
 
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
 
     // SecurityFilterChain Bean 등록
     // HttpSecurity를 통해 HTTP 요청에 대한 보안 설정 구성
@@ -55,6 +59,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").authenticated()
                         // `/api/**` 가 아닌 요청 (`/swagger-ui.html`, `/actuator/**` 등)
                         .anyRequest().permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        // 인증되지 않은 사용자가 인증이 필요한 API에 접근했을 때 실행
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        // 인증이 되었지만 권한이 부족한 사용자가 접근했을 때 실행
+                        .accessDeniedHandler(restAccessDeniedHandler)
                 )
         ;
 
