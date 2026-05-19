@@ -16,6 +16,8 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -76,7 +78,8 @@ public class SecurityConfig {
                                 .maximumSessions(1)
                                 // 최대 세션 수 도달한 경우 새 로그인 차단
                                 .maxSessionsPreventsLogin(true)
-
+                                // 동시 세션 관리 기능이 사용할 SessionRegistry 저장소 지정
+                                .sessionRegistry(sessionRegistry())
                         )
                 )
         ;
@@ -90,6 +93,12 @@ public class SecurityConfig {
         log.debug("========== [Spring Security Filter List - END] ==========");
 
         return chain;
+    }
+
+    // 로그인한 사용자의 principal과 해당 사용자의 세션 정보를 관리하는 SessionRegistry Bean 등록
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     // Role Hierarchy (권한 계층 구조)
