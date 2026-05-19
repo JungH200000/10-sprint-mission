@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class BasicChannelService implements ChannelService {
+
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
@@ -37,6 +39,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
         log.debug("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 시작: name={}, description={}", request.name(), request.description());
@@ -138,6 +141,7 @@ public class BasicChannelService implements ChannelService {
         return channelDtoList;
     }
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         log.debug("[CHANNEL_UPDATE] 채널 정보 수정 시작: channelId={}, newName={}, newDescription={}", channelId, request.newName(), request.newDescription());
@@ -164,6 +168,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public void delete(UUID channelId) {
         log.debug("[CHANNEL_DELETE] 채널 삭제 시작: channelId={}", channelId);
@@ -179,7 +184,7 @@ public class BasicChannelService implements ChannelService {
     //로그인 되어있는 user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
         if (userId == null) {
-            throw new InvalidInputException("userId", userId);
+            throw new InvalidInputException("userId", null);
         }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
@@ -187,7 +192,7 @@ public class BasicChannelService implements ChannelService {
 
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
         if (channelId == null) {
-            throw new InvalidInputException("channelId", channelId);
+            throw new InvalidInputException("channelId", null);
         }
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
