@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.security.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,8 +23,6 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final UserStatusService userStatusService;
-
     private final ObjectMapper objectMapper;
 
     @Override
@@ -40,9 +37,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
 
         UserDto userDto = userDetails.getUserDto();
-
-        // lastActiveAt 업데이트
-        userStatusService.refreshLastActiveAtByUserId(userDto.id());
 
         UserDto refreshedUserDto = new UserDto(
                 userDto.id(),
