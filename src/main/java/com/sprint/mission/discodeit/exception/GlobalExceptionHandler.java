@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,9 +23,11 @@ public class GlobalExceptionHandler {
         HttpStatus status = getHttpStatus(errorCode);
 
         if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
-            log.error("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}", e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
+            log.error("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}",
+                    e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
         } else {
-            log.warn("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}", e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
+            log.warn("[Exception] 커스텀 예외: timestamp={}, code={}, message={}, details={}",
+                    e.getTimestamp(), e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
         }
 
         ErrorResponse errorResponse = new ErrorResponse(e, status.value());
@@ -34,7 +37,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("[Exception] 예상하지 못한 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+        log.error("[Exception] 예상하지 못한 예외: code={}, message={}",
+                e.getClass().getSimpleName(), e.getMessage(), e);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
         ErrorResponse errorResponse = new ErrorResponse(e, status.value());
@@ -44,7 +48,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
-        log.warn("[EXCEPTION] Bean Validation 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+        log.warn("[EXCEPTION] Bean Validation 예외: code={}, message={}",
+                e.getClass().getSimpleName(), e.getMessage(), e);
 
         Map<String, Object> details = new HashMap<>();
         e.getBindingResult().getFieldErrors()
@@ -62,9 +67,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+        log.warn("[AUTH_ACCESS_DENIED] 권한이 부족한 요청: code={}, message={}",
+                e.getClass().getSimpleName(), e.getMessage(), e);
+
+        int status = HttpStatus.FORBIDDEN.value();
+        ErrorResponse errorResponse = ErrorResponse.accessDenied(e, status);
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleException(HttpMessageNotReadableException e) {
-        log.warn("[EXCEPTION] 적합하지 않은 HTTP Request Body: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+        log.warn("[EXCEPTION] 적합하지 않은 HTTP Request Body: code={}, message={}",
+                e.getClass().getSimpleName(), e.getMessage(), e);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now(),
@@ -80,7 +97,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentTypeMismatchException e) {
-        log.warn("[EXCEPTION] 요청 파라미터 타입 형식 예외: code={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+        log.warn("[EXCEPTION] 요청 파라미터 타입 형식 예외: code={}, message={}",
+                e.getClass().getSimpleName(), e.getMessage(), e);
 
         Map<String, Object> details = new HashMap<>();
         details.put(e.getName(), e.getValue()); // (파라미터 필드 이름, 파라미터 필드 값)
