@@ -44,7 +44,16 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         // lastActiveAt 업데이트
         userStatusService.refreshLastActiveAtByUserId(userDto.id());
 
-        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", userDto.id());
+        UserDto refreshedUserDto = new UserDto(
+                userDto.id(),
+                userDto.username(),
+                userDto.email(),
+                userDto.profile(),
+                true,
+                userDto.role()
+        );
+
+        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", refreshedUserDto.id());
 
         // response
         // 응답 상태 코드 200
@@ -54,7 +63,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         // 한글 깨짐 방지를 위해 UTF-8 인코딩 설정
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         // UserDto 객체 -> JSON으로 변환 후 응답 Body에 담음
-        objectMapper.writeValue(response.getWriter(), userDto);
+        objectMapper.writeValue(response.getWriter(), refreshedUserDto);
     }
     // 이후 SecurityContext에 Authentication이 저장됨
 }
