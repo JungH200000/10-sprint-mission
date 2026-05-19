@@ -16,12 +16,14 @@ import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantR
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -59,7 +61,10 @@ class BasicChannelServiceTest {
     private ChannelMapper channelMapper;
 
     @Mock
-    private UserMapper userMapper;
+    private BinaryContentMapper binaryContentMapper;
+
+    @Mock
+    private UserSessionManager userSessionManager;
 
     @InjectMocks
     private BasicChannelService basicChannelService;
@@ -313,6 +318,8 @@ class BasicChannelServiceTest {
             );
 
             given(messageRepository.findLastMessageAtDtoByChannelIds(channelIds)).willReturn(channelLastMessageAtDtoList);
+            given(binaryContentMapper.toDto(user.getProfile())).willReturn(null);
+            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
 
             UUID readStatusId3 = UUID.randomUUID();
             UUID readStatusId4 = UUID.randomUUID();
@@ -325,8 +332,6 @@ class BasicChannelServiceTest {
             List<ReadStatus> readStatusList = List.of(readStatus3, readStatus4);
 
             given(readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds)).willReturn(readStatusList);
-
-            given(userMapper.toDto(user)).willReturn(userDto);
 
             ChannelDto channelDto1 = new ChannelDto(channelId1, channel1.getType(), channel1.getName(), channel1.getDescription(), List.of(), Instant.now());
             ChannelDto channelDto2 = new ChannelDto(channelId2, channel2.getType(), channel2.getName(), channel2.getDescription(), List.of(), null);
@@ -355,7 +360,6 @@ class BasicChannelServiceTest {
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
             verify(messageRepository).findLastMessageAtDtoByChannelIds(channelIds);
             verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(privateChannelIds);
-            verify(userMapper, times(2)).toDto(user);
             verify(channelMapper, times(4)).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 
@@ -371,6 +375,7 @@ class BasicChannelServiceTest {
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId)).willReturn(List.of());
             given(messageRepository.findLastMessageAtDtoByChannelIds(List.of())).willReturn(List.of());
+            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
             given(readStatusRepository.findAllByChannelIdsWithUserAndChannel(List.of())).willReturn(List.of());
 
             List<ChannelDto> expectedChannelDtoList = List.of();
@@ -386,7 +391,6 @@ class BasicChannelServiceTest {
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
             verify(messageRepository).findLastMessageAtDtoByChannelIds(anyList());
             verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(anyList());
-            verify(userMapper, never()).toDto(any(User.class));
             verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 
@@ -401,7 +405,6 @@ class BasicChannelServiceTest {
             verify(channelRepository, never()).findChannelByUserId(eq(ChannelType.PUBLIC), any());
             verify(messageRepository, never()).findLastMessageAtDtoByChannelIds(any());
             verify(readStatusRepository, never()).findAllByChannelIdsWithUserAndChannel(any());
-            verify(userMapper, never()).toDto(any(User.class));
             verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 
@@ -420,7 +423,6 @@ class BasicChannelServiceTest {
             verify(channelRepository, never()).findChannelByUserId(eq(ChannelType.PUBLIC), any());
             verify(messageRepository, never()).findLastMessageAtDtoByChannelIds(any());
             verify(readStatusRepository, never()).findAllByChannelIdsWithUserAndChannel(any());
-            verify(userMapper, never()).toDto(any(User.class));
             verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
         }
     }
