@@ -19,7 +19,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
-@EnableMethodSecurity // Method Security 활성화
+@EnableMethodSecurity(prePostEnabled = true) // Method Security 활성화
 public class SecurityConfig {
 
     private final LoginSuccessHandler loginSuccessHandler;
