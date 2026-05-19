@@ -21,7 +21,7 @@ import java.time.Instant;
 @Transactional
 public class AdminInitializer implements ApplicationRunner {
 
-    private AdminProperties adminProperties;
+    private final AdminProperties adminProperties;
 
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
