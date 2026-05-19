@@ -10,6 +10,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -77,6 +81,29 @@ public class SecurityConfig {
         log.debug("========== [Spring Security Filter List - END] ==========");
 
         return chain;
+    }
+
+    // Role Hierarchy (권한 계층 구조)
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        // builder 방식
+        // `withDefaultRolePrefix` 사용 시 `ROLE_` prefix를 자동으로 붙여줌
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("CHANNEL_MANAGER")
+                .role("CHANNEL_MANAGER").implies("USER")
+                .build();
+    }
+
+    // Method Security 표현식을 처리하는 핸들러 설정
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+        // @PreAuthorize, @PostAuthorize 같은 Method Security 표현식을 처리하는 핸들러
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+
+        // Method Security에서도 RoleHierarchy가 적용되도록 설정
+        handler.setRoleHierarchy(roleHierarchy);
+
+        return handler;
     }
 
     // PasswordEncoder Bean 등록
