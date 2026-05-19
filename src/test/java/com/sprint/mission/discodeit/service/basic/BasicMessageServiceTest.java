@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,6 +73,9 @@ class BasicMessageServiceTest {
 
     @Mock
     private PageResponseMapper pageResponseMapper;
+
+    @Mock
+    private UserSessionManager userSessionManager;
 
     @InjectMocks
     private BasicMessageService basicMessageService;
@@ -342,6 +347,8 @@ class BasicMessageServiceTest {
 
             given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
 
+            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
+
             UUID messageId1 = UUID.randomUUID();
             UUID messageId2 = UUID.randomUUID();
             UUID messageId3 = UUID.randomUUID();
@@ -371,9 +378,9 @@ class BasicMessageServiceTest {
             MessageDto messageDto2 = new MessageDto(messageId2, message2.getCreatedAt(), null, message2.getContent(), message2.getChannel().getId(), authorDto, null);
             MessageDto messageDto3 = new MessageDto(messageId3, message3.getCreatedAt(), null, message3.getContent(), message3.getChannel().getId(), authorDto, null);
 
-            given(messageMapper.toDto(message1)).willReturn(messageDto1);
-            given(messageMapper.toDto(message2)).willReturn(messageDto2);
-            given(messageMapper.toDto(message3)).willReturn(messageDto3);
+            given(messageMapper.toDto(message1, Set.of())).willReturn(messageDto1);
+            given(messageMapper.toDto(message2, Set.of())).willReturn(messageDto2);
+            given(messageMapper.toDto(message3, Set.of())).willReturn(messageDto3);
 
             Slice<MessageDto> messageDtoSlice = new SliceImpl<>(List.of(messageDto1, messageDto2, messageDto3), pageable, true);
 
@@ -391,7 +398,7 @@ class BasicMessageServiceTest {
             verify(channelRepository).findById(channelId);
             verify(messageRepository).findAllByChannelId(channelId, cursor, pageable);
 
-            verify(messageMapper, times(3)).toDto(any(Message.class));
+            verify(messageMapper, times(3)).toDto(any(Message.class), anySet());
             verify(pageResponseMapper).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(createdAt3));
         }
 
@@ -407,6 +414,7 @@ class BasicMessageServiceTest {
             ReflectionTestUtils.setField(channel, "id", channelId);
 
             given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
 
             Slice<Message> messageSlice = new SliceImpl<>(List.of(), pageable, false);
 
@@ -427,7 +435,7 @@ class BasicMessageServiceTest {
             verify(channelRepository).findById(channelId);
             verify(messageRepository).findAllByChannelId(channelId, cursor, pageable);
 
-            verify(messageMapper, never()).toDto(any(Message.class));
+            verify(messageMapper, never()).toDto(any(Message.class), anySet());
             verify(pageResponseMapper).fromSlice(Mockito.<Slice<MessageDto>>any(), eq(null));
         }
 

@@ -10,9 +10,11 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,10 +54,16 @@ class BasicUserServiceTest {
     private UserMapper userMapper;
 
     @Mock
+    private BinaryContentMapper binaryContentMapper;
+
+    @Mock
     private BinaryContentStorage binaryContentStorage;
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserSessionManager userSessionManager;
 
     @InjectMocks
     private BasicUserService basicUserService;
@@ -280,14 +289,20 @@ class BasicUserServiceTest {
         @DisplayName("사용자 목록을 조회할 수 있다.")
         void success_findAll_userList() {
             // given(준비)
+            UUID userId1 = UUID.randomUUID();
+            UUID userId2 = UUID.randomUUID();
             User user1 = new User("test1@gmail.com", "test1", "1234", null);
             User user2 = new User("test2@gmail.com", "test2", "1234", null);
-            UserDto expectedUserDto1 = new UserDto(null, "test1", "test1@gmail.com", null, false, Role.USER);
-            UserDto expectedUserDto2 = new UserDto(null, "test2", "test2@gmail.com", null, false, Role.USER);
+            ReflectionTestUtils.setField(user1, "id", userId1);
+            ReflectionTestUtils.setField(user2, "id", userId2);
+
+            UserDto expectedUserDto1 = new UserDto(user1.getId(), user1.getUsername(), user1.getEmail(), null, true, Role.USER);
+            UserDto expectedUserDto2 = new UserDto(user2.getId(), user2.getUsername(), user2.getEmail(), null, true, Role.USER);
 
             given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of(user1, user2));
-            given(userMapper.toDto(user1)).willReturn(expectedUserDto1);
-            given(userMapper.toDto(user2)).willReturn(expectedUserDto2);
+            given(binaryContentMapper.toDto(user1.getProfile())).willReturn(null);
+            given(binaryContentMapper.toDto(user2.getProfile())).willReturn(null);
+            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of(user1.getId(), user2.getId()));
 
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
@@ -298,7 +313,6 @@ class BasicUserServiceTest {
             assertEquals(expectedUserDto2, result.get(1));
 
             verify(userRepository).findAllWithStatusAndProfile();
-            verify(userMapper, times(2)).toDto(any(User.class));
         }
 
         @Test
@@ -306,6 +320,7 @@ class BasicUserServiceTest {
         void success_findAll_userList_when_empty_userList() {
             // give(준비)
             given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of());
+            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
 
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
@@ -314,7 +329,6 @@ class BasicUserServiceTest {
             assertEquals(0, result.size());
 
             verify(userRepository).findAllWithStatusAndProfile();
-            verify(userMapper, never()).toDto(any(User.class));
         }
     }
 
