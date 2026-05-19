@@ -31,12 +31,17 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
             AuthenticationException exception
     ) throws IOException, ServletException
     {
+        log.warn("[LOGIN_FAILURE] 로그인 실패: method={}, uri={}, exceptionType={}",
+                request.getMethod(), request.getRequestURI(), exception.getClass().getSimpleName());
+
+        int status = HttpStatus.UNAUTHORIZED.value();
+
         // 예외 응답 생성
-        ErrorResponse errorResponse = ErrorResponse.authenticationFailure(exception, 401);
+        ErrorResponse errorResponse = ErrorResponse.loginFailure(exception, status);
 
         // response
         // 응답 상태 코드 401
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(status);
         // 응답 body가 JSON
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         // 한글 깨짐 방지를 위해 UTF-8 인코딩 설정
