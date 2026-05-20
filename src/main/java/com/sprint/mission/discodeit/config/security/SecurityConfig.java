@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,6 +36,9 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
+
+    @Value("${discodeit.security.remember-me-key}")
+    private String rememberMeKey;
 
     // SecurityFilterChain Bean 등록
     // HttpSecurity를 통해 HTTP 요청에 대한 보안 설정 구성
@@ -78,12 +82,18 @@ public class SecurityConfig {
                                 // 같은 계정으로 유지 가능한 최대 세션 수
                                 .maximumSessions(1)
                                 // 최대 세션 수 도달한 경우 새 로그인 차단
-                                .maxSessionsPreventsLogin(true)
+                                // RememberMe 설정으로인해 true -> false
+                                .maxSessionsPreventsLogin(false)
                                 // 동시 세션 관리 기능이 사용할 SessionRegistry 저장소 지정
                                 .sessionRegistry(sessionRegistry())
                         )
                 )
-        ;
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                        .rememberMeCookieName("remember-me")
+                        .key(rememberMeKey)
+                        .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
+                );
 
         SecurityFilterChain chain = http.build();
 
