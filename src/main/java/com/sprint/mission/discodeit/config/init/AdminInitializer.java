@@ -24,10 +24,10 @@ public class AdminInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info("[ADMIN_INITIALIZER] Admin 계정 초기화 시작");
+        log.debug("[ADMIN_INITIALIZER] Admin 계정 초기화 시작");
 
         if (userRepository.existsByRole(Role.ADMIN)) {
-            log.info("[ADMIN_INITIALIZER] Admin 계정 이미 존재");
+            log.debug("[ADMIN_INITIALIZER] Admin 계정 이미 존재");
             return;
         }
 
@@ -42,6 +42,6 @@ public class AdminInitializer implements ApplicationRunner {
 
         userRepository.save(admin);
 
-        log.info("[ADMIN_INITIALIZER] Admin 계정 초기화 완료: adminName={}", admin.getUsername());
+        log.debug("[ADMIN_INITIALIZER] Admin 계정 초기화 완료: adminName={}", admin.getUsername());
     }
 }
