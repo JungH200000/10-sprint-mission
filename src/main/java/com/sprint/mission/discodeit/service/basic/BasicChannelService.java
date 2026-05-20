@@ -194,7 +194,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
-    @PreAuthorize("@channelAuthorizationEvaluator.canDelete(#channelId, authentication.principal)")
+    @PreAuthorize("@channelAuthorizationEvaluator.canDelete(#channelId, authentication)")
     @Override
     public void delete(UUID channelId) {
         log.debug("[CHANNEL_DELETE] 채널 삭제 시작: channelId={}", channelId);
