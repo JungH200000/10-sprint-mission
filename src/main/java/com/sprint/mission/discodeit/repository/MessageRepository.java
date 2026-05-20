@@ -35,7 +35,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel AS c " +
             "LEFT JOIN FETCH m.author AS a " +
-            "LEFT JOIN FETCH a.status " +
             "LEFT JOIN FETCH a.profile " +
             "WHERE c.id = :channelId AND m.createdAt < :createdAt " +
             "ORDER BY m.createdAt DESC, m.id DESC")
