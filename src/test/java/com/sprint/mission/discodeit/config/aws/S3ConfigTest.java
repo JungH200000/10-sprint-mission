@@ -1,7 +1,5 @@
-package com.sprint.mission.discodeit.config;
+package com.sprint.mission.discodeit.config.aws;
 
-import com.sprint.mission.discodeit.config.aws.AwsProperties;
-import com.sprint.mission.discodeit.config.aws.S3Config;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
