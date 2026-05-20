@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS binary_contents
     content_type VARCHAR(100) NOT NULL
 );
 
-
 -- binary_contents : users = 0..1 : 1
 -- read_statuses : users = 0..N : 1
 -- messages : users = 0..N : 1
