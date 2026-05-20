@@ -32,9 +32,6 @@ class BasicAuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserStatusRepository userStatusRepository;
-
-    @Mock
     private UserMapper userMapper;
 
     @InjectMocks
@@ -49,13 +46,9 @@ class BasicAuthServiceTest {
         nowMinus10 = now.minus(10, ChronoUnit.MINUTES);
     }
 
-    private User createUser(String email, String username, String password, BinaryContent profile, Instant lastActiveAt) {
+    private User createUser(String email, String username, String password, BinaryContent profile) {
         User user = new User(email, username, password, profile);
         ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
-
-        if (lastActiveAt != null) {
-            new UserStatus(user, lastActiveAt);
-        }
 
         return user;
     }

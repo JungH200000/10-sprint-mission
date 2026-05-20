@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -52,9 +51,6 @@ class BasicUserServiceTest {
 
     @Mock
     private UserMapper userMapper;
-
-    @Mock
-    private BinaryContentMapper binaryContentMapper;
 
     @Mock
     private BinaryContentStorage binaryContentStorage;
@@ -240,7 +236,7 @@ class BasicUserServiceTest {
         @DisplayName("사용자ID로 사용자 단건 조회를 할 수 있다.")
         void success_find_user() {
             // given(준비)
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(userMapper.toDto(user)).willReturn(expectedUserDto);
 
             // when(실행)
@@ -251,7 +247,7 @@ class BasicUserServiceTest {
             assertEquals(expectedUserDto.email(), result.email());
             assertEquals(expectedUserDto.username(), result.username());
 
-            verify(userRepository).findByIdWithStatusAndProfile(userId);
+            verify(userRepository).findByIdWithProfile(userId);
             verify(userMapper).toDto(user);
         }
 
@@ -262,7 +258,7 @@ class BasicUserServiceTest {
             assertThrows(InvalidInputException.class,
                     () -> basicUserService.find(null));
 
-            verify(userRepository, never()).findByIdWithStatusAndProfile(any());
+            verify(userRepository, never()).findByIdWithProfile(any());
             verify(userMapper, never()).toDto(any(User.class));
         }
 
@@ -270,13 +266,13 @@ class BasicUserServiceTest {
         @DisplayName("해당 ID를 가진 사용자를 찾을 수 없으면 예외가 발생한다.")
         void fail_find_user_when_user_not_found() {
             // given(준비)
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.empty());
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.empty());
 
             // when(실행),  then(검증)
             assertThrows(UserNotFoundException.class,
                     () -> basicUserService.find(userId));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
             verify(userMapper, never()).toDto(any(User.class));
         }
     }
@@ -299,7 +295,7 @@ class BasicUserServiceTest {
             UserDto expectedUserDto1 = new UserDto(user1.getId(), user1.getUsername(), user1.getEmail(), null, true, Role.USER);
             UserDto expectedUserDto2 = new UserDto(user2.getId(), user2.getUsername(), user2.getEmail(), null, true, Role.USER);
 
-            given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of(user1, user2));
+            given(userRepository.findAllWithProfile()).willReturn(List.of(user1, user2));
             given(userSessionManager.getOnlineUserIds()).willReturn(Set.of(user1.getId(), user2.getId()));
             given(userMapper.toDto(eq(user1), anySet())).willReturn(expectedUserDto1);
             given(userMapper.toDto(eq(user2), anySet())).willReturn(expectedUserDto2);
@@ -313,14 +309,14 @@ class BasicUserServiceTest {
             assertEquals(expectedUserDto2, result.get(1));
 
             verify(userMapper, times(2)).toDto(any(User.class), anySet());
-            verify(userRepository).findAllWithStatusAndProfile();
+            verify(userRepository).findAllWithProfile();
         }
 
         @Test
         @DisplayName("사용자가 없을 때 사용자 목록 조회 시 빈 목록을 출력할 수 있다.")
         void success_findAll_userList_when_empty_userList() {
             // give(준비)
-            given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of());
+            given(userRepository.findAllWithProfile()).willReturn(List.of());
 
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
@@ -328,7 +324,7 @@ class BasicUserServiceTest {
             // then(검증)
             assertEquals(0, result.size());
 
-            verify(userRepository).findAllWithStatusAndProfile();
+            verify(userRepository).findAllWithProfile();
             verify(userMapper, never()).toDto(any(User.class), anySet());
         }
     }
@@ -349,7 +345,7 @@ class BasicUserServiceTest {
             // given(준비)
             UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", null, false, Role.USER);
 
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(false);
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userMapper.toDto(user)).willReturn(expectedUpdateUserDto);
@@ -362,7 +358,7 @@ class BasicUserServiceTest {
             assertEquals(expectedUpdateUserDto.email(), result.email());
             assertEquals(expectedUpdateUserDto.username(), result.username());
 
-            verify(userRepository).findByIdWithStatusAndProfile(userId);
+            verify(userRepository).findByIdWithProfile(userId);
             verify(userRepository).isEmailUsedByOther(userId, request.newEmail());
             verify(userRepository).isUsernameUsedByOther(userId, request.newUsername());
             verify(userMapper).toDto(user);
@@ -392,7 +388,7 @@ class BasicUserServiceTest {
             BinaryContentDto newProfileDto = new BinaryContentDto(null, newProfileFile.getOriginalFilename(), newProfileFile.getSize(), newProfileFile.getContentType());
             UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", newProfileDto, false, Role.USER);
 
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.of(oldProfile));
             given(binaryContentStorage.get(oldProfileId)).willReturn(new ByteArrayInputStream(oldProfileBytes));
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
@@ -407,7 +403,7 @@ class BasicUserServiceTest {
             assertEquals(expectedUpdateUserDto.email(), result.email());
             assertEquals(expectedUpdateUserDto.username(), result.username());
 
-            verify(userRepository).findByIdWithStatusAndProfile(userId);
+            verify(userRepository).findByIdWithProfile(userId);
             verify(userRepository).isUsernameUsedByOther(userId, request.newUsername());
             verify(userRepository).isEmailUsedByOther(userId, request.newEmail());
 
@@ -427,7 +423,7 @@ class BasicUserServiceTest {
             assertThrows(InvalidInputException.class,
                     () -> basicUserService.update(null, request, null));
 
-            verify(userRepository, never()).findByIdWithStatusAndProfile(any());
+            verify(userRepository, never()).findByIdWithProfile(any());
             verify(userRepository, never()).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
@@ -443,13 +439,13 @@ class BasicUserServiceTest {
         @Test
         @DisplayName("해당 ID를 가진 사용자를 찾을 수 없으면 예외가 발생한다.")
         void fail_update_user_when_user_not_found() {
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.empty());
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.empty());
 
             // when(실행),  then(검증)
             assertThrows(UserNotFoundException.class,
                     () -> basicUserService.update(userId, request, null));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(binaryContentRepository, never()).findById(any());
             verify(binaryContentStorage, never()).get(any());
@@ -481,14 +477,14 @@ class BasicUserServiceTest {
             given(newProfileFile.isEmpty()).willReturn(false);
             given(newProfileFile.getBytes()).willReturn(newProfileBytes);
 
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.empty());
 
             // when(실행), then(검증)
             assertThrows(ProfileNotFoundException.class,
                     () -> basicUserService.update(userId, request, newProfileFile));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(binaryContentRepository).findById(any());
             verify(binaryContentStorage, never()).get(any());
@@ -520,7 +516,7 @@ class BasicUserServiceTest {
             given(newProfileFile.isEmpty()).willReturn(false);
             given(newProfileFile.getBytes()).willReturn(newProfileBytes);
 
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(binaryContentRepository.findById(oldProfileId)).willReturn(Optional.of(oldProfile));
 
             InputStream inputStream = mock(InputStream.class);
@@ -531,7 +527,7 @@ class BasicUserServiceTest {
             assertThrows(ProfileReadFailedException.class,
                     () -> basicUserService.update(userId, request, newProfileFile));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(binaryContentRepository).findById(any());
             verify(binaryContentStorage).get(any());
@@ -559,13 +555,13 @@ class BasicUserServiceTest {
             given(newProfileFile.isEmpty()).willReturn(false);
             given(newProfileFile.getBytes()).willThrow(new IOException("파일 읽기 실패"));
 
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
 
             // when(실행), then(검증)
             assertThrows(ProfileUploadFailedException.class,
                     () -> basicUserService.update(userId, request, newProfileFile));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(binaryContentRepository, never()).findById(any());
             verify(binaryContentStorage, never()).get(any());
@@ -585,13 +581,13 @@ class BasicUserServiceTest {
             // given(준비)
             request = new UserUpdateRequest(null, null, null);
 
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
 
             // when(실행), then(검증)
             assertThrows(NoChangeValueException.class,
                     () -> basicUserService.update(userId, request, null));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(binaryContentRepository, never()).findById(any());
             verify(binaryContentStorage, never()).get(any());
@@ -609,14 +605,14 @@ class BasicUserServiceTest {
         @DisplayName("기존 사용자 이름이 입력된 사용자 이름과 중복되면 예외가 발생한다.")
         void fail_update_user_when_duplicated_username() {
             // given(준비)
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(true);
 
             // when(실행), then(검증)
             assertThrows(DuplicatedUsernameException.class,
                     () -> basicUserService.update(userId, request, null));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(userRepository).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
@@ -631,7 +627,7 @@ class BasicUserServiceTest {
         @DisplayName("기존 이메일이 입력된 이메일과 중복되면 예외가 발생한다.")
         void fail_update_user_when_duplicated_email() {
             // given(준비)
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(true);
 
@@ -639,7 +635,7 @@ class BasicUserServiceTest {
             assertThrows(DuplicatedEmailException.class,
                     () -> basicUserService.update(userId, request, null));
 
-            verify(userRepository).findByIdWithStatusAndProfile(any());
+            verify(userRepository).findByIdWithProfile(any());
 
             verify(userRepository).isUsernameUsedByOther(any(), eq(request.newUsername()));
             verify(userRepository).isEmailUsedByOther(any(), eq(request.newEmail()));
@@ -659,13 +655,13 @@ class BasicUserServiceTest {
         @DisplayName("사용자 ID로 사용자를 삭제할 수 있다")
         void success_delete_user() {
             // given(준비)
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
 
             // when(실행)
             basicUserService.delete(userId);
 
             // then(검증)
-            verify(userRepository).findByIdWithStatusAndProfile(userId);
+            verify(userRepository).findByIdWithProfile(userId);
             verify(userRepository).deleteById(userId);
         }
 
@@ -676,7 +672,7 @@ class BasicUserServiceTest {
             assertThrows(InvalidInputException.class,
                     () -> basicUserService.delete(null));
 
-            verify(userRepository, never()).findByIdWithStatusAndProfile(null);
+            verify(userRepository, never()).findByIdWithProfile(null);
             verify(userRepository, never()).deleteById(null);
         }
 
@@ -684,13 +680,13 @@ class BasicUserServiceTest {
         @DisplayName("해당 ID를 가진 사용자를 찾을 수 없으면 예외가 발생한다.")
         void delete_user_fail_when_user_not_found() {
             // given(준비)
-            given(userRepository.findByIdWithStatusAndProfile(userId)).willReturn(Optional.empty());
+            given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.empty());
 
             // when(실행), then(검증)
             assertThrows(UserNotFoundException.class,
                     () -> basicUserService.delete(userId));
 
-            verify(userRepository).findByIdWithStatusAndProfile(userId);
+            verify(userRepository).findByIdWithProfile(userId);
             verify(userRepository, never()).deleteById(userId);
         }
     }
