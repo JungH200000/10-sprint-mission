@@ -156,7 +156,7 @@ public class BasicUserStatusService implements UserStatusService {
     // validation
     // 사용자 존재 확인
     private User validateAndGetUserByUserIdWithStatusAndProfile(UUID userID) {
-        return userRepository.findByIdWithStatusAndProfile(userID)
+        return userRepository.findByIdWithProfile(userID)
                 .orElseThrow(() -> new UserNotFoundException("userId", userID));
     }
 

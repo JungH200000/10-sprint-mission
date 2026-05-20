@@ -25,7 +25,7 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // 사용자 조회
-        User user = userRepository.findByUsernameWithStatusAndProfile(username)
+        User user = userRepository.findByUsernameWithProfile(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Principal에 담아둘 UserDto(사용자 정보)

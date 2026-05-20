@@ -105,7 +105,7 @@ public class BasicUserService implements UserService {
 
         // userMapper 사용 => n명의 사용자 x 전체 로그인 principal 순회(SessionRegistry 순회)
         // 그래서 직접 UserDto 구현 => n 명 사용자 + SessionRegistry 1회 순회
-        List<UserDto> userDtoList = userRepository.findAllWithStatusAndProfile().stream()
+        List<UserDto> userDtoList = userRepository.findAllWithProfile().stream()
                 .map(user -> userMapper.toDto(user, onlineUserIds))
                 .toList();
 
@@ -190,7 +190,7 @@ public class BasicUserService implements UserService {
             throw new InvalidInputException("userId", userId);
         }
 
-        return userRepository.findByIdWithStatusAndProfile(userId)
+        return userRepository.findByIdWithProfile(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 

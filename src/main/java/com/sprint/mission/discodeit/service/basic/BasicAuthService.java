@@ -62,7 +62,7 @@ public class BasicAuthService implements AuthService {
     // validation
     // 사용자 존재 확인
     private User validateAndGetUserByUserIdWithStatusAndProfile(UUID userId) {
-        return userRepository.findByIdWithStatusAndProfile(userId)
+        return userRepository.findByIdWithProfile(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }
 }
