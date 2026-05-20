@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -76,8 +74,6 @@ public class BasicUserService implements UserService {
         // PasswordEncoder를 이용해 비밀번호 해시 처리
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = new User(email, username, encodedPassword, binaryContent);
-
-        new UserStatus(user, Instant.now());
 
         userRepository.save(user);
 
