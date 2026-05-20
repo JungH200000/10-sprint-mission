@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -31,7 +30,6 @@ import java.util.UUID;
 public class AuthController {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
     private final AuthService authService;
 
     // csrf 토큰 생성 API
@@ -46,18 +44,18 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
-    @Operation(summary = "세션을 활용한 현재 사용자 정보 조회")
+    @Operation(summary = "세션을 활용한 현재 User 정보 조회")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
-            @ApiResponse(responseCode = "404", description = "User나 UserStatus를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User/UserStatus with id {id} not found")))
+            @ApiResponse(responseCode = "200", description = "현재 인증된 User 정보 조회"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 User", content = @Content(examples = @ExampleObject(value = "Unauthorized"))),
+            @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User with id {id} not found")))
     })
     public ResponseEntity<UserDto> getMe(
             @AuthenticationPrincipal DiscodeitUserDetails principal
     ) {
         UUID userId = principal.getUserDto().id();
 
-        // 사용자 온라인 상태 업데이트
-        userStatusService.refreshLastActiveAtByUserId(userId);
+        log.debug("[AUTH_ME] 현재 인증된 사용자 조회: userId={}", userId);
 
         UserDto userDto = userService.find(userId);
 
@@ -65,9 +63,10 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/role", method = RequestMethod.PUT)
-    @Operation(summary = "사용자 권한 수정")
+    @Operation(summary = "User 권한 수정")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User 권한이 성공적으로 업데이트됨"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 User", content = @Content(examples = @ExampleObject(value = "Unauthorized"))),
             @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User with id {id} not found")))
     })
     public ResponseEntity<UserDto> updateUserRole(
