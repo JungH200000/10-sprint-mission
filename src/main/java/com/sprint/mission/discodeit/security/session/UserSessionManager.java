@@ -59,12 +59,13 @@ public class UserSessionManager {
                         // 해당 사용자의 DiscodeitUserDetails의 세션 목록을 가져옴 (false -> 이미 만료된 세션 제외)
                         sessionRegistry.getAllSessions(discodeitUserDetails, false)
                                 .forEach(sessionInformation -> {
-                                    // 세션 만료 처리
-                                    sessionInformation.expireNow();
+                                            // 세션 만료 처리
+                                            sessionInformation.expireNow();
 
-                                    log.debug("[SESSION_EXPIRED] 권한 변경으로 세션 만료: userId={}, sessionId={}",
-                                            userId, sessionInformation.getSessionId());
-                                })
+                                            log.debug("[SESSION_EXPIRED] 권한 변경으로 세션 만료: userId={}, sessionId={}",
+                                                    userId, sessionInformation.getSessionId());
+                                        }
+                                )
                 );
 
     }
