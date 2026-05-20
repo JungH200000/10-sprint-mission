@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.security.session;
 
+import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,7 @@ public class UserSessionManager {
     // 사용자 온라인 여부 확인
     public boolean isOnline(UUID userId) {
         if (userId == null) {
-            return false;
-            // or 예외 처리?
+            throw new InvalidInputException("userId", null);
         }
 
         return getDiscodeitUserDetailsStream()
