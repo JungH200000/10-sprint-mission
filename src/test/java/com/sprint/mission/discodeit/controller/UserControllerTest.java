@@ -5,17 +5,13 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
-import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicatedUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -54,9 +50,6 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
-
-    @MockitoBean
-    private UserStatusService userStatusService;
 
     @MockitoBean
     private JpaMetamodelMappingContext  jpaMetamodelMappingContext;
@@ -332,53 +325,6 @@ class UserControllerTest {
                     .andExpect(jsonPath("$.code").value(ErrorCode.USER_NOT_FOUND.toString()))
                     .andExpect(jsonPath("$.status").value(404))
                     .andExpect(jsonPath("$.exceptionType").value(UserNotFoundException.class.getSimpleName()))
-                    .andExpect(jsonPath("$.details.userId").value(requestUserId.toString()));
-        }
-    }
-
-    @Nested
-    @DisplayName("사용자 온라인 상태 수정 API 테스트")
-    class updateUserStatus {
-
-        @Test
-        @DisplayName("특정 사용자의 온라인 상태를 수정하면 200 상태 코드와 수정된 사용자 온라인 상태 정보를 반환한다.")
-        void success_update_userStatus_by_userId() throws Exception {
-            // given(준비)
-            UUID requestUserId = UUID.randomUUID();
-            UserStatusUpdateRequest request = new UserStatusUpdateRequest(now);
-
-            UUID userStatusDtoId = UUID.randomUUID();
-            UserStatusDto expectedUserStatus = new UserStatusDto(userStatusDtoId, requestUserId, request.newLastActiveAt());
-
-            given(userStatusService.updateByUserId(requestUserId, request)).willReturn(expectedUserStatus);
-
-            // when(실행), then(검증)
-            mockMvc.perform(patch("/api/users/{userId}/userStatus", requestUserId)
-                            .content(om.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(expectedUserStatus.id().toString()))
-                    .andExpect(jsonPath("$.userId").value(expectedUserStatus.userId().toString()))
-                    .andExpect(jsonPath("$.lastActiveAt").value(expectedUserStatus.lastActiveAt().toString()));
-        }
-
-        @Test
-        @DisplayName("특정 사용자의 온라인 상태를 찾을 수 없으면 404 상태 코드와 예외 응답을 반환한다.")
-        void fail_update_userStatus_by_userId_when_userStatus_not_found() throws Exception {
-            // given(준비)
-            UUID requestUserId = UUID.randomUUID();
-            UserStatusUpdateRequest request = new UserStatusUpdateRequest(now);
-
-            willThrow(new UserStatusNotFoundException("userId", requestUserId)).given(userStatusService).updateByUserId(requestUserId, request);
-
-            // when(실행), then(검증)
-            mockMvc.perform(patch("/api/users/{userId}/userStatus", requestUserId)
-                            .content(om.writeValueAsString(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.code").value(ErrorCode.USER_STATUS_NOT_FOUND.toString()))
-                    .andExpect(jsonPath("$.status").value("404"))
-                    .andExpect(jsonPath("$.exceptionType").value(UserStatusNotFoundException.class.getSimpleName()))
                     .andExpect(jsonPath("$.details.userId").value(requestUserId.toString()));
         }
     }

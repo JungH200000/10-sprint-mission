@@ -17,10 +17,6 @@ public enum ErrorCode {
     PROFILE_NOT_FOUND("프로필 이미지를 찾을 수 없습니다."),
     PROFILE_READ_FAILED("프로필 이미지 처리 중 오류가 발생했습니다."),
 
-    // UserStatus
-    USER_STATUS_NOT_FOUND("사용자 온라인 상태 정보를 찾을 수 없습니다."),
-    DUPLICATED_USER_STATUS("이미 존재하는 사용자 온라인 상태 정보가 있습니다."),
-
     // BinaryContent
     BINARY_CONTENT_NOT_FOUND("바이너리 컨텐츠를 찾을 수 없습니다."),
     BINARY_CONTENT_SAVE_FAILED("바이너리 컨텐츠 저장에 실패했습니다."),

@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS binary_contents
 
 
 -- binary_contents : users = 0..1 : 1
--- user_statuses : users = 1 : 1
 -- read_statuses : users = 0..N : 1
 -- messages : users = 0..N : 1
 CREATE TABLE IF NOT EXISTS users
@@ -25,17 +24,6 @@ CREATE TABLE IF NOT EXISTS users
     profile_id UUID UNIQUE,
     role       VARCHAR(20)         NOT NULL,
     FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE SET NULL
-);
-
--- user_statuses : users = 1 : 1
-CREATE TABLE IF NOT EXISTS user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     timestamptz NOT NULL,
-    updated_at     timestamptz,
-    user_id        UUID UNIQUE NOT NULL,
-    last_active_at timestamptz NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- read_status : channels = 0..N : 1

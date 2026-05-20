@@ -64,12 +64,8 @@ class MessageRepositoryTest {
         nowMinus10 = now.minus(10, ChronoUnit.MINUTES);
     }
 
-    private User createUser(String email, String username, String password, BinaryContent profile, Instant lastActiveAt) {
+    private User createUser(String email, String username, String password, BinaryContent profile) {
         User author = new User(email, username, password, profile);
-
-        if (lastActiveAt != null) {
-            new UserStatus(author, lastActiveAt);
-        }
 
         return userRepository.save(author);
     }
@@ -100,7 +96,7 @@ class MessageRepositoryTest {
     @DisplayName("해당 ID를 가진 메시지를 조회할 수 있다.")
     void find_message_by_id_with_author_channel_attachments() {
         // given(준비)
-        User author = createUser("test1@gmail.com", "test1", "1234", null, null);
+        User author = createUser("test1@gmail.com", "test1", "1234", null);
 
         Channel channel = createChannel(ChannelType.PUBLIC, "test1Channel", "test1Channel입니다.");
 
@@ -127,8 +123,8 @@ class MessageRepositoryTest {
     @DisplayName("채널별 가장 최신 메시지 생성 시간을 조회할 수 있다.")
     void find_last_message_createdAt_with_channelIds() {
         // given(준비)
-        User author1 = createUser("test1@gmail.com", "test1", "1234", null, null);
-        User author2 = createUser("test2@gmail.com", "test2", "1234", null, null);
+        User author1 = createUser("test1@gmail.com", "test1", "1234", null);
+        User author2 = createUser("test2@gmail.com", "test2", "1234", null);
 
         Channel channel1 = createChannel(ChannelType.PUBLIC, "test1Channel", "test1Channel입니다.");
         Channel channel2 = createChannel(ChannelType.PRIVATE, "test2Channel", "test2Channel입니다.");
@@ -160,9 +156,9 @@ class MessageRepositoryTest {
     @DisplayName("특정 채널의 메시지 목록을 페이지네이션으로 조회할 수 있다.")
     void find_All_message_by_channelIds() throws InterruptedException {
         // given(준비)
-        User author1 = createUser("test1@gmail.com", "test1", "1234", createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length), nowMinus5);
-        User author2 = createUser("test2@gmail.com", "test2", "1234", null, now);
-        User author3 = createUser("test3@gmail.com", "test3", "1234", null, now);
+        User author1 = createUser("test1@gmail.com", "test1", "1234", createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length));
+        User author2 = createUser("test2@gmail.com", "test2", "1234", null);
+        User author3 = createUser("test3@gmail.com", "test3", "1234", null);
 
         Channel channel1 = createChannel(ChannelType.PUBLIC, "test1Channel", "test1Channel입니다.");
         Channel channel2 = createChannel(ChannelType.PRIVATE, "test2Channel", "test2Channel입니다.");
@@ -207,10 +203,7 @@ class MessageRepositoryTest {
                 .extracting(message -> message.getAuthor().getId())
                 .contains(author1.getId(),  author2.getId())
                 .doesNotContain(author3.getId());
-        assertThat(result)
-                .extracting(message -> message.getAuthor().getStatus().getId())
-                .contains(author1.getStatus().getId(), author2.getStatus().getId())
-                .doesNotContain(author3.getStatus().getId());
+
         // sort 비교
         List<Message> messageList = result.getContent();
         assertThat(messageList.get(0).getCreatedAt()).isAfterOrEqualTo(messageList.get(1).getCreatedAt());

@@ -24,9 +24,6 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id", unique = true)
     private BinaryContent profile; // 프로필 이미지
 
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
-    private UserStatus status;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -43,10 +40,6 @@ public class User extends BaseUpdatableEntity {
         this.password = password;
         this.profile = profile;
         this.role = Role.USER; // 기본 권한
-    }
-
-    public void setStatus(UserStatus status) {
-        this.status = status;
     }
 
     public void update(

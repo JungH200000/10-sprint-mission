@@ -38,7 +38,7 @@ public class BasicAuthService implements AuthService {
         log.debug("[USER_ROLE_UPDATE] 사용자 권한 수정 시작: userId={}, newRole={}",
                 userId, newRole);
 
-        User user = validateAndGetUserByUserIdWithStatusAndProfile(userId);
+        User user = validateAndGetUserByUserIdWithProfile(userId);
         Role oldRole = user.getRole();
 
         // 기존 Role과 요청 Role이 다르면
@@ -61,7 +61,7 @@ public class BasicAuthService implements AuthService {
 
     // validation
     // 사용자 존재 확인
-    private User validateAndGetUserByUserIdWithStatusAndProfile(UUID userId) {
+    private User validateAndGetUserByUserIdWithProfile(UUID userId) {
         return userRepository.findByIdWithProfile(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
     }

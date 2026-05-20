@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,9 +30,6 @@ class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Autowired
-    private UserStatusRepository userStatusRepository;
-
-    @Autowired
     private BinaryContentRepository binaryContentRepository;
 
     @Autowired
@@ -46,7 +42,6 @@ class UserRepositoryTest {
     @BeforeEach
     void setUp() {
         binaryContentRepository.deleteAll();
-        userStatusRepository.deleteAll();
         userRepository.deleteAll();
 
         now = Instant.now();
@@ -54,12 +49,8 @@ class UserRepositoryTest {
         nowMinus10 = now.minus(10, ChronoUnit.MINUTES);
     }
 
-    private User createUser(String email, String username, String password, BinaryContent profile, Instant lastActiveAt) {
+    private User createUser(String email, String username, String password, BinaryContent profile) {
         User author = new User(email, username, password, profile);
-
-        if (lastActiveAt != null) {
-            new UserStatus(author, lastActiveAt);
-        }
 
         return userRepository.save(author);
     }
@@ -71,10 +62,10 @@ class UserRepositoryTest {
 
     @Test
     @DisplayName("사용자 ID로 사용자 온라인 상태와 프로필을 포함한 사용자를 조회할 수 있다.")
-    void find_user_by_userId_with_userStatus_and_profile() {
+    void find_user_by_userId_with_profile() {
         // given(준비)
         BinaryContent profile = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
-        User user = createUser("test1@gmail.com", "test1", "1234", profile, nowMinus10);
+        User user = createUser("test1@gmail.com", "test1", "1234", profile);
         UUID userId = user.getId();
 
         // 영속성 해제
@@ -86,16 +77,15 @@ class UserRepositoryTest {
 
         // then(검증)
         assertEquals(userId, result.getId());
-        assertThat(Hibernate.isInitialized(result.getStatus())).isTrue();
         assertThat(Hibernate.isInitialized(result.getProfile())).isTrue();
     }
 
     @Test
     @DisplayName("사용자 이름으로 사용자 온라인 상태와 프로필을 포함한 사용자를 조회할 수 있다.")
-    void find_user_by_username_with_userStatus_and_profile() {
+    void find_user_by_username_with_profile() {
         // given(준비)
         BinaryContent profile = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
-        User user = createUser("test1@gmail.com", "test1", "1234", profile, nowMinus10);
+        User user = createUser("test1@gmail.com", "test1", "1234", profile);
         UUID userId = user.getId();
         String username = user.getUsername();
 
@@ -109,20 +99,19 @@ class UserRepositoryTest {
         // then(검증)
         assertEquals(userId, result.getId());
         assertEquals(username, result.getUsername());
-        assertThat(Hibernate.isInitialized(result.getStatus())).isTrue();
         assertThat(Hibernate.isInitialized(result.getProfile())).isTrue();
     }
 
     @Test
     @DisplayName("사용자별 온라인 상태와 프로필을 포함한 사용자 목록을 조회할 수 있다.")
-    void find_All_user_list_with_userStatus_and_profile() {
+    void find_All_user_list_with_profile() {
         // given(준비)
         BinaryContent profile1 = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
         BinaryContent profile2 = createBinaryContent("test2Binary", "image/png", (long) "test2".getBytes().length);
 
-        User user1 = createUser("test1@gmail.com", "test1", "1234", profile1, nowMinus5);
-        User user2 = createUser("test2@gmail.com", "test2", "1234", profile2, now);
-        User user3 = createUser("test3@gmail.com", "test3", "1234", null, nowMinus10);
+        User user1 = createUser("test1@gmail.com", "test1", "1234", profile1);
+        User user2 = createUser("test2@gmail.com", "test2", "1234", profile2);
+        User user3 = createUser("test3@gmail.com", "test3", "1234", null);
 
         // 영속성 해제
         testEntityManager.flush();
@@ -137,10 +126,6 @@ class UserRepositoryTest {
                 .extracting(user -> user.getId())
                 .containsExactlyInAnyOrder(user1.getId(), user2.getId(), user3.getId());
 
-        assertThat(Hibernate.isInitialized(result.get(0).getStatus())).isTrue();
-        assertThat(Hibernate.isInitialized(result.get(1).getStatus())).isTrue();
-        assertThat(Hibernate.isInitialized(result.get(2).getStatus())).isTrue();
-
         assertThat(Hibernate.isInitialized(result.get(0).getProfile())).isTrue();
         assertThat(Hibernate.isInitialized(result.get(1).getProfile())).isTrue();
         assertThat(Hibernate.isInitialized(result.get(2).getProfile())).isTrue();
@@ -148,7 +133,7 @@ class UserRepositoryTest {
 
     @Test
     @DisplayName("사용자들이 없을 경우, 빈 사용자 목록을 조회할 수 있다.")
-    void find_empty_user_list_with_userStatus_and_profile() {
+    void find_empty_user_list_with_profile() {
         // when(실행)
         List<User> result = userRepository.findAllWithProfile();
 
@@ -164,8 +149,8 @@ class UserRepositoryTest {
         // given(준비)
         BinaryContent profile1 = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
 
-        User my = createUser("test1@gmail.com", "test1", "1234", profile1, nowMinus5);
-        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null, now);
+        User my = createUser("test1@gmail.com", "test1", "1234", profile1);
+        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null);
 
         String inputEmail = anotherUser.getEmail();
 
@@ -186,8 +171,8 @@ class UserRepositoryTest {
         // given(준비)
         BinaryContent profile1 = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
 
-        User my = createUser("test1@gmail.com", "test1", "1234", profile1, nowMinus5);
-        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null, now);
+        User my = createUser("test1@gmail.com", "test1", "1234", profile1);
+        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null);
 
         String inputEmail = "test3@gmail.com";
 
@@ -208,8 +193,8 @@ class UserRepositoryTest {
         // given(준비)
         BinaryContent profile1 = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
 
-        User my = createUser("test1@gmail.com", "test1", "1234", profile1, nowMinus5);
-        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null, now);
+        User my = createUser("test1@gmail.com", "test1", "1234", profile1);
+        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null);
 
         String inputUsername = anotherUser.getUsername();
 
@@ -230,8 +215,8 @@ class UserRepositoryTest {
         // given(준비)
         BinaryContent profile1 = createBinaryContent("test1Binary", "image/png", (long) "test1".getBytes().length);
 
-        User my = createUser("test1@gmail.com", "test1", "1234", profile1, nowMinus5);
-        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null, now);
+        User my = createUser("test1@gmail.com", "test1", "1234", profile1);
+        User anotherUser = createUser("test2@gmail.com", "test2", "1234", null);
 
         String inputUsername = "Jung";
 

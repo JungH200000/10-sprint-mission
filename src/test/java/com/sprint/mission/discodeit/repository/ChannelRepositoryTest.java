@@ -41,12 +41,8 @@ class ChannelRepositoryTest {
         userRepository.deleteAll();
     }
 
-    private User createUser(String email, String username, String password, BinaryContent profile, Instant lastActiveAt) {
+    private User createUser(String email, String username, String password, BinaryContent profile) {
         User author = new User(email, username, password, profile);
-
-        if (lastActiveAt != null) {
-            new UserStatus(author, lastActiveAt);
-        }
 
         return userRepository.save(author);
     }
@@ -60,8 +56,8 @@ class ChannelRepositoryTest {
     @DisplayName("채널 type이 PUBLIC이거나 사용자 ID와 연관된 ReadStatus가 존재하는 채널 목록을 조회할 수 있다.")
     void find_channel_list_with_userId_or_public_channel() {
         // given(준비)
-        User user1 = createUser("test1@gmail.com", "test1", "1234", null, null);
-        User user2 = createUser("test2@gmail.com", "test2", "1234", null, null);
+        User user1 = createUser("test1@gmail.com", "test1", "1234", null);
+        User user2 = createUser("test2@gmail.com", "test2", "1234", null);
 
         Channel channel1 = createChannel(ChannelType.PUBLIC, "test1Channel", "test1Channel입니다.");
         Channel channel2 = createChannel(ChannelType.PUBLIC, "test2Channel", "test2Channel입니다.");
@@ -92,8 +88,8 @@ class ChannelRepositoryTest {
     @DisplayName("채널 type이 PUBLIC이거나 사용자 ID와 연관된 ReadStatus가 없는 경우 빈 채널 목록을 조회할 수 있다.")
     void find_empty_channel_list_without_userId_or_public_channel() {
         // given(준비)
-        User user1 = createUser("test1@gmail.com", "test1", "1234", null, null);
-        User user2 = createUser("test2@gmail.com", "test2", "1234", null, null);
+        User user1 = createUser("test1@gmail.com", "test1", "1234", null);
+        User user2 = createUser("test2@gmail.com", "test2", "1234", null);
 
         Channel channel3 = createChannel(ChannelType.PRIVATE, "test3Channel", "test3Channel입니다.");
         Channel channel4 = createChannel(ChannelType.PRIVATE, "test4Channel", "test4Channel입니다.");
