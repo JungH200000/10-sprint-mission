@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,6 +115,7 @@ public class BasicUserService implements UserService {
         return userDtoList;
     }
 
+    @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
         log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, newEmail={}, newUsername={}, isInputNewPassword={}",
@@ -171,6 +173,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
     public void delete(UUID userId) {
         log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
@@ -187,7 +190,7 @@ public class BasicUserService implements UserService {
     // user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
         if (userId == null) {
-            throw new InvalidInputException("userId", userId);
+            throw new InvalidInputException("userId", null);
         }
 
         return userRepository.findByIdWithProfile(userId)
