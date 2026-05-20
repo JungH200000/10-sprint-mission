@@ -32,7 +32,9 @@ public class AuthController {
     private final UserService userService;
     private final AuthService authService;
 
-    // csrf 토큰 생성 API
+    /**
+     * csrf 토큰 생성
+     */
     @RequestMapping(value = "/csrf-token", method = RequestMethod.GET)
     @ApiResponse(responseCode = "203", description = "CSRF 토큰 요청이 성공적으로 수행됨")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -43,6 +45,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
     }
 
+    /**
+     * 세션을 활용해 현재 인증된 사용자 조회
+     */
     @RequestMapping(value = "/me", method = RequestMethod.GET)
     @Operation(summary = "세션을 활용한 현재 User 정보 조회")
     @ApiResponses(value = {
@@ -62,6 +67,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
+    /**
+     * 사용자 권한 수정
+     */
     @RequestMapping(value = "/role", method = RequestMethod.PUT)
     @Operation(summary = "User 권한 수정")
     @ApiResponses(value = {
