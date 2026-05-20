@@ -82,7 +82,7 @@ class UserRepositoryTest {
         testEntityManager.clear(); // 현재 영속성 컨텍스트를 비움
 
         // when(실행)
-        User result = userRepository.findByIdWithStatusAndProfile(userId).orElseThrow();
+        User result = userRepository.findByIdWithProfile(userId).orElseThrow();
 
         // then(검증)
         assertEquals(userId, result.getId());
@@ -104,7 +104,7 @@ class UserRepositoryTest {
         testEntityManager.clear();
 
         // when(실행)
-        User result = userRepository.findByUsernameWithStatusAndProfile(username).orElseThrow();
+        User result = userRepository.findByUsernameWithProfile(username).orElseThrow();
 
         // then(검증)
         assertEquals(userId, result.getId());
@@ -129,7 +129,7 @@ class UserRepositoryTest {
         testEntityManager.clear();
 
         // when(실행)
-        List<User> result = userRepository.findAllWithStatusAndProfile();
+        List<User> result = userRepository.findAllWithProfile();
 
         // then(검증)
         assertEquals(3,  result.size());
@@ -150,7 +150,7 @@ class UserRepositoryTest {
     @DisplayName("사용자들이 없을 경우, 빈 사용자 목록을 조회할 수 있다.")
     void find_empty_user_list_with_userStatus_and_profile() {
         // when(실행)
-        List<User> result = userRepository.findAllWithStatusAndProfile();
+        List<User> result = userRepository.findAllWithProfile();
 
         // then(검증)
         assertEquals(0,  result.size());
