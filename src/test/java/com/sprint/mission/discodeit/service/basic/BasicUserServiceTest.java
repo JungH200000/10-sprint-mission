@@ -300,9 +300,9 @@ class BasicUserServiceTest {
             UserDto expectedUserDto2 = new UserDto(user2.getId(), user2.getUsername(), user2.getEmail(), null, true, Role.USER);
 
             given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of(user1, user2));
-            given(binaryContentMapper.toDto(user1.getProfile())).willReturn(null);
-            given(binaryContentMapper.toDto(user2.getProfile())).willReturn(null);
             given(userSessionManager.getOnlineUserIds()).willReturn(Set.of(user1.getId(), user2.getId()));
+            given(userMapper.toDto(eq(user1), anySet())).willReturn(expectedUserDto1);
+            given(userMapper.toDto(eq(user2), anySet())).willReturn(expectedUserDto2);
 
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
@@ -312,6 +312,7 @@ class BasicUserServiceTest {
             assertEquals(expectedUserDto1, result.get(0));
             assertEquals(expectedUserDto2, result.get(1));
 
+            verify(userMapper, times(2)).toDto(any(User.class), anySet());
             verify(userRepository).findAllWithStatusAndProfile();
         }
 
@@ -320,7 +321,6 @@ class BasicUserServiceTest {
         void success_findAll_userList_when_empty_userList() {
             // give(준비)
             given(userRepository.findAllWithStatusAndProfile()).willReturn(List.of());
-            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
 
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
@@ -329,6 +329,7 @@ class BasicUserServiceTest {
             assertEquals(0, result.size());
 
             verify(userRepository).findAllWithStatusAndProfile();
+            verify(userMapper, never()).toDto(any(User.class), anySet());
         }
     }
 

@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantR
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -40,13 +39,13 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
-    private final BinaryContentMapper binaryContentMapper;
     private final UserSessionManager userSessionManager;
 
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
-        log.debug("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 시작: name={}, description={}", request.name(), request.description());
+        log.debug("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 시작: name={}, description={}",
+                request.name(), request.description());
 
         Channel channel = new Channel(
                 ChannelType.PUBLIC,
@@ -54,7 +53,9 @@ public class BasicChannelService implements ChannelService {
                 request.description()
         );
         channelRepository.save(channel);
-        log.info("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
+
+        log.info("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 완료: channelId={}, type={}, name={}, description={}",
+                channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
         return channelMapper.toDto(channel);
     }
@@ -80,7 +81,9 @@ public class BasicChannelService implements ChannelService {
             ReadStatus participantReadStatus = new ReadStatus(participant, channel, now);
             readStatusRepository.save(participantReadStatus);
         });
-        log.info("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 완료: channelId={}, type={}, count={}", channel.getId(), channel.getType(), participants.size());
+
+        log.info("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 완료: channelId={}, type={}, count={}",
+                channel.getId(), channel.getType(), participants.size());
 
         return channelMapper.toDto(channel);
     }
@@ -92,7 +95,9 @@ public class BasicChannelService implements ChannelService {
 
         // Channel ID null 검증
         Channel channel = validateAndGetChannelByChannelId(channelId);
-        log.debug("[CHANNEL_FIND] 채널 조회 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
+
+        log.debug("[CHANNEL_FIND] 채널 조회 완료: channelId={}, type={}, name={}, description={}",
+                channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
         return channelMapper.toDto(channel);
     }
@@ -130,30 +135,28 @@ public class BasicChannelService implements ChannelService {
         Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
 
         // 채널별 참가자 목록 조회
-        Map<UUID, List<UserDto>> participantMap = readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds).stream()
-                .collect(Collectors.groupingBy(
-                        readStatus -> readStatus.getChannel().getId(),
-                        Collectors.mapping(
-                                readStatus -> {
-                                    User readStatusUser = readStatus.getUser();
-                                    UUID readStatusUserId = readStatusUser.getId();
-
-                                    return new UserDto(
-                                            readStatusUserId,
-                                            readStatusUser.getUsername(),
-                                            readStatusUser.getEmail(),
-                                            binaryContentMapper.toDto(readStatusUser.getProfile()),
-                                            onlineUserIds.contains(readStatusUserId),
-                                            readStatusUser.getRole()
-                                    );
-                                },
-                                Collectors.toList()
-                        )
-                ));
+        Map<UUID, List<UserDto>> participantMap =
+                readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds).stream()
+                        .collect(
+                                Collectors.groupingBy(readStatus ->
+                                                readStatus.getChannel().getId(),
+                                        Collectors.mapping(readStatus ->
+                                                userMapper.toDto(readStatus.getUser(), onlineUserIds),
+                                        Collectors.toList()
+                                        )
+                                )
+                        );
 
         List<ChannelDto> channelDtoList = channels.stream()
-                .map(channel -> channelMapper.toListDto(channel, participantMap, lastMessageAtMap))
+                .map(channel ->
+                        channelMapper.toListDto(
+                                channel,
+                                participantMap,
+                                lastMessageAtMap
+                        )
+                )
                 .toList();
+
         log.debug("[CHANNEL_LIST_FIND] 채널 조회 목록 완료: count={}", channelDtoList.size());
 
         return channelDtoList;
@@ -162,7 +165,8 @@ public class BasicChannelService implements ChannelService {
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
-        log.debug("[CHANNEL_UPDATE] 채널 정보 수정 시작: channelId={}, newName={}, newDescription={}", channelId, request.newName(), request.newDescription());
+        log.debug("[CHANNEL_UPDATE] 채널 정보 수정 시작: channelId={}, newName={}, newDescription={}",
+                channelId, request.newName(), request.newDescription());
 
         // channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
@@ -175,13 +179,17 @@ public class BasicChannelService implements ChannelService {
         // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
         String newName = changedString(request.newName(), channel.getName());
         String newDescription = changedString(request.newDescription(), channel.getDescription());
-        log.debug("[CHANNEL_UPDATE] 채널 수정 입력값 변경 여부: isChangedName={}, isChangedDescription={}", newName != null, newDescription != null);
+
+        log.debug("[CHANNEL_UPDATE] 채널 수정 입력값 변경 여부: isChangedName={}, isChangedDescription={}",
+                newName != null, newDescription != null);
 
         // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
         validateAllRequestExistingOrNull(newName, newDescription);
 
         channel.update(newName, newDescription);
-        log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료: channelId={}, type={}, name={}, description={}", channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
+
+        log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료: channelId={}, type={}, name={}, description={}",
+                channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
         return channelMapper.toDto(channel);
     }
@@ -195,6 +203,7 @@ public class BasicChannelService implements ChannelService {
         validateAndGetChannelByChannelId(channelId);
 
         channelRepository.deleteById(channelId);
+
         log.info("[CHANNEL_DELETE] 채널 삭제 완료: channelId={}", channelId);
     }
 

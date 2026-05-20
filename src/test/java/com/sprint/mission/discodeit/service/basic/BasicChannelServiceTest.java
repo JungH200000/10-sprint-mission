@@ -61,7 +61,7 @@ class BasicChannelServiceTest {
     private ChannelMapper channelMapper;
 
     @Mock
-    private BinaryContentMapper binaryContentMapper;
+    private UserMapper userMapper;
 
     @Mock
     private UserSessionManager userSessionManager;
@@ -318,7 +318,6 @@ class BasicChannelServiceTest {
             );
 
             given(messageRepository.findLastMessageAtDtoByChannelIds(channelIds)).willReturn(channelLastMessageAtDtoList);
-            given(binaryContentMapper.toDto(user.getProfile())).willReturn(null);
             given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
 
             UUID readStatusId3 = UUID.randomUUID();
@@ -360,6 +359,7 @@ class BasicChannelServiceTest {
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
             verify(messageRepository).findLastMessageAtDtoByChannelIds(channelIds);
             verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(privateChannelIds);
+            verify(userMapper, times(2)).toDto(any(User.class), anySet());
             verify(channelMapper, times(4)).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 
@@ -391,6 +391,7 @@ class BasicChannelServiceTest {
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
             verify(messageRepository).findLastMessageAtDtoByChannelIds(anyList());
             verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(anyList());
+            verify(userMapper, never()).toDto(any(User.class), anySet());
             verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 

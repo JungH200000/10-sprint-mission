@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -36,7 +35,6 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
-    private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
 
     private final PasswordEncoder passwordEncoder;
@@ -112,18 +110,10 @@ public class BasicUserService implements UserService {
         // userMapper 사용 => n명의 사용자 x 전체 로그인 principal 순회(SessionRegistry 순회)
         // 그래서 직접 UserDto 구현 => n 명 사용자 + SessionRegistry 1회 순회
         List<UserDto> userDtoList = userRepository.findAllWithStatusAndProfile().stream()
-                .map(user -> new UserDto(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        binaryContentMapper.toDto(user.getProfile()),
-                        onlineUserIds.contains(user.getId()),
-                        user.getRole()
-                ))
+                .map(user -> userMapper.toDto(user, onlineUserIds))
                 .toList();
 
-        log.debug("[USER_LIST_FIND] 사용자 목록 조회 완료: count={}",
-                userDtoList.size());
+        log.debug("[USER_LIST_FIND] 사용자 목록 조회 완료: count={}", userDtoList.size());
 
         return userDtoList;
     }
@@ -187,15 +177,14 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}",
-                userId);
+        log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateAndGetUserByUserId(userId);
 
         userRepository.deleteById(userId);
-        log.info("[USER_DELETE] 사용자 삭제 완료: userId={}",
-                userId);
+
+        log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
     }
 
     //// validation
