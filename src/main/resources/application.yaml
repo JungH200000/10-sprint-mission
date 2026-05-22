@@ -31,9 +31,9 @@ discodeit:
   security:
     remember-me-key: ${REMEMBER_ME_KEY:rememberMeKey}
     jwt:
-      jwt_secret_key: ${JWT_SECRET_KEY}
-      access-token_expiration-time: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME}
-      refresh-token_expiration-time: ${JWT_REFRESH_TOKEN_EXPIRATION_TIME}
+      jwt_secret_key: ${JWT_SECRET_KEY:}
+      access-token_expiration-time: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME:}
+      refresh-token_expiration-time: ${JWT_REFRESH_TOKEN_EXPIRATION_TIME:}
 
 logging:
   level:
