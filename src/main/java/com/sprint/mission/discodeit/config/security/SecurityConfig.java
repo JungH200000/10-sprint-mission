@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.config.security;
 
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoint;
+import com.sprint.mission.discodeit.security.handler.jwt.JwtLoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,14 +18,11 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @Slf4j
@@ -33,7 +30,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @EnableMethodSecurity(prePostEnabled = true) // Method Security 활성화
 public class SecurityConfig {
 
-    private final LoginSuccessHandler loginSuccessHandler;
+    private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
@@ -52,7 +49,7 @@ public class SecurityConfig {
                 )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
+                        .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
                 .logout(logout -> logout
@@ -98,19 +95,6 @@ public class SecurityConfig {
         log.debug("========== [Spring Security Filter List - END] ==========");
 
         return chain;
-    }
-
-    // 로그인한 사용자의 principal과 해당 사용자의 세션 정보를 관리하는 SessionRegistry Bean 등록
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
-
-    // 로그아웃, 세션 타임아웃 등으로 HttpSession이 만료되거나 제거될 때
-    // SessionRegistry의 세션 등록 정보도 함께 정리되도록 이벤트를 전달하는 Bean
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
     }
 
     // Role Hierarchy (권한 계층 구조)
