@@ -17,6 +17,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -78,15 +79,8 @@ public class SecurityConfig {
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
                 .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                // 같은 계정으로 유지 가능한 최대 세션 수
-                                .maximumSessions(1)
-                                // 최대 세션 수 도달한 경우 새 로그인 차단
-                                // RememberMe 설정으로인해 true -> false
-                                .maxSessionsPreventsLogin(false)
-                                // 동시 세션 관리 기능이 사용할 SessionRegistry 저장소 지정
-                                .sessionRegistry(sessionRegistry())
-                        )
+                        // JWT 기반 토큰 기반 인증을 사용으로 인증 상태를 서버 세션에 저장하지 않도록 설정
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .rememberMe(remember -> remember
                         .rememberMeParameter("remember-me")
