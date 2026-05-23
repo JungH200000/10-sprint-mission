@@ -74,19 +74,23 @@ public class JwtTokenProvider {
     ) {
         JWTClaimsSet jwtClaimsSet = getAndVerifyJwtToken(refreshToken);
 
+        // claims의 토큰 타입이 Refresh Token인지 검증
         validateRefreshToken(jwtClaimsSet);
 
         String userId = discodeitUserDetails.getUserDto().id().toString();
 
+        // Refresh Token의 subject와 현재 사용자의 id가 다를 경우, 예외 발생
         if (!userId.equals(jwtClaimsSet.getSubject())) {
             throw new IllegalArgumentException("사용자 정보와 일치하지 않음");
         }
 
+        // 인증된 사용자 정보를 담은 Access Token 생성
         return generateAccessToken(discodeitUserDetails);
     }
 
     // JWT의 서명과 만료 시간을 검증해 JWT 토큰 유효 여부 확인
     public boolean validateToken(String token) {
+        // 토큰이 없거나 공백일 경우, 유효하지 않은 토큰(false)
         if (token == null || token.isBlank()) {
             return false;
         }
@@ -95,6 +99,7 @@ public class JwtTokenProvider {
             getAndVerifyJwtToken(token);
             return true;
         } catch (IllegalArgumentException e) {
+            // 토큰 파싱, 서명 검증, 만료 검증 중 하나라도 실패할 경우, 유효하지 않은 토큰(false)
             return false;
         }
     }
@@ -102,17 +107,22 @@ public class JwtTokenProvider {
     // claims를 HS256 방식으로 서명해 JWT 문자열로 직렬화
     private String createJwtToken(JWTClaimsSet jwtClaimsSet) {
         try {
+            // 현재 가지고 있는 secret key와 HMAC 서명을 사용해 JWT에 서명할 객체 생성
             JWSSigner jwsSigner = new MACSigner(getJwtSecretKeyBytes());
 
+            // HS256 알고르즘 정보가 담긴 header와 사용자 정보가 담긴 claims로 서명 가능한 JWT 객체 생성
             SignedJWT signedJWT = new SignedJWT(
                     new JWSHeader(JWSAlgorithm.HS256),
                     jwtClaimsSet
             );
 
+            // 현재 가지고 있는 secret key를 사용해 JWT에 HMAC 서명 추가
             signedJWT.sign(jwsSigner);
 
+            // 서명된 JWT를 직렬화
             return signedJWT.serialize();
         } catch (JOSEException e) {
+            // JWT 서명 생성 과정에서 오류가 발생할 경우, 서버 내부의 토큰 생성 실패로 보고 예외 발생
             throw new IllegalStateException("JWT 생성에 실패했습니다.", e);
         }
     }
@@ -122,21 +132,27 @@ public class JwtTokenProvider {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
 
+            // JWT 서명이 현재 가지고 있는 secret key에 HMAC 서명을 사용해 만들어졌는지 확인
             JWSVerifier jwsVerifier = new MACVerifier(getJwtSecretKeyBytes());
 
+            // JWT 서명이 secret key로 검증되지 않을 경우, 예외 발생
             if (!signedJWT.verify(jwsVerifier)) {
+                // 변조되었거나 신뢰할 수 없는 토큰
                 throw new IllegalArgumentException("JWT 서명이 유효하지 않습니다.");
             }
 
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
             Date expirationTime = jwtClaimsSet.getExpirationTime();
 
+            // 만료 시간이 없거나 이미 지난 경우, 예외 발생
             if (expirationTime == null || expirationTime.before(new Date())) {
+                // 사용할 수 없는 토큰
                 throw new IllegalArgumentException("JWT가 만료되었습니다.");
             }
 
             return jwtClaimsSet;
         } catch (ParseException | JOSEException e) {
+            // JWT 문자열 파싱 실패나 서명 검증 객체 처리 중 오류가 발생할 경우, 예외 발생
             throw new IllegalArgumentException("JWT 검증에 실패");
         }
     }
@@ -151,11 +167,13 @@ public class JwtTokenProvider {
         try {
             String tokenType = jwtClaimsSet.getStringClaim(TOKEN_TYPE);
 
+            // claims의 token_type이 refresh_token이 아닐 경우, 예외 발생
             if (!REFRESH_TOKEN_TYPE.equals(tokenType)) {
                 throw new IllegalArgumentException("Refresh Token이 아닙니다.");
             }
 
         } catch (ParseException e) {
+            // token_type claim의 형식이 잘못된 경우, 파싱 처리 오류로 예외 발생
             throw new IllegalArgumentException("TOKEN_TYPE이 잘못된 형식입니다.");
         }
     }
