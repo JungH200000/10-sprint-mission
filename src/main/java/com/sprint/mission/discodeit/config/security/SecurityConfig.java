@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config.security;
 
+import com.sprint.mission.discodeit.security.filter.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoint;
@@ -23,6 +24,7 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -37,6 +39,7 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Value("${discodeit.security.remember-me-key}")
     private String rememberMeKey;
@@ -87,7 +90,8 @@ public class SecurityConfig {
                         .rememberMeCookieName("remember-me")
                         .key(rememberMeKey)
                         .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         SecurityFilterChain chain = http.build();
 
