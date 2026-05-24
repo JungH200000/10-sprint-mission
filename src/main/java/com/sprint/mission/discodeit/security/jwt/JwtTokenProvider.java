@@ -72,6 +72,7 @@ public class JwtTokenProvider {
             String refreshToken,
             DiscodeitUserDetails discodeitUserDetails
     ) {
+        // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
         JWTClaimsSet jwtClaimsSet = getAndVerifyJwtToken(refreshToken);
 
         // claims의 토큰 타입이 Refresh Token인지 검증
@@ -86,36 +87,6 @@ public class JwtTokenProvider {
 
         // 인증된 사용자 정보를 담은 Access Token 생성
         return generateAccessToken(discodeitUserDetails);
-    }
-
-    // JWT 문자열을 파싱한 뒤 서명과 만료 시간을 검증하고 claims를 반환
-    public JWTClaimsSet getAndVerifyJwtToken(String token) {
-        try {
-            SignedJWT signedJWT = SignedJWT.parse(token);
-
-            // JWT 서명이 현재 가지고 있는 secret key에 HMAC 서명을 사용해 만들어졌는지 확인
-            JWSVerifier jwsVerifier = new MACVerifier(getJwtSecretKeyBytes());
-
-            // JWT 서명이 secret key로 검증되지 않을 경우, 예외 발생
-            if (!signedJWT.verify(jwsVerifier)) {
-                // 변조되었거나 신뢰할 수 없는 토큰
-                throw new IllegalArgumentException("JWT 서명이 유효하지 않습니다.");
-            }
-
-            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-            Date expirationTime = jwtClaimsSet.getExpirationTime();
-
-            // 만료 시간이 없거나 이미 지난 경우, 예외 발생
-            if (expirationTime == null || expirationTime.before(new Date())) {
-                // 사용할 수 없는 토큰
-                throw new IllegalArgumentException("JWT가 만료되었습니다.");
-            }
-
-            return jwtClaimsSet;
-        } catch (ParseException | JOSEException e) {
-            // JWT 문자열 파싱 실패나 서명 검증 객체 처리 중 오류가 발생할 경우, 예외 발생
-            throw new IllegalArgumentException("JWT 검증에 실패");
-        }
     }
 
     // JWT의 서명과 만료 시간을 검증해 JWT 토큰 유효 여부 확인
@@ -157,9 +128,54 @@ public class JwtTokenProvider {
         }
     }
 
+    // JWT 문자열을 파싱한 뒤 서명과 만료 시간을 검증하고 claims를 반환
+    private JWTClaimsSet getAndVerifyJwtToken(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+
+            // JWT 서명이 현재 가지고 있는 secret key에 HMAC 서명을 사용해 만들어졌는지 확인
+            JWSVerifier jwsVerifier = new MACVerifier(getJwtSecretKeyBytes());
+
+            // JWT 서명이 secret key로 검증되지 않을 경우, 예외 발생
+            if (!signedJWT.verify(jwsVerifier)) {
+                // 변조되었거나 신뢰할 수 없는 토큰
+                throw new IllegalArgumentException("JWT 서명이 유효하지 않습니다.");
+            }
+
+            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+            Date expirationTime = jwtClaimsSet.getExpirationTime();
+
+            // 만료 시간이 없거나 이미 지난 경우, 예외 발생
+            if (expirationTime == null || expirationTime.before(new Date())) {
+                // 사용할 수 없는 토큰
+                throw new IllegalArgumentException("JWT가 만료되었습니다.");
+            }
+
+            return jwtClaimsSet;
+        } catch (ParseException | JOSEException e) {
+            // JWT 문자열 파싱 실패나 서명 검증 객체 처리 중 오류가 발생할 경우, 예외 발생
+            throw new IllegalArgumentException("JWT 검증에 실패");
+        }
+    }
+
     // JWT 서명에 사용할 secret key를 UTF-8 byte 배열로 변환
     private byte[] getJwtSecretKeyBytes() {
         return jwtProperties.getJwtSecretKey().getBytes(StandardCharsets.UTF_8);
+    }
+
+    // claims의 토큰 타입이 Access Token인지 검증
+    private void validateAccessToken(JWTClaimsSet jwtClaimsSet) {
+        try {
+            String tokenType = jwtClaimsSet.getStringClaim(TOKEN_TYPE);
+
+            // claims의 token_type이 access_token이 아닐 경우, 예외 발생
+            if (!ACCESS_TOKEN_TYPE.equals(tokenType)) {
+                throw new IllegalArgumentException("Access Token이 아닙니다.");
+            }
+        } catch (ParseException e) {
+            // token_type claim의 형식이 잘못된 경우, 파싱 처리 오류로 예외 발생
+            throw new IllegalArgumentException("TOKEN_TYPE이 잘못된 형식입나다.");
+        }
     }
 
     // claims의 토큰 타입이 Refresh Token인지 검증
@@ -171,7 +187,6 @@ public class JwtTokenProvider {
             if (!REFRESH_TOKEN_TYPE.equals(tokenType)) {
                 throw new IllegalArgumentException("Refresh Token이 아닙니다.");
             }
-
         } catch (ParseException e) {
             // token_type claim의 형식이 잘못된 경우, 파싱 처리 오류로 예외 발생
             throw new IllegalArgumentException("TOKEN_TYPE이 잘못된 형식입니다.");
