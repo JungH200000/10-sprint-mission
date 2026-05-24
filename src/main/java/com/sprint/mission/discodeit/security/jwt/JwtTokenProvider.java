@@ -73,7 +73,7 @@ public class JwtTokenProvider {
             DiscodeitUserDetails discodeitUserDetails
     ) {
         // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
-        JWTClaimsSet jwtClaimsSet = getAndVerifyJwtToken(refreshToken);
+        JWTClaimsSet jwtClaimsSet = getAndVerifyToken(refreshToken);
 
         // claims의 토큰 타입이 Refresh Token인지 검증
         validateRefreshToken(jwtClaimsSet);
@@ -97,12 +97,28 @@ public class JwtTokenProvider {
         }
 
         try {
-            getAndVerifyJwtToken(token);
+            getAndVerifyToken(token);
             return true;
         } catch (IllegalArgumentException e) {
             // 토큰 파싱, 서명 검증, 만료 검증 중 하나라도 실패할 경우, 유효하지 않은 토큰(false)
             return false;
         }
+    }
+
+    // Access Token 검증 후 claims 반환
+    public JWTClaimsSet getAndValidateAccessToken(String token) {
+        // 토큰이 없거나 공백일 경우, 유효하지 않은 토큰
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("토큰이 존재하지 않습니다.");
+        }
+
+        // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
+        JWTClaimsSet jwtClaimsSet = getAndVerifyToken(token);
+
+        // claims의 토큰 타입이 Access Token인지 검증
+        validateAccessToken(jwtClaimsSet);
+
+        return jwtClaimsSet;
     }
 
     // claims를 HS256 방식으로 서명해 JWT 문자열로 직렬화
@@ -129,7 +145,7 @@ public class JwtTokenProvider {
     }
 
     // JWT 문자열을 파싱한 뒤 서명과 만료 시간을 검증하고 claims를 반환
-    private JWTClaimsSet getAndVerifyJwtToken(String token) {
+    private JWTClaimsSet getAndVerifyToken(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
 
