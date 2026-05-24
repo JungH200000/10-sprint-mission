@@ -88,6 +88,36 @@ public class JwtTokenProvider {
         return generateAccessToken(discodeitUserDetails);
     }
 
+    // JWT 문자열을 파싱한 뒤 서명과 만료 시간을 검증하고 claims를 반환
+    public JWTClaimsSet getAndVerifyJwtToken(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+
+            // JWT 서명이 현재 가지고 있는 secret key에 HMAC 서명을 사용해 만들어졌는지 확인
+            JWSVerifier jwsVerifier = new MACVerifier(getJwtSecretKeyBytes());
+
+            // JWT 서명이 secret key로 검증되지 않을 경우, 예외 발생
+            if (!signedJWT.verify(jwsVerifier)) {
+                // 변조되었거나 신뢰할 수 없는 토큰
+                throw new IllegalArgumentException("JWT 서명이 유효하지 않습니다.");
+            }
+
+            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+            Date expirationTime = jwtClaimsSet.getExpirationTime();
+
+            // 만료 시간이 없거나 이미 지난 경우, 예외 발생
+            if (expirationTime == null || expirationTime.before(new Date())) {
+                // 사용할 수 없는 토큰
+                throw new IllegalArgumentException("JWT가 만료되었습니다.");
+            }
+
+            return jwtClaimsSet;
+        } catch (ParseException | JOSEException e) {
+            // JWT 문자열 파싱 실패나 서명 검증 객체 처리 중 오류가 발생할 경우, 예외 발생
+            throw new IllegalArgumentException("JWT 검증에 실패");
+        }
+    }
+
     // JWT의 서명과 만료 시간을 검증해 JWT 토큰 유효 여부 확인
     public boolean validateToken(String token) {
         // 토큰이 없거나 공백일 경우, 유효하지 않은 토큰(false)
@@ -124,36 +154,6 @@ public class JwtTokenProvider {
         } catch (JOSEException e) {
             // JWT 서명 생성 과정에서 오류가 발생할 경우, 서버 내부의 토큰 생성 실패로 보고 예외 발생
             throw new IllegalStateException("JWT 생성에 실패했습니다.", e);
-        }
-    }
-
-    // JWT 문자열을 파싱한 뒤 서명과 만료 시간을 검증하고 claims를 반환
-    private JWTClaimsSet getAndVerifyJwtToken(String token) {
-        try {
-            SignedJWT signedJWT = SignedJWT.parse(token);
-
-            // JWT 서명이 현재 가지고 있는 secret key에 HMAC 서명을 사용해 만들어졌는지 확인
-            JWSVerifier jwsVerifier = new MACVerifier(getJwtSecretKeyBytes());
-
-            // JWT 서명이 secret key로 검증되지 않을 경우, 예외 발생
-            if (!signedJWT.verify(jwsVerifier)) {
-                // 변조되었거나 신뢰할 수 없는 토큰
-                throw new IllegalArgumentException("JWT 서명이 유효하지 않습니다.");
-            }
-
-            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-            Date expirationTime = jwtClaimsSet.getExpirationTime();
-
-            // 만료 시간이 없거나 이미 지난 경우, 예외 발생
-            if (expirationTime == null || expirationTime.before(new Date())) {
-                // 사용할 수 없는 토큰
-                throw new IllegalArgumentException("JWT가 만료되었습니다.");
-            }
-
-            return jwtClaimsSet;
-        } catch (ParseException | JOSEException e) {
-            // JWT 문자열 파싱 실패나 서명 검증 객체 처리 중 오류가 발생할 경우, 예외 발생
-            throw new IllegalArgumentException("JWT 검증에 실패");
         }
     }
 
