@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.config.jwt.JwtProperties;
+import com.sprint.mission.discodeit.dto.auth.JwtRefreshDto;
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -14,9 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +32,9 @@ import java.util.UUID;
 @Tag(name = "Auth", description = "인증 API")
 public class AuthController {
 
-    private final UserService userService;
     private final AuthService authService;
+
+    private final JwtProperties jwtProperties;
 
     /**
      * csrf 토큰 생성
@@ -83,5 +87,58 @@ public class AuthController {
         UserDto userDto = authService.updateUserRole(request);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
+    }
+
+    /**
+     * Refresh Token을 이용해 Access Token과 새로운 Refresh Token 재발급
+     */
+    @RequestMapping(value = "/refresh", method = RequestMethod.POST)
+    @Operation(summary = "Refresh Token으로 Access Token 재발급")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Access Token 재발급 성공"),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token", content = @Content(examples = @ExampleObject(value = "Unauthorized")))
+    })
+    public ResponseEntity<?> refreshAccessToken(
+            @CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken
+    ) {
+        try {
+            JwtRefreshDto jwtRefreshDto = authService.refreshAccessToken(refreshToken);
+
+            // Refresh Token을 Cookie에 저장
+            ResponseCookie refreshTokenCookie = ResponseCookie
+                    .from("REFRESH_TOKEN", jwtRefreshDto.newRefreshToken())
+                    .httpOnly(true)
+                    .secure(false) // local용
+                    .path("/")
+                    .maxAge(jwtProperties.getRefreshTokenExpirationTime())
+                    .sameSite("Strict")
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    .body(jwtRefreshDto.jwtDto());
+        } catch (Exception e) {
+            // Refresh Token이 없거나 유효하지 않다면 401 ErrorResponse 반환
+            log.warn("[AUTH_UNAUTHENTICATED] 인증되지 않은 요청: message={}, {}",
+                    e, e.getMessage());
+
+            ResponseCookie unAuthenticatedToken = ResponseCookie
+                    .from("REFRESH_TOKEN", "")
+                    .httpOnly(true)
+                    .secure(false) // local용
+                    .path("/")
+                    .maxAge(0)
+                    .sameSite("Strict")
+                    .build();
+
+            ErrorResponse errorResponse = new ErrorResponse(
+                    e,
+                    HttpStatus.UNAUTHORIZED.value()
+            );
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .header(HttpHeaders.SET_COOKIE, unAuthenticatedToken.toString())
+                    .body(errorResponse);
+        }
     }
 }
