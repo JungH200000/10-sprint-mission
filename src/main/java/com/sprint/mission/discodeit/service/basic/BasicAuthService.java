@@ -68,6 +68,9 @@ public class BasicAuthService implements AuthService {
     // Refresh Token으로 Access Token과 새로운 Refresh Token 재발급
     @Override
     public JwtRefreshDto refreshAccessToken(String refreshToken) {
+        log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 시작: refreshToken={}",
+                refreshToken);
+
         // Refresh Token 검증 및 claims 반환
         JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateRefreshToken(refreshToken);
 
@@ -103,6 +106,9 @@ public class BasicAuthService implements AuthService {
                 refreshUserDto,
                 newAccessToken
         );
+
+        log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 완료: newRefreshToken={}",
+                newRefreshToken);
 
         return new JwtRefreshDto(jwtDto, newRefreshToken);
     }
