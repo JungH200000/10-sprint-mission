@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.security.handler.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.jwt.JwtLogoutHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,7 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtLogoutHandler jwtLogoutHandler;
 
     // SecurityFilterChain Bean 등록
     // HttpSecurity를 통해 HTTP 요청에 대한 보안 설정 구성
@@ -56,6 +58,7 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
+                        .addLogoutHandler(jwtLogoutHandler)
                         .logoutSuccessHandler(
                                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                 )
