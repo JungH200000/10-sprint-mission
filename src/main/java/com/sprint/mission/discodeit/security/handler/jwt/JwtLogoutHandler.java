@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.security.handler.jwt;
 
-import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
