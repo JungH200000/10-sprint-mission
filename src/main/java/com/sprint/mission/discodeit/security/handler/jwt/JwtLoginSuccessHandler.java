@@ -61,7 +61,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         ResponseCookie refreshTokenCookie = ResponseCookie
                 .from("REFRESH_TOKEN", refreshToken)
                 .httpOnly(true)
-                .secure(request.isSecure()) // 요청이 HTTPS면 Secure 있는 쿠키 만들고, HTTP면 Secure 없는 쿠키 만듦
+                .secure(false) // local용
                 .path("/") // 쿠키가 전송될 URL 범위 설정("/" :
                 .maxAge(jwtProperties.getRefreshTokenExpirationTime()) // 쿠키 만료 시간 설정
                 .sameSite("Strict")
