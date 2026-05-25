@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.auth.JwtRefreshDto;
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
-import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,8 +21,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -47,28 +44,6 @@ public class AuthController {
         log.debug("[CSRF_TOKEN_REQUEST] CSRF 토큰 요청: token={}", token);
 
         return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
-    }
-
-    /**
-     * 세션을 활용해 현재 인증된 사용자 조회
-     */
-    @RequestMapping(value = "/me", method = RequestMethod.GET)
-    @Operation(summary = "세션을 활용한 현재 User 정보 조회")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "현재 인증된 User 정보 조회"),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 User", content = @Content(examples = @ExampleObject(value = "Unauthorized"))),
-            @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = @ExampleObject(value = "User with id {id} not found")))
-    })
-    public ResponseEntity<UserDto> getMe(
-            @AuthenticationPrincipal DiscodeitUserDetails principal
-    ) {
-        UUID userId = principal.getUserDto().id();
-
-        log.debug("[AUTH_ME] 현재 인증된 사용자 조회: userId={}", userId);
-
-        UserDto userDto = userService.find(userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
     /**
