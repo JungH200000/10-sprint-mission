@@ -62,7 +62,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 .from("REFRESH_TOKEN", refreshToken)
                 .httpOnly(true)
                 .secure(false) // local용
-                .path("/") // 쿠키가 전송될 URL 범위 설정("/" :
+                .path("/") // 쿠키가 전송될 URL 범위 설정("/" : 모든 경로에 쿠키 전송)
                 .maxAge(jwtProperties.getRefreshTokenExpirationTime()) // 쿠키 만료 시간 설정
                 .sameSite("Strict")
                 .build();
