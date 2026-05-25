@@ -73,8 +73,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 accessToken
         );
 
-        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", refreshUserDto.id());
-
         // response
         // 응답 상태 코드 200
         response.setStatus(HttpStatus.OK.value());
@@ -86,5 +84,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         // JwtDto 객체 -> JSON으로 변환 후 응답 Body에 담음
         objectMapper.writeValue(response.getWriter(), jwtDto);
+
+        log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", refreshUserDto.id());
     }
 }
