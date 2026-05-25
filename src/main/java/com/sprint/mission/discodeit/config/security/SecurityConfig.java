@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoin
 import com.sprint.mission.discodeit.security.handler.jwt.JwtLoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -41,9 +40,6 @@ public class SecurityConfig {
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${discodeit.security.remember-me-key}")
-    private String rememberMeKey;
-
     // SecurityFilterChain Bean 등록
     // HttpSecurity를 통해 HTTP 요청에 대한 보안 설정 구성
     @Bean
@@ -68,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         // 회원가입
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         // 그 외 나머지 `/api/**` 요청
@@ -84,12 +81,6 @@ public class SecurityConfig {
                 .sessionManagement(management -> management
                         // JWT 기반 토큰 기반 인증을 사용으로 인증 상태를 서버 세션에 저장하지 않도록 설정
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .rememberMe(remember -> remember
-                        .rememberMeParameter("remember-me")
-                        .rememberMeCookieName("remember-me")
-                        .key(rememberMeKey)
-                        .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
