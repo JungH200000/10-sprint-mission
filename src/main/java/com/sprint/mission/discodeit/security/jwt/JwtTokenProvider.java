@@ -121,6 +121,22 @@ public class JwtTokenProvider {
         return jwtClaimsSet;
     }
 
+    // Refresh Token 검증 후 claims 반환
+    public JWTClaimsSet getAndValidateRefreshToken(String token) {
+        // 토큰이 없거나 공백일 경우, 유효하지 않은 토큰
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("토큰이 존재하지 않습니다.");
+        }
+
+        // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
+        JWTClaimsSet jwtClaimsSet = getAndVerifyToken(token);
+
+        // claims의 토큰 타입이 Refresh Token인지 검증
+        validateRefreshToken(jwtClaimsSet);
+
+        return jwtClaimsSet;
+    }
+
     // claims를 HS256 방식으로 서명해 JWT 문자열로 직렬화
     private String createJwtToken(JWTClaimsSet jwtClaimsSet) {
         try {
