@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.sprint.mission.discodeit.dto.auth.JwtDto;
+import com.sprint.mission.discodeit.dto.auth.JwtRefreshDto;
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
@@ -7,7 +10,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.session.UserSessionManager;
+import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +32,7 @@ public class BasicAuthService implements AuthService {
     private final UserMapper userMapper;
 
     private final UserSessionManager userSessionManager;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // 사용자 권한 수정
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,6 +63,48 @@ public class BasicAuthService implements AuthService {
         }
 
         return userMapper.toDto(user);
+    }
+
+    // Refresh Token으로 Access Token과 새로운 Refresh Token 재발급
+    @Override
+    public JwtRefreshDto refreshAccessToken(String refreshToken) {
+        // Refresh Token 검증 및 claims 반환
+        JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateRefreshToken(refreshToken);
+
+        // Refresh Token의 subject를 꺼내서 UUID로 포매팅
+        UUID usrId = UUID.fromString(jwtClaimsSet.getSubject());
+
+        User user = validateAndGetUserByUserIdWithProfile(usrId);
+        UserDto userDto = userMapper.toDto(user);
+
+        UserDto refreshUserDto = new UserDto(
+                userDto.id(),
+                userDto.username(),
+                userDto.email(),
+                userDto.profile(),
+                true,
+                userDto.role()
+        );
+
+        // DiscodeitUserDetails 생성
+        DiscodeitUserDetails userDetails = new DiscodeitUserDetails(
+                refreshUserDto,
+                user.getPassword()
+        );
+
+        // 새로운 token 발급
+        String newAccessToken = jwtTokenProvider.refreshAccessToken(
+                refreshToken,
+                userDetails
+        );
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+
+        JwtDto jwtDto = new JwtDto(
+                refreshUserDto,
+                newAccessToken
+        );
+
+        return new JwtRefreshDto(jwtDto, newRefreshToken);
     }
 
     // validation
