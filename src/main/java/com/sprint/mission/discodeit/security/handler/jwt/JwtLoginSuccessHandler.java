@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.jwt.JwtProperties;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +33,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void onAuthenticationSuccess(
@@ -56,6 +59,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 true,
                 userDto.role()
         );
+
+        JwtInformation jwtInformation = new JwtInformation(
+                refreshUserDto,
+                accessToken,
+                refreshToken
+        );
+        jwtRegistry.registerJwtInformation(jwtInformation);
 
         // Refresh Token을 Cookie에 저장
         ResponseCookie refreshTokenCookie = ResponseCookie

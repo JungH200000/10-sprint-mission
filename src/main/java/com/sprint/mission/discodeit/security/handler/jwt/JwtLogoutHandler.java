@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.security.handler.jwt;
 
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +13,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.UUID;
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class JwtLogoutHandler implements LogoutHandler {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void logout(
@@ -31,6 +40,19 @@ public class JwtLogoutHandler implements LogoutHandler {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, logoutRefreshTokenCookie.toString());
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            // 로그아웃 시 해당 유저의 모든 JwtInformation 삭제
+            Arrays.stream(cookies)
+                    .filter(cookie -> "REFRESH_TOKEN".equals(cookie.getName()))
+                    .findFirst()
+                    .ifPresent(cookie -> {
+                        String refreshToken = cookie.getValue();
+                        UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
+                        jwtRegistry.invalidateJwtInformationByUserId(userId);
+                    });
+        }
 
         log.info("[AUTH_LOGOUT_SUCCESS] 로그아웃 성공");
     }

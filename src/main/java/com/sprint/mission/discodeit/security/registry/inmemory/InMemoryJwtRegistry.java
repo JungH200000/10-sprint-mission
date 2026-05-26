@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.security.registry.inmemory;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
@@ -47,6 +46,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
             // 최대 동시 로그인 수 초과 시 가장 오래된 JwtInformation 삭제
             while (jwtInformationQueue.size() > maxActiveJwtCount) {
+                log.debug("[JWT_REGISTER] 최대 동시 로그인 수 초과로 가장 오래된 JwtInformation 삭제");
                 jwtInformationQueue.poll();
             }
 
@@ -59,7 +59,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     }
 
     /**
-     * UserId로 해당 유저의 모든 JwtInformation 정보 삭제
+     * UserId로 해당 유저의 모든 JwtInformation 삭제
      */
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
@@ -215,14 +215,12 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     // Access Token 검증 후 userId 추출
     private UUID getUserIdInAccessToken(String accessToken) {
-        JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateAccessToken(accessToken);
-        return UUID.fromString(jwtClaimsSet.getSubject());
+        return UUID.fromString(jwtTokenProvider.getSubject(accessToken));
     }
 
     // Refresh Token 검증 후 userId 추출
     private UUID getUserIdInRefreshToken(String refreshToken) {
-        JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateRefreshToken(refreshToken);
-        return UUID.fromString(jwtClaimsSet.getSubject());
+        return UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
     }
 
     private JwtInformation getJwtInformationByRefreshToken(UUID userId, String refreshToken) {
@@ -271,6 +269,4 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             return false;
         }
     }
-
-
 }

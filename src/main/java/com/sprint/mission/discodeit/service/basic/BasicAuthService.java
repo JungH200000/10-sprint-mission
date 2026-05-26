@@ -10,7 +10,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -33,6 +35,7 @@ public class BasicAuthService implements AuthService {
 
     private final UserSessionManager userSessionManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
 
     // 사용자 권한 수정
     @PreAuthorize("hasRole('ADMIN')")
@@ -68,11 +71,14 @@ public class BasicAuthService implements AuthService {
     // Refresh Token으로 Access Token과 새로운 Refresh Token 재발급
     @Override
     public JwtRefreshDto refreshAccessToken(String refreshToken) {
-        log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 시작: refreshToken={}",
-                refreshToken);
+        log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 시작");
 
         // Refresh Token 검증 및 claims 반환
         JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateRefreshToken(refreshToken);
+
+        if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException("Active Refresh Token이 아닙니다.");
+        }
 
         // Refresh Token의 subject를 꺼내서 UUID로 포매팅
         UUID usrId = UUID.fromString(jwtClaimsSet.getSubject());
@@ -97,7 +103,7 @@ public class BasicAuthService implements AuthService {
 
         // 새로운 token 발급
         String newAccessToken = jwtTokenProvider.refreshAccessToken(
-                refreshToken,
+                jwtClaimsSet,
                 userDetails
         );
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
@@ -107,8 +113,16 @@ public class BasicAuthService implements AuthService {
                 newAccessToken
         );
 
-        log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 완료: newRefreshToken={}",
-                newRefreshToken);
+        JwtInformation newJwtInformation = new JwtInformation(
+                refreshUserDto,
+                newAccessToken,
+                newRefreshToken
+        );
+
+        jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
+
+        log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 완료: userId={}",
+                refreshUserDto.id());
 
         return new JwtRefreshDto(jwtDto, newRefreshToken);
     }
