@@ -34,10 +34,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     public JwtInformation registerJwtInformation(JwtInformation jwtInformation) {
         UUID userId = jwtInformation.getUserDto().id();
 
-        // 기존 JwtInformation이 없으면 새로운 Queue 생성
-        origin.compute(userId, (id, jwtInformations) -> {
-            Queue<JwtInformation> queue = jwtInformations != null
-                    ? jwtInformations
+        // 기존 Queue가 없으면 새로운 Queue 생성 후 JwtInformation 저장,
+        // 이미 Queue가 있으면 해당 Queue에 JwtInformation 저장
+        origin.compute(userId, (id, jwtInformationQueue) -> {
+            Queue<JwtInformation> queue = jwtInformationQueue != null
+                    ? jwtInformationQueue
                     : new ConcurrentLinkedDeque<>();
 
             queue.add(jwtInformation);
@@ -60,6 +61,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
      */
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
+        // InMemory(map)에서 제거
         origin.remove(userId);
 
         log.debug("[JWT_INVALIDATE] JWT Information 제거: userId={}", userId);
