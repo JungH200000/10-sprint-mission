@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 public class JwtInformation {
 
-    UserDto userDto;
-    String accessToken;
-    String refreshToken;
+    private UserDto userDto;
+    private String accessToken;
+    private String refreshToken;
 
     public JwtInformation(
             UserDto userDto,
@@ -25,8 +25,13 @@ public class JwtInformation {
             String accessToken,
             String refreshToken
     ) {
-        if (accessToken != null) this.accessToken = accessToken;
-        if (refreshToken != null) this.refreshToken = refreshToken;
+        if ((accessToken == null || accessToken.isBlank())
+                || (refreshToken == null || refreshToken.isBlank())) {
+            throw new IllegalArgumentException("Token은 필수입니다.");
+        }
+
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
 
         return this;
     }
