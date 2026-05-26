@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,6 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    private final UserSessionManager userSessionManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
 
@@ -55,8 +53,11 @@ public class BasicAuthService implements AuthService {
             // 권한 수정
             user.updateRole(newRole);
 
-            // 권한이 변경된 사용자의 로그인 세션 만료 처리
-            userSessionManager.expiredUserSession(userId);
+            // 권한이 변경된 사용자가 로그인 상태 시 강제 로그아웃 처리
+            if (jwtRegistry.hasActiveJwtInformationByUserId(userId)) {
+                // 해당 사용자의 모든 JwtInformation 삭제
+                jwtRegistry.invalidateJwtInformationByUserId(userId);
+            }
 
             log.debug("[USER_ROLE_UPDATE] 사용자 권한 수정 완료: userId={}, role={}",
                     user.getId(), user.getRole());
