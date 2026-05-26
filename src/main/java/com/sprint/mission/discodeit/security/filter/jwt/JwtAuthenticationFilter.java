@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.filter.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetailsService;
 import jakarta.servlet.FilterChain;
@@ -9,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -22,6 +24,8 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
+
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
 
     // Bearer Access Token이 있으면 인증 시도
@@ -48,6 +52,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // JWT 검증, Access Token 여부 확인 후 claims 반환
             // 예외 발생 시, 실패 원인 추가를 위해 "try...catch"문 안에 포함
             JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateAccessToken(accessToken);
+
+            // Registry에서 Access Token이 Active인지 확인
+            if (!jwtRegistry.hasActiveJwtInformationByAccessToken(accessToken)) {
+                throw new BadCredentialsException("Active Access Token이 아닙니다.");
+            }
 
             // claims에서 username 조회
             String username = jwtClaimsSet.getStringClaim("username");
