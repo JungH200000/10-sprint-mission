@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -185,6 +186,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * 만료된 JwtInformation 삭제
      */
+    @Scheduled(fixedDelay = 1000 * 60 * 5) // 5분 간격
     @Override
     public void clearExpiredJwtInformation() {
         origin.forEach((userId, jwtInformationQueue) ->
