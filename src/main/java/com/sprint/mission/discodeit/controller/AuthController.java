@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.config.jwt.JwtProperties;
 import com.sprint.mission.discodeit.dto.auth.JwtRefreshDto;
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -76,44 +75,20 @@ public class AuthController {
     public ResponseEntity<?> refreshAccessToken(
             @CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken
     ) {
-        try {
-            JwtRefreshDto jwtRefreshDto = authService.refreshAccessToken(refreshToken);
+        JwtRefreshDto jwtRefreshDto = authService.refreshAccessToken(refreshToken);
 
-            // Refresh Token을 Cookie에 저장
-            ResponseCookie refreshTokenCookie = ResponseCookie
-                    .from("REFRESH_TOKEN", jwtRefreshDto.newRefreshToken())
-                    .httpOnly(true)
-                    .secure(false) // local용
-                    .path("/")
-                    .maxAge(jwtProperties.getRefreshTokenExpirationTime())
-                    .sameSite("Strict")
-                    .build();
+        // Refresh Token을 Cookie에 저장
+        ResponseCookie refreshTokenCookie = ResponseCookie
+                .from("REFRESH_TOKEN", jwtRefreshDto.newRefreshToken())
+                .httpOnly(true)
+                .secure(false) // local용
+                .path("/")
+                .maxAge(jwtProperties.getRefreshTokenExpirationTime())
+                .sameSite("Strict")
+                .build();
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                    .body(jwtRefreshDto.jwtDto());
-        } catch (Exception e) {
-            // Refresh Token이 없거나 유효하지 않다면 401 ErrorResponse 반환
-            log.warn("[AUTH_UNAUTHENTICATED] 인증되지 않은 요청: message={}, {}",
-                    e, e.getMessage());
-
-            ResponseCookie unAuthenticatedToken = ResponseCookie
-                    .from("REFRESH_TOKEN", "")
-                    .httpOnly(true)
-                    .secure(false) // local용
-                    .path("/")
-                    .maxAge(0)
-                    .sameSite("Strict")
-                    .build();
-
-            ErrorResponse errorResponse = new ErrorResponse(
-                    e,
-                    HttpStatus.UNAUTHORIZED.value()
-            );
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .header(HttpHeaders.SET_COOKIE, unAuthenticatedToken.toString())
-                    .body(errorResponse);
-        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(jwtRefreshDto.jwtDto());
     }
 }

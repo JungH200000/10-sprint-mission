@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -75,10 +76,15 @@ public class BasicAuthService implements AuthService {
         log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 시작");
 
         // Refresh Token 검증 및 claims 반환
-        JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateRefreshToken(refreshToken);
+        JWTClaimsSet jwtClaimsSet;
+        try {
+            jwtClaimsSet = jwtTokenProvider.getAndValidateRefreshToken(refreshToken);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRefreshTokenException(e);
+        }
 
         if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-            throw new IllegalArgumentException("Active Refresh Token이 아닙니다.");
+            throw new InvalidRefreshTokenException();
         }
 
         // Refresh Token의 subject를 꺼내서 UUID로 포매팅
@@ -120,7 +126,11 @@ public class BasicAuthService implements AuthService {
                 newRefreshToken
         );
 
-        jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
+        try {
+            jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRefreshTokenException(e);
+        }
 
         log.debug("[REFRESH_ACCESS_TOEKN] Access Token 재발급 완료: userId={}",
                 refreshUserDto.id());
