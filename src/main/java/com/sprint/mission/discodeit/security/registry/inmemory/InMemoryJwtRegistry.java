@@ -99,7 +99,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
      */
     @Override
     public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
-        if (accessToken == null || accessToken.isEmpty()) {
+        if (accessToken == null || accessToken.isBlank()) {
             return false;
         }
 
@@ -137,7 +137,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
      */
     @Override
     public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
-        if (refreshToken == null || refreshToken.isEmpty()) {
+        if (refreshToken == null || refreshToken.isBlank()) {
             return false;
         }
 
@@ -184,15 +184,19 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             String refreshToken,
             JwtInformation newJwtInformation
     ) {
-        if (refreshToken == null || refreshToken.isEmpty()) {
+        if (refreshToken == null || refreshToken.isBlank()) {
             throw new IllegalArgumentException("유효하지 않은 Refresh Token입니다.");
+        }
+
+        if (newJwtInformation == null || newJwtInformation.getUserDto() == null) {
+            throw new IllegalArgumentException("새로운 JwtInformation이 유효하지 않습니다.");
         }
 
         UUID oldUserId = getUserIdInRefreshToken(refreshToken);
         UUID newUserId = newJwtInformation.getUserDto().id();
 
         // 기존 userId와 newJwtInformation의 userId 비교
-        if (oldUserId.equals(newUserId)) {
+        if (!oldUserId.equals(newUserId)) {
             throw new IllegalArgumentException("Refresh Token과 사용자 정보가 일치하지 않습니다.");
         }
 
@@ -200,13 +204,19 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         String newRefreshToken = newJwtInformation.getRefreshToken();
 
         // 새롭게 Refresh Token와 Access Token 비교
-        if ((newRefreshToken == null || newRefreshToken.isEmpty())
-                || (newAccessToken == null || newAccessToken.isEmpty())
+        if ((newRefreshToken == null || newRefreshToken.isBlank())
+                || (newAccessToken == null || newAccessToken.isBlank())
         ) {
             throw new IllegalArgumentException("새로운 Access/Refresh Token이 비어있습니다.");
         }
 
-        JwtInformation oldJwtInformation = origin.get(oldUserId).stream()
+        Queue<JwtInformation> jwtInformationQueue = origin.get(oldUserId);
+
+        if (jwtInformationQueue == null || jwtInformationQueue.isEmpty()) {
+            throw new IllegalArgumentException("Jwt 정보가 저장된 Queue를 찾을 수 없습니다.");
+        }
+
+        JwtInformation oldJwtInformation = jwtInformationQueue.stream()
                 .filter(jwtInfo ->
                         jwtInfo.getRefreshToken().equals(refreshToken)
                 )
@@ -271,6 +281,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     }
 
     private boolean hasActiveRefreshToken(JwtInformation jwtInformation) {
-        return jwtTokenProvider.validateToken(jwtInformation.getRefreshToken());
+        try {
+            jwtTokenProvider.getAndValidateRefreshToken(jwtInformation.getRefreshToken());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
