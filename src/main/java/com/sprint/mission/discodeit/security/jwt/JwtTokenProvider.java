@@ -67,17 +67,11 @@ public class JwtTokenProvider {
         return createJwtToken(jwtClaimsSet);
     }
 
-    // 유효한 Refresh Token과 사용자 정보로 Access Token을 재발급
+    // 유효한 Refresh Token에서 가져온 JWTClaimsSet과 사용자 정보로 Access Token을 재발급
     public String refreshAccessToken(
-            String refreshToken,
+            JWTClaimsSet jwtClaimsSet,
             DiscodeitUserDetails discodeitUserDetails
     ) {
-        // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
-        JWTClaimsSet jwtClaimsSet = getAndVerifyToken(refreshToken);
-
-        // claims의 토큰 타입이 Refresh Token인지 검증
-        validateRefreshToken(jwtClaimsSet);
-
         String userId = discodeitUserDetails.getUserDto().id().toString();
 
         // Refresh Token의 subject와 현재 사용자의 id가 다를 경우, 예외 발생
@@ -136,6 +130,17 @@ public class JwtTokenProvider {
         validateRefreshToken(jwtClaimsSet);
 
         return jwtClaimsSet;
+    }
+
+    // JWT 문자열에서 subject 추출
+    public String getSubject(String token) {
+        try {
+          SignedJWT signedJWT = SignedJWT.parse(token);
+
+          return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Jwt에서 subject 추출 불가능합니다.");
+        }
     }
 
     // claims를 HS256 방식으로 서명해 JWT 문자열로 직렬화
