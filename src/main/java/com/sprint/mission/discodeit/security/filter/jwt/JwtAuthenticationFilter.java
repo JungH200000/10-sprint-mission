@@ -79,8 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 토큰 검증이나 사용자 조회에 실패할 경우
             // 현재 요청의 인증 상태를 제거하고, 미인증 상태(인증된 사용자X)로 다음 filter로 넘김
             SecurityContextHolder.clearContext();
-            // entry나 다른 handler에서 실패 원인을 사용할 수 있게 저장
-            request.setAttribute("exception",e);
+            throw new BadCredentialsException("유효하지 않은 Access Token입니다.", e);
         }
         // 다음 filter로 이동
         filterChain.doFilter(request, response);
