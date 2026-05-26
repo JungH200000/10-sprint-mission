@@ -80,17 +80,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
      */
     @Override
     public boolean hasActiveJwtInformationByUserId(UUID userId) {
-        // userId로 Map에서 JwtInformation 찾기
-        Queue<JwtInformation> jwtInformationQueue = origin.get(userId);
-
-        // 해당 userId로 저장된 JwtInformation이 없다면 로그인 상태 아님
-        if (jwtInformationQueue == null || jwtInformationQueue.isEmpty()) {
-            return false;
-        }
-
-        // userId에 매핑된 Queue에서 만료된 Refresh Token 가진 JwtInformation 제거 후
-        // 남아있는 JwtInformation 확인
-        return removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue);
+        return getActiveJwtInformationQueue(userId).isPresent();
     }
 
     /**
@@ -107,21 +97,9 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             // Access Token에서 userId 추출
             UUID userId = getUserIdInAccessToken(accessToken);
 
-            // origin에서 userId와 매핑된 Queue<JwtInformation> 추출
-            Queue<JwtInformation> jwtInformationQueue = origin.get(userId);
-
-            if (jwtInformationQueue == null || jwtInformationQueue.isEmpty()) {
-                return false;
-            }
-
-            // userId에 매핑된 Queue에서 만료된 Refresh Token 가진 JwtInformation 제거 후
-            // active된 JwtInformation 존재여부 확인
-            if (!removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue)) {
-                return false;
-            }
-
             // JwtInformation에서 해당 accessToken이 존재하는지 확인
-            return jwtInformationQueue.stream()
+            return getActiveJwtInformationQueue(userId).stream()
+                    .flatMap(queue -> queue.stream())
                     .anyMatch(jwtInformation ->
                             jwtInformation.getAccessToken().equals(accessToken)
                     );
@@ -145,32 +123,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             // Refresh Token에서 userId 추출
             UUID userId = getUserIdInRefreshToken(refreshToken);
 
-            // origin에서 userId와 매핑된 Queue<JwtInformation> 추출
-            Queue<JwtInformation> jwtInformationQueue = origin.get(userId);
-
-            if (jwtInformationQueue == null || jwtInformationQueue.isEmpty()) {
-                return false;
-            }
-
-            // userId에 매핑된 Queue에서 만료된 Refresh Token 가진 JwtInformation 제거 후
-            // active된 JwtInformation 존재여부 확인
-            if (!removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue)) {
-                return false;
-            }
-
-            // Queue에서 동일한 Refresh Token을 가진 JwtInformation 조회
-            Optional<JwtInformation> jwtInformation = jwtInformationQueue.stream()
-                    .filter(jwtInfo ->
-                            jwtInfo.getRefreshToken().equals(refreshToken)
-                    )
-                    .findFirst();
-
-            // 해당 JwtInformation의 Refresh Token의 만료 여부 확인
-            return jwtInformation
-                    .filter(jwtInfo ->
-                            hasActiveRefreshToken(jwtInfo)
-                    )
-                    .isPresent();
+            return getActiveJwtInformationQueue(userId).stream()
+                    .flatMap(queue -> queue.stream())
+                    .anyMatch(jwtInformation ->
+                            jwtInformation.getRefreshToken().equals(refreshToken)
+                    );
         } catch (Exception e) {
             return false;
         }
@@ -210,20 +167,10 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             throw new IllegalArgumentException("새로운 Access/Refresh Token이 비어있습니다.");
         }
 
-        Queue<JwtInformation> jwtInformationQueue = origin.get(oldUserId);
-
-        if (jwtInformationQueue == null || jwtInformationQueue.isEmpty()) {
-            throw new IllegalArgumentException("Jwt 정보가 저장된 Queue를 찾을 수 없습니다.");
-        }
-
-        JwtInformation oldJwtInformation = jwtInformationQueue.stream()
-                .filter(jwtInfo ->
-                        jwtInfo.getRefreshToken().equals(refreshToken)
-                )
-                .findFirst()
-                .orElseThrow(()->
-                        new IllegalArgumentException("기존 JwtInformation을 찾을 수 없음")
-                );
+        JwtInformation oldJwtInformation = getJwtInformationByRefreshToken(
+                oldUserId,
+                refreshToken
+        );
 
         oldJwtInformation.rotate(
                 newAccessToken,
@@ -247,6 +194,25 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         log.debug("[EXPIRED_JWT_CLEAR] 만료된 Jwt Information 삭제 완료");
     }
 
+    // userId와 매핑된 Queue<JwtInformation> 추출 후 검증 -> 만료된 Refresh Token 제거
+    private Optional<Queue<JwtInformation>> getActiveJwtInformationQueue(UUID userId) {
+        // origin에서 userId와 매핑된 Queue<JwtInformation> 추출
+        Queue<JwtInformation> jwtInformationQueue = origin.get(userId);
+
+        // 해당 userId로 저장된 JwtInformation이 없다면 로그인 상태 아님
+        if (jwtInformationQueue == null || jwtInformationQueue.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // userId에 매핑된 Queue에서 만료된 Refresh Token 가진 JwtInformation 제거 후
+        // active된 JwtInformation 존재여부 확인
+        if (!removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(jwtInformationQueue);
+    }
+
     // Access Token 검증 후 userId 추출
     private UUID getUserIdInAccessToken(String accessToken) {
         JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateAccessToken(accessToken);
@@ -259,6 +225,22 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         return UUID.fromString(jwtClaimsSet.getSubject());
     }
 
+    private JwtInformation getJwtInformationByRefreshToken(UUID userId, String refreshToken) {
+        Queue<JwtInformation> jwtInformationQueue = getActiveJwtInformationQueue(userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Active Jwt Information을 찾을 수 없습니다.")
+                );
+
+        return jwtInformationQueue.stream()
+                .filter(jwtInfo ->
+                        jwtInfo.getRefreshToken().equals(refreshToken)
+                )
+                .findFirst()
+                .orElseThrow(()->
+                        new IllegalArgumentException("기존 JwtInformation을 찾을 수 없음")
+                );
+    }
+
     // userId에 매핑된 Queue에서 만료된 Refresh Token 가진 JwtInformation 제거 후
     // active된 JwtInformation 존재여부 확인
     private boolean removeAndHasActiveJwtInformationByUserId(
@@ -268,7 +250,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         // Refresh Token 기준으로 로그인 상태 목록 정리
         // Refresh Token이 유효하지 않거나 잘못된 서명이거나 만료 시간이 지난 경우
         jwtInformationQueue.removeIf(jwtInformation ->
-                !hasActiveRefreshToken(jwtInformation));
+                !hasActiveRefreshToken(jwtInformation)
+        );
 
         // 위에서 Refresh Token 삭제 후 남은 JwtInformation이 없다면 Map에서 userId 삭제
         if (jwtInformationQueue.isEmpty()) {
@@ -288,4 +271,6 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             return false;
         }
     }
+
+
 }
