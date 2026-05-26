@@ -97,6 +97,7 @@ public class JwtTokenProvider {
         }
 
         try {
+            // JWT 토큰의 서명과 만료 시간을 검증
             getAndVerifyToken(token);
             return true;
         } catch (IllegalArgumentException e) {
