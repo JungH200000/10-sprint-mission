@@ -39,6 +39,9 @@ public enum ErrorCode {
     READ_STATUS_NOT_FOUND("마지막 메시지 읽음 상태 정보를 찾을 수 없습니다."),
 
     // Security - Token
+    JWT_TOKEN_CREATE_FAILED("JWT Token 생성에 실패했습니다."),
+    INVALID_JWT_TOKEN("유효하지 않은 Token입니다."),
+    INVALID_ACCESS_TOKEN("유효하지 않은 Access Token입니다."),
     INVALID_REFRESH_TOKEN("유효하지 않은 Refresh Token입니다."),
 
     // Server
