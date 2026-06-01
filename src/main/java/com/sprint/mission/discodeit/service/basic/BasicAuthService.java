@@ -7,8 +7,10 @@ import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
+import com.sprint.mission.discodeit.exception.security.JwtInformationNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -131,7 +133,13 @@ public class BasicAuthService implements AuthService {
 
         try {
             jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRefreshTokenException
+                 | InvalidJwtInformationException
+                 | InvalidJwtTokenException
+                 | JwtInformationNotFoundException e
+        ) {
+            // 해당 API는 Refresh Token 관련 흐름으로 InvalidRefreshTokenException로 통일해서
+            // SecurityExceptionHandler가 실행되게 설정
             throw new InvalidRefreshTokenException(e);
         }
 
