@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
@@ -24,6 +25,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,9 +52,12 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     @Override
     public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
-        log.debug("[MESSAGE_CREATE] 메시지 생성 시작: authorId={}, channelId={}", request.authorId(), request.channelId());
+        log.debug("[MESSAGE_CREATE] 메시지 생성 시작: authorId={}, channelId={}",
+                request.authorId(), request.channelId());
 
         UUID authorId = request.authorId();
         UUID channelId = request.channelId();
@@ -70,10 +75,23 @@ public class BasicMessageService implements MessageService {
                 if (attachment == null || attachment.isEmpty()) continue;
                 try {
                     byte[] bytes = attachment.getBytes();
-                    BinaryContent binaryContent = new BinaryContent(attachment.getOriginalFilename(), attachment.getContentType(), (long) bytes.length);
+                    BinaryContent binaryContent = new BinaryContent(
+                            attachment.getOriginalFilename(),
+                            attachment.getContentType(),
+                            (long) bytes.length
+                    );
+
                     binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(binaryContent.getId(), bytes);
-                    log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: profileID={}, fileName={}, contentType={}, count={}", binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+
+                    applicationEventPublisher.publishEvent(
+                            new BinaryContentCreatedEvent(
+                                    binaryContent.getId(),
+                                    bytes
+                            )
+                    );
+
+                    log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+                            binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
                     message.addAttachment(binaryContent);
                 } catch (IOException e) {
@@ -82,7 +100,8 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.save(message);
-        log.debug("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
+        log.debug("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}",
+                message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }
@@ -94,7 +113,8 @@ public class BasicMessageService implements MessageService {
 
         // Message ID `null` 및 존재 검증
         Message message = validateAndGetMessageByMessageId(messageId);
-        log.debug("[MESSAGE_FIND] 메시지 조회 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
+        log.debug("[MESSAGE_FIND] 메시지 조회 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}",
+                message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }
@@ -116,7 +136,8 @@ public class BasicMessageService implements MessageService {
     @Transactional(readOnly = true)
     @Override
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
-        log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 시작: channelId={}, cursor={}, size={}, sort={}", channelId, cursor, pageable.getPageSize(), pageable.getSort());
+        log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 시작: channelId={}, cursor={}, size={}, sort={}",
+                channelId, cursor, pageable.getPageSize(), pageable.getSort());
 
         // Channel ID null & channel 객체 존재 확인
         validateAndGetChannelByChannelId(channelId);
@@ -129,7 +150,8 @@ public class BasicMessageService implements MessageService {
 
         Instant nextCursor = !slice.getContent().isEmpty() ? slice.getContent().get(slice.getContent().size() - 1).createdAt() : null;
 
-        log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 완료: channelId={}, messageCount={}, nextCursor={}, hasNext={}", channelId, slice.getSize(), nextCursor, slice.hasNext());
+        log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 완료: channelId={}, messageCount={}, nextCursor={}, hasNext={}",
+                channelId, slice.getSize(), nextCursor, slice.hasNext());
 
         return pageResponseMapper.fromSlice(slice, nextCursor);
     }
@@ -145,7 +167,8 @@ public class BasicMessageService implements MessageService {
         validateAllRequestExistingOrNull(request.newContent());
 
         message.update(request.newContent());
-        log.info("[MESSAGE_UPDATE] 메시지 수정 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}", message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
+        log.info("[MESSAGE_UPDATE] 메시지 수정 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}",
+                message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
         return messageMapper.toDto(message);
     }

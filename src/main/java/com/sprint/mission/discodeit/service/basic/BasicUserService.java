@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
@@ -15,6 +16,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
 
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
@@ -60,10 +63,17 @@ public class BasicUserService implements UserService {
                         profile.getSize()
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
-                binaryContentStorage.put(binaryContent.getId(), bytes);
+
+                UUID binaryContentId = binaryContent.getId();
+                applicationEventPublisher.publishEvent(
+                        new BinaryContentCreatedEvent(
+                                binaryContentId,
+                                bytes
+                        )
+                );
 
                 log.info("[USER_CREATE_PROFILE_UPLOAD] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
-                        binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+                        binaryContentId, binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
                 throw new ProfileUploadFailedException(email, username, e);
@@ -153,7 +163,12 @@ public class BasicUserService implements UserService {
                     (long) bytes.length
             );
             binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
-            binaryContentStorage.put(newProfile.getId(), bytes);
+            applicationEventPublisher.publishEvent(
+                    new BinaryContentCreatedEvent(
+                            newProfile.getId(),
+                            bytes
+                    )
+            );
 
             log.info("[USER_UPDATE_PROFILE_UPLOAD] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
                     newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
