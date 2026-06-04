@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
@@ -138,7 +139,7 @@ class BasicUserServiceTest {
             BinaryContent profile = new BinaryContent(profileFile.getOriginalFilename(), profileFile.getContentType(), profileFile.getSize());
             ReflectionTestUtils.setField(profile, "id", profileId);
 
-            BinaryContentDto profileDto = new BinaryContentDto(profileId, profileFile.getOriginalFilename(), profileFile.getSize(), profileFile.getContentType());
+            BinaryContentDto profileDto = new BinaryContentDto(profileId, profileFile.getOriginalFilename(), profileFile.getSize(), profileFile.getContentType(), BinaryContentStatus.SUCCESS);
             UserDto expectedUserDto = new UserDto(userId, request.username(), request.email(), profileDto, false, Role.USER);
 
             given(userRepository.existsByEmail(request.email())).willReturn(false);
@@ -390,7 +391,7 @@ class BasicUserServiceTest {
             given(newProfileFile.getContentType()).willReturn("image/png");
 
             UUID newProfileId = UUID.randomUUID();
-            BinaryContentDto newProfileDto = new BinaryContentDto(newProfileId, newProfileFile.getOriginalFilename(), newProfileFile.getSize(), newProfileFile.getContentType());
+            BinaryContentDto newProfileDto = new BinaryContentDto(newProfileId, newProfileFile.getOriginalFilename(), newProfileFile.getSize(), newProfileFile.getContentType(), BinaryContentStatus.SUCCESS);
             UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", newProfileDto, false, Role.USER);
 
             given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));

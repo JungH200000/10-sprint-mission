@@ -170,8 +170,8 @@ class BasicMessageServiceTest {
             message.addAttachment(attachment1);
             message.addAttachment(attachment2);
 
-            BinaryContentDto attachment1Dto = new BinaryContentDto(attachment1Id, attachment1.getFileName(), attachment1.getSize(), attachment1.getContentType());
-            BinaryContentDto attachment2Dto = new BinaryContentDto(attachment2Id, attachment2.getFileName(), attachment2.getSize(), attachment2.getContentType());
+            BinaryContentDto attachment1Dto = new BinaryContentDto(attachment1Id, attachment1.getFileName(), attachment1.getSize(), attachment1.getContentType(), BinaryContentStatus.SUCCESS);
+            BinaryContentDto attachment2Dto = new BinaryContentDto(attachment2Id, attachment2.getFileName(), attachment2.getSize(), attachment2.getContentType(), BinaryContentStatus.SUCCESS);
 
             MessageDto expectedMessageDto = new MessageDto(messageId, message.getCreatedAt(), message.getUpdatedAt(), message.getContent(), message.getChannel().getId(), authorDto, List.of(attachment1Dto, attachment2Dto));
 
