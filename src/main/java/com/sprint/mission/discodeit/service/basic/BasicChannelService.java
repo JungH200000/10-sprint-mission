@@ -76,7 +76,7 @@ public class BasicChannelService implements ChannelService {
 
         Instant now = Instant.now();
         participants.forEach(participant -> {
-            ReadStatus participantReadStatus = new ReadStatus(participant, channel, now);
+            ReadStatus participantReadStatus = new ReadStatus(participant, channel, now, true);
             readStatusRepository.save(participantReadStatus);
         });
 
