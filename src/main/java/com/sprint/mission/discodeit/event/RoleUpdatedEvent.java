@@ -23,7 +23,7 @@ public class RoleUpdatedEvent {
             throw new InvalidInputException("user", null);
         }
 
-        this.user = user;
+        this.user = user; 
         this.occurredAt = Instant.now();
     }
 }
