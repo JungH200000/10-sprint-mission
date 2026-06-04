@@ -15,7 +15,6 @@ public class RoleUpdatedEvent {
     // 이벤트 생성 시간
     private final Instant occurredAt;
 
-
     // 이벤트 생성자
     public RoleUpdatedEvent(
             User user
@@ -27,6 +26,4 @@ public class RoleUpdatedEvent {
         this.user = user;
         this.occurredAt = Instant.now();
     }
-
-
 }
