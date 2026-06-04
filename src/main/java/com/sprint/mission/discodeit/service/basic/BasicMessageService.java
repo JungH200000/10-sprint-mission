@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
@@ -75,9 +72,10 @@ public class BasicMessageService implements MessageService {
         if (attachments != null && !attachments.isEmpty()) {
             for (MultipartFile attachment : attachments) {
                 if (attachment == null || attachment.isEmpty()) continue;
+                BinaryContent binaryContent = null;
                 try {
                     byte[] bytes = attachment.getBytes();
-                    BinaryContent binaryContent = new BinaryContent(
+                    binaryContent = new BinaryContent(
                             attachment.getOriginalFilename(),
                             attachment.getContentType(),
                             (long) bytes.length
@@ -97,6 +95,10 @@ public class BasicMessageService implements MessageService {
 
                     message.addAttachment(binaryContent);
                 } catch (IOException e) {
+                    if (binaryContent != null) {
+                        binaryContent.updateBinaryContentStatus(BinaryContentStatus.FAIL);
+                    }
+
                     throw new AttachmentsUploadFailedException(authorId, channelId, e);
                 }
             }

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
@@ -79,6 +80,10 @@ public class BasicUserService implements UserService {
                         binaryContentId, binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
+                if (binaryContent != null) {
+                    binaryContent.updateBinaryContentStatus(BinaryContentStatus.FAIL);
+                }
+
                 throw new ProfileUploadFailedException(email, username, e);
             }
         }
