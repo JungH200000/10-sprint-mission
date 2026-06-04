@@ -137,9 +137,18 @@ public class BasicUserService implements UserService {
         User user = validateAndGetUserByUserId(userId);
 
         // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
-        String newEmail = changedString(request.newEmail(), user.getEmail());
-        String newUsername = changedString(request.newUsername(), user.getUsername());
-        String newPassword = changedPassword(request.newPassword(), user.getPassword());
+        String newEmail = changedString(
+                request.newEmail(),
+                user.getEmail()
+        );
+        String newUsername = changedString(
+                request.newUsername(),
+                user.getUsername()
+        );
+        String newPassword = changedPassword(
+                request.newPassword(),
+                user.getPassword()
+        );
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         byte[] bytes = null;
