@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
@@ -19,7 +20,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -67,10 +68,10 @@ class BasicMessageServiceTest {
     private MessageMapper messageMapper;
 
     @Mock
-    private BinaryContentStorage binaryContentStorage;
+    private PageResponseMapper pageResponseMapper;
 
     @Mock
-    private PageResponseMapper pageResponseMapper;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private BasicMessageService basicMessageService;
@@ -125,7 +126,7 @@ class BasicMessageServiceTest {
             verify(channelRepository).findById(channelId);
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository).save(any(Message.class));
             verify(messageMapper).toDto(any(Message.class));
@@ -174,6 +175,18 @@ class BasicMessageServiceTest {
 
             MessageDto expectedMessageDto = new MessageDto(messageId, message.getCreatedAt(), message.getUpdatedAt(), message.getContent(), message.getChannel().getId(), authorDto, List.of(attachment1Dto, attachment2Dto));
 
+            given(binaryContentRepository.save(any(BinaryContent.class)))
+                    .willAnswer(invocation -> {
+                        BinaryContent binaryContent = invocation.getArgument(0);
+                        ReflectionTestUtils.setField(binaryContent, "id", attachment1Id);
+                        return binaryContent;
+                    })
+                    .willAnswer(invocation -> {
+                        BinaryContent binaryContent = invocation.getArgument(0);
+                        ReflectionTestUtils.setField(binaryContent, "id", attachment2Id);
+                        return binaryContent;
+                    });
+
             given(messageMapper.toDto(any(Message.class))).willReturn(expectedMessageDto);
 
             // when(실행)
@@ -188,8 +201,8 @@ class BasicMessageServiceTest {
             verify(userRepository).findById(authorId);
             verify(channelRepository).findById(channelId);
             verify(binaryContentRepository, times(2)).save(any(BinaryContent.class));
-            verify(binaryContentStorage, times(2)).put(any(), any());
             verify(messageRepository).save(any(Message.class));
+            verify(applicationEventPublisher, times(2)).publishEvent(any(BinaryContentCreatedEvent.class));
             verify(messageMapper).toDto(any(Message.class));
         }
 
@@ -207,7 +220,7 @@ class BasicMessageServiceTest {
             verify(channelRepository, never()).findById(channelId);
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
             verify(messageMapper, never()).toDto(any(Message.class));
@@ -229,7 +242,7 @@ class BasicMessageServiceTest {
             verify(channelRepository, never()).findById(channelId);
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
             verify(messageMapper, never()).toDto(any(Message.class));
@@ -251,7 +264,7 @@ class BasicMessageServiceTest {
             verify(channelRepository, never()).findById(channelId);
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
             verify(messageMapper, never()).toDto(any(Message.class));
@@ -274,7 +287,7 @@ class BasicMessageServiceTest {
             verify(channelRepository).findById(channelId);
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
             verify(messageMapper, never()).toDto(any(Message.class));
@@ -307,7 +320,7 @@ class BasicMessageServiceTest {
             verify(channelRepository).findById(channelId);
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
             verify(messageMapper, never()).toDto(any(Message.class));
