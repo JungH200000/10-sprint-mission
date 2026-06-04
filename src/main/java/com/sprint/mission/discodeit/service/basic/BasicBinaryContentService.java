@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
@@ -85,6 +86,23 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.debug("[BINARY_CONTENT_LIST_FIND] 바이너리 컨텐츠 목록 조회 완료: count={}", binaryContentDtoList.size());
 
         return binaryContentDtoList;
+    }
+
+    @Override
+    public BinaryContentDto updateStatus(
+            UUID binaryContentId,
+            BinaryContentStatus status
+    ) {
+        BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
+
+        if (status == null || !status.equals(BinaryContentStatus.PROCESSING)) {
+            throw new InvalidInputException("status", status);
+        }
+
+        // BinaryContent 상태 업데이트
+        binaryContent.updateBinaryContentStatus(status);
+
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Override
