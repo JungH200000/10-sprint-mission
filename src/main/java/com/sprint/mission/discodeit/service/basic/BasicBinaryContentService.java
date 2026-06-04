@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,9 +23,9 @@ import java.util.UUID;
 @Slf4j
 @Transactional
 public class BasicBinaryContentService implements BinaryContentService {
+
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -50,7 +49,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 )
         );
 
-        log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: binaryContentId={}, fileName={}, contentType={}, count={}",
+        log.info("[BINARY_CONTENT_SAVE_EVENT_PUBLISH] 바이너리 컨텐츠 이벤트 발행 완료: binaryContentId={}, fileName={}, contentType={}, count={}",
                 binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
         return binaryContentMapper.toDto(binaryContent);

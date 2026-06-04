@@ -22,7 +22,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -44,18 +43,21 @@ import java.util.UUID;
 @Slf4j
 @Transactional
 public class BasicMessageService implements MessageService {
+
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
+    public MessageDto create(
+            MessageCreateRequest request,
+            List<MultipartFile> attachments
+    ) {
         log.debug("[MESSAGE_CREATE] 메시지 생성 시작: authorId={}, channelId={}",
                 request.authorId(), request.channelId());
 
@@ -90,7 +92,7 @@ public class BasicMessageService implements MessageService {
                             )
                     );
 
-                    log.info("[BINARY_CONTENT_SAVE] 바이너리 컨텐츠 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+                    log.info("[ATTACHMENTS_UPLOAD_EVENT_PUBLISH] 첨부파일 업로드 이벤트 발행: profileID={}, fileName={}, contentType={}, count={}",
                             binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
                     message.addAttachment(binaryContent);
@@ -135,7 +137,11 @@ public class BasicMessageService implements MessageService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+    public PageResponse<MessageDto> findAllByChannelId(
+            UUID channelId,
+            Instant cursor,
+            Pageable pageable
+    ) {
         log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 시작: channelId={}, cursor={}, size={}, sort={}",
                 channelId, cursor, pageable.getPageSize(), pageable.getSort());
 
@@ -145,10 +151,16 @@ public class BasicMessageService implements MessageService {
         Instant createdAt = Optional.ofNullable(cursor)
                 .orElse(Instant.now());
 
-        Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, createdAt, pageable)
+        Slice<MessageDto> slice = messageRepository.findAllByChannelId(
+                        channelId,
+                        createdAt,
+                        pageable
+                )
                 .map(message -> messageMapper.toDto(message));
 
-        Instant nextCursor = !slice.getContent().isEmpty() ? slice.getContent().get(slice.getContent().size() - 1).createdAt() : null;
+        Instant nextCursor = !slice.getContent().isEmpty()
+                ? slice.getContent().get(slice.getContent().size() - 1).createdAt()
+                : null;
 
         log.debug("[MESSAGE_LIST_FIND_BY_CHANNELID] channelId로 메시지 목록 조회 완료: channelId={}, messageCount={}, nextCursor={}, hasNext={}",
                 channelId, slice.getSize(), nextCursor, slice.hasNext());
@@ -158,7 +170,10 @@ public class BasicMessageService implements MessageService {
 
     @PreAuthorize("@messageAuthorizationEvaluator.isAuthor(#messageId, authentication.principal)")
     @Override
-    public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+    public MessageDto update(
+            UUID messageId,
+            MessageUpdateRequest request
+    ) {
         log.debug("[MESSAGE_UPDATE] 메시지 수정 시작: messageId={}", messageId);
 
         // Message ID null & Message 객체 존재 확인

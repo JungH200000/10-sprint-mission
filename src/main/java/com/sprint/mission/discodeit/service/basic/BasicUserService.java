@@ -41,7 +41,10 @@ public class BasicUserService implements UserService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public UserDto create(UserCreateRequest request, MultipartFile profile) {
+    public UserDto create(
+            UserCreateRequest request,
+            MultipartFile profile
+    ) {
         log.debug("[USER_CREATE] 사용자 등록 시작: email={}, username={}",
                 request.email(), request.username());
 
@@ -72,7 +75,7 @@ public class BasicUserService implements UserService {
                         )
                 );
 
-                log.info("[USER_CREATE_PROFILE_UPLOAD] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+                log.info("[USER_CREATE_PROFILE_UPLOAD_EVENT_PUBLISH] 프로필 업로드 이벤트 발행: profileId={}, fileName={}, contentType={}, count={}",
                         binaryContentId, binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
@@ -121,7 +124,11 @@ public class BasicUserService implements UserService {
 
     @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
-    public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
+    public UserDto update(
+            UUID userId,
+            UserUpdateRequest request,
+            MultipartFile profile
+    ) {
         log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, newEmail={}, newUsername={}, isInputNewPassword={}",
                 userId, request.newEmail(), request.newUsername(), request.newPassword() != null);
 
@@ -170,7 +177,7 @@ public class BasicUserService implements UserService {
                     )
             );
 
-            log.info("[USER_UPDATE_PROFILE_UPLOAD] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+            log.info("[USER_UPDATE_PROFILE_UPLOAD_EVENT_PUBLISH] 프로필 업로드 이벤트 발행: profileId={}, fileName={}, contentType={}, count={}",
                     newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
         }
 
@@ -234,15 +241,26 @@ public class BasicUserService implements UserService {
     }
 
     // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
-    private void validateAllRequestExistingOrNull(String email, String username, String password, boolean binaryContentChanged) {
-        if (email == null && username == null && password == null && !binaryContentChanged
+    private void validateAllRequestExistingOrNull(
+            String email,
+            String username,
+            String password,
+            boolean binaryContentChanged
+    ) {
+        if (email == null
+                && username == null
+                && password == null
+                && !binaryContentChanged
         ) {
             throw new NoChangeValueException("All UpdateRequestField", null);
         }
     }
 
     // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
-    private boolean isProfileChanged(byte[] bytes, BinaryContent profile) {
+    private boolean isProfileChanged(
+            byte[] bytes,
+            BinaryContent profile
+    ) {
         if (profile == null) { // 기존에 BinaryContent 없을 때
             return true; // 새로운 BinaryContent 들어옴
         }
