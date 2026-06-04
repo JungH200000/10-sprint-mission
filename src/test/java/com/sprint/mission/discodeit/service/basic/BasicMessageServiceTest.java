@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
@@ -129,6 +130,7 @@ class BasicMessageServiceTest {
             verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository).save(any(Message.class));
+            verify(applicationEventPublisher).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper).toDto(any(Message.class));
         }
 
@@ -201,8 +203,9 @@ class BasicMessageServiceTest {
             verify(userRepository).findById(authorId);
             verify(channelRepository).findById(channelId);
             verify(binaryContentRepository, times(2)).save(any(BinaryContent.class));
-            verify(messageRepository).save(any(Message.class));
             verify(applicationEventPublisher, times(2)).publishEvent(any(BinaryContentCreatedEvent.class));
+            verify(messageRepository).save(any(Message.class));
+            verify(applicationEventPublisher).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper).toDto(any(Message.class));
         }
 
@@ -223,6 +226,7 @@ class BasicMessageServiceTest {
             verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
+            verify(applicationEventPublisher, never()).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper, never()).toDto(any(Message.class));
         }
 
@@ -245,6 +249,7 @@ class BasicMessageServiceTest {
             verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
+            verify(applicationEventPublisher, never()).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper, never()).toDto(any(Message.class));
         }
 
@@ -267,6 +272,7 @@ class BasicMessageServiceTest {
             verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
+            verify(applicationEventPublisher, never()).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper, never()).toDto(any(Message.class));
         }
 
@@ -290,6 +296,7 @@ class BasicMessageServiceTest {
             verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
+            verify(applicationEventPublisher, never()).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper, never()).toDto(any(Message.class));
         }
 
@@ -323,6 +330,7 @@ class BasicMessageServiceTest {
             verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(messageRepository, never()).save(any(Message.class));
+            verify(applicationEventPublisher, never()).publishEvent(any(MessageCreatedEvent.class));
             verify(messageMapper, never()).toDto(any(Message.class));
         }
     }
