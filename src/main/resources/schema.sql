@@ -42,12 +42,13 @@ CREATE TABLE IF NOT EXISTS channels
 -- channels : users = 0..M : 0..N
 CREATE TABLE IF NOT EXISTS read_statuses
 (
-    id           UUID PRIMARY KEY,
-    created_at   timestamptz NOT NULL,
-    updated_at   timestamptz,
-    user_id      UUID        NOT NULL,
-    channel_id   UUID        NOT NULL,
-    last_read_at timestamptz NOT NULL,
+    id                   UUID PRIMARY KEY,
+    created_at           timestamptz NOT NULL,
+    updated_at           timestamptz,
+    user_id              UUID        NOT NULL,
+    channel_id           UUID        NOT NULL,
+    last_read_at         timestamptz NOT NULL,
+    notification_enabled BOOLEAN     NOT NULL,
     UNIQUE (user_id, channel_id),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE
