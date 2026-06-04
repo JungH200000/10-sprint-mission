@@ -398,9 +398,14 @@ class BasicUserServiceTest {
             given(binaryContentStorage.get(oldProfileId)).willReturn(new ByteArrayInputStream(oldProfileBytes));
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(false);
+
+            // 해당 메서드 호출 시, 동작 직접 정의
             given(binaryContentRepository.save(any(BinaryContent.class))).willAnswer(invocation -> {
+                // invocation은 실제 mock 메서드가 호출될 때 정보를 담고 있는 객체로,
+                // getArgument(0)는 save(...)의 첫 번째 Argument를 꺼내는 메서드
                 BinaryContent binaryContent = invocation.getArgument(0);
                 ReflectionTestUtils.setField(binaryContent, "id", newProfileId);
+                // 실제 binaryContent.save(...)처럼 BinaryContent 객체 반환
                 return binaryContent;
             });
             given(userMapper.toDto(user)).willReturn(expectedUpdateUserDto);
