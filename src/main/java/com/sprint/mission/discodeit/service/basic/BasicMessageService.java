@@ -95,10 +95,6 @@ public class BasicMessageService implements MessageService {
 
                     message.addAttachment(binaryContent);
                 } catch (IOException e) {
-                    if (binaryContent != null) {
-                        binaryContent.updateStatus(BinaryContentStatus.FAIL);
-                    }
-
                     throw new AttachmentsUploadFailedException(authorId, channelId, e);
                 }
             }

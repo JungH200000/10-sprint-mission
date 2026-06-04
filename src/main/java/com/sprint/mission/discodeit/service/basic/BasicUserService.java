@@ -80,10 +80,6 @@ public class BasicUserService implements UserService {
                         binaryContentId, binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
-                if (binaryContent != null) {
-                    binaryContent.updateStatus(BinaryContentStatus.FAIL);
-                }
-
                 throw new ProfileUploadFailedException(email, username, e);
             }
         }
