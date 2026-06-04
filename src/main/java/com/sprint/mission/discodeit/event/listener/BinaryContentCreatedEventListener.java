@@ -22,10 +22,9 @@ public class BinaryContentCreatedEventListener {
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService binaryContentService;
 
+    // 이전 로직 트랜잭션이 성공적으로 Commit된 뒤 Binary 파일을 저장하는 Listener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleBinaryContentCreatedListener(
-            BinaryContentCreatedEvent event
-    ) {
+    public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
         UUID binaryContentId = event.getBinaryContentId();
         byte[] bytes = event.getBytes();
 
