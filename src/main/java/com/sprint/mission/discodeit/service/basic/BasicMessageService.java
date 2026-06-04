@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
@@ -100,6 +101,11 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.save(message);
+
+        applicationEventPublisher.publishEvent(
+                new MessageCreatedEvent(message)
+        );
+
         log.debug("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}",
                 message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 
