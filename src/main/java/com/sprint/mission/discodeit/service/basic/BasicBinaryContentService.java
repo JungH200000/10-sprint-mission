@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -88,6 +89,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContentDtoList;
     }
 
+    // 새로운 트랜잭션에서 BinaryContent status 업데이트
+    // => Listener의 메서드가 트랜잭션이 Commit된 후에 실행되기 때문
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public BinaryContentDto updateStatus(
             UUID binaryContentId,
@@ -95,7 +99,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     ) {
         BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
 
-        if (status == null || !status.equals(BinaryContentStatus.PROCESSING)) {
+        if (status == null) {
             throw new InvalidInputException("status", status);
         }
 
