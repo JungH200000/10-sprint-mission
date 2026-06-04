@@ -81,7 +81,7 @@ public class BasicUserService implements UserService {
 
             } catch (IOException e) {
                 if (binaryContent != null) {
-                    binaryContent.updateBinaryContentStatus(BinaryContentStatus.FAIL);
+                    binaryContent.updateStatus(BinaryContentStatus.FAIL);
                 }
 
                 throw new ProfileUploadFailedException(email, username, e);

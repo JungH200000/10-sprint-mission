@@ -100,7 +100,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         }
 
         // BinaryContent 상태 업데이트
-        binaryContent.updateBinaryContentStatus(status);
+        binaryContent.updateStatus(status);
 
         return binaryContentMapper.toDto(binaryContent);
     }

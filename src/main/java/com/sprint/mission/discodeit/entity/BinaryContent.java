@@ -36,7 +36,7 @@ public class BinaryContent extends BaseUpdatableEntity {
         this.status = BinaryContentStatus.PROCESSING;
     }
 
-    public void updateBinaryContentStatus(BinaryContentStatus status) {
+    public void updateStatus(BinaryContentStatus status) {
         this.status = status;
     }
 }

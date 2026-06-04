@@ -37,7 +37,7 @@ public class BinaryContentCreatedEventListener {
 
         // BinaryContent status를 SUCCESS로 업데이트
         BinaryContent binaryContent = validateAndGetBinaryContentByBinaryContentId(binaryContentId);
-        binaryContent.updateBinaryContentStatus(BinaryContentStatus.SUCCESS);
+        binaryContent.updateStatus(BinaryContentStatus.SUCCESS);
 
         log.debug("[BINARY_CONTENT_UPLOAD] Binary 파일 저장 완료: binaryContentId={}, status={}, size={}",
                 binaryContentId, binaryContent.getStatus().toString(), bytes.length);
