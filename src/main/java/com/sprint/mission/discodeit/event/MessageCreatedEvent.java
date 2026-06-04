@@ -6,7 +6,7 @@ import lombok.Getter;
 
 import java.time.Instant;
 
-// 채널에 새로운 메시지가 생성될 시 알림을 요청하는 이벤트 클래스
+// 채널에 새로운 메시지가 생성될 시 알림 발생을 요청하는 이벤트 클래스
 @Getter
 public class MessageCreatedEvent {
 
