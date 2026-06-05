@@ -12,6 +12,7 @@ import java.util.UUID;
 
 // 데이터 관련 로직(저장, 조회, 삭제 등등) 담당
 public interface UserRepository extends JpaRepository<User, UUID> {
+
     @Query(value = "SELECT u FROM User AS u " +
             "LEFT JOIN FETCH u.profile " +
             "WHERE u.id = :userId")

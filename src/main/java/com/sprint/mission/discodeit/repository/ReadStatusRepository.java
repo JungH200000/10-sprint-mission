@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
+
     Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
 
     @Query(value = "SELECT r FROM ReadStatus AS r " +
