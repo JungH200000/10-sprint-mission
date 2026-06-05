@@ -11,6 +11,6 @@ public record ReadStatusUpdateRequest(
         Instant newLastReadAt,
 
         @NotNull(message = "알림 수정 여부가 null로 입력되었습니다.")
-        boolean newNotificationEnabled
+        Boolean newNotificationEnabled
 ) {
 }
