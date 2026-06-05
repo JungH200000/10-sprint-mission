@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS notifications
     updated_at  timestamptz,
     receiver_id UUID         NOT NULL,
     title       VARCHAR(200) NOT NULL,
-    content     text         NOT NULL,
+    content     text,
     FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
