@@ -19,15 +19,15 @@ public class Notification extends BaseUpdatableEntity {
     private String title;
 
     @Column(nullable = false)
-    private String message;
+    private String content;
 
     public Notification(
             User receiver,
             String title,
-            String message
+            String content
     ) {
         this.receiver = receiver;
         this.title = title;
-        this.message = message;
+        this.content = content;
     }
 }
