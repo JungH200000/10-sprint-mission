@@ -73,7 +73,7 @@ public class BasicMessageService implements MessageService {
         if (attachments != null && !attachments.isEmpty()) {
             for (MultipartFile attachment : attachments) {
                 if (attachment == null || attachment.isEmpty()) continue;
-                BinaryContent binaryContent = null;
+                BinaryContent binaryContent;
                 try {
                     byte[] bytes = attachment.getBytes();
                     binaryContent = new BinaryContent(
