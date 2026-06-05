@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +100,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusDtoList;
     }
 
+    @PreAuthorize("@readStatusAuthorizationEvaluator.isOwner(#readStatusId, authentication.principal)")
     @Override
     public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
         log.debug("[READ_STATUS_UPDATE] ReadStatus 수정 시작: readStatusId={}, newLastReadAt={}, newNotificationEnabled={}",
@@ -130,6 +132,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusMapper.toDto(readStatus);
     }
 
+    @PreAuthorize("@readStatusAuthorizationEvaluator.isOwner(#readStatusId, authentication.principal)")
     @Override
     public void delete(UUID readStatusId) {
         log.debug("[READ_STATUS_DELETE] ReadStatus 삭제 시작: readStatusId={}", readStatusId);
