@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
@@ -21,6 +22,7 @@ import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,8 @@ public class BasicAuthService implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     // 사용자 권한 수정
     @PreAuthorize("hasRole('ADMIN')")
     @Override
@@ -56,6 +60,11 @@ public class BasicAuthService implements AuthService {
         if (!oldRole.equals(newRole)) {
             // 권한 수정
             user.updateRole(newRole);
+
+            // 권한 변경 시 알림 이벤트 발행
+            applicationEventPublisher.publishEvent(
+                    new RoleUpdatedEvent(userId, oldRole, newRole)
+            );
 
             // 권한이 변경된 사용자가 로그인 상태 시 강제 로그아웃 처리
             if (jwtRegistry.hasActiveJwtInformationByUserId(userId)) {
