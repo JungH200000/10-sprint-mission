@@ -3,13 +3,13 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.notification.NotificationDto;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.NotificationService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,14 +21,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Notification", description = "알림 API")
 public class NotificationController {
 
     private final NotificationService notificationService;
 
-    // 알림 조회
     @RequestMapping(method = RequestMethod.GET)
+    @Operation(summary = "알림 조회")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "알림 조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 User", content = @Content(examples = @ExampleObject(value = "Unauthorized")))
@@ -42,8 +41,8 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.OK).body(notificationDtoList);
     }
 
-    // 알림 확인
     @RequestMapping(value = "/{notificationId}", method = RequestMethod.DELETE)
+    @Operation(summary = "알림 확인")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "알림 확인 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 요청", content = @Content(examples = @ExampleObject(value = "Unauthorized"))),
@@ -56,6 +55,8 @@ public class NotificationController {
     ) {
         UUID receiverId = discodeitUserDetails.getUserDto().id();
 
-        return null;
+        notificationService.deleteByReceiverId(receiverId, notificationId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
