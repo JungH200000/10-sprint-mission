@@ -172,7 +172,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 : null;
     }
 
-    private boolean changedBoolean(Boolean requestValue, Boolean readStatusValue) {
+    private Boolean changedBoolean(Boolean requestValue, Boolean readStatusValue) {
         return requestValue != null && !requestValue.equals(readStatusValue)
                 ? requestValue
                 : null;
