@@ -12,8 +12,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void create(Set<UUID> receiverIds, String title, String content) {
         log.debug("[NOTIFICATION_CREATE] 알림 생성 시작: title={}, content={}, count={}",
@@ -76,6 +79,12 @@ public class BasicNotificationService implements NotificationService {
 
         // 알림 검증
         Notification notification = validateAndGetNotificationByUserId(notificationId);
+
+        // 해당 알림의 수취인이 user가 맞는지 확인
+        UUID notificationReceiverId = notification.getReceiver().getId();
+        if (!notificationReceiverId.equals(receiverId)) {
+            throw new AccessDeniedException("본인 알림만 삭제할 수 있습니다.");
+        }
 
         // 알림 확인(삭제)
         notificationRepository.delete(notification);
