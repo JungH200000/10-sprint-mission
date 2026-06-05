@@ -678,7 +678,7 @@ class BasicUserServiceTest {
 
             // then(검증)
             verify(userRepository).findByIdWithProfile(userId);
-            verify(userRepository).deleteById(userId);
+            verify(userRepository).delete(user);
         }
 
         @Test
@@ -689,7 +689,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.delete(null));
 
             verify(userRepository, never()).findByIdWithProfile(null);
-            verify(userRepository, never()).deleteById(null);
+            verify(userRepository, never()).delete(null);
         }
 
         @Test
@@ -703,7 +703,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.delete(userId));
 
             verify(userRepository).findByIdWithProfile(userId);
-            verify(userRepository, never()).deleteById(userId);
+            verify(userRepository, never()).delete(user);
         }
     }
 }
