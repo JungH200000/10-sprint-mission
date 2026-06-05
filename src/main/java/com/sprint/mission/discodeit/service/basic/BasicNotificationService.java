@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -31,13 +31,19 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationMapper notificationMapper;
 
     @Override
-    public Optional<NotificationDto> create(
-            UUID receiverId,
-            String title,
-            String content
-    ) {
+    public void create(Set<UUID> receiverIds, String title, String content) {
+        log.debug("[NOTIFICATION_CREATE] 알림 생성 시작: title={}, content={}, count={}",
+                title, content, receiverIds.size());
 
-        return Optional.empty();
+        List<Notification> notificationList = receiverIds.stream()
+                .map(receiverId -> validateAndGetUserByUserId(receiverId))
+                .map(receiver -> new Notification(receiver, title, content))
+                .toList();
+
+        notificationRepository.saveAll(notificationList);
+
+        log.info("[NOTIFICATION_CREATE] 알림 생성 완료: title={}, content={}, count={}",
+                title, content, notificationList.size());
     }
 
     @Transactional(readOnly = true)
