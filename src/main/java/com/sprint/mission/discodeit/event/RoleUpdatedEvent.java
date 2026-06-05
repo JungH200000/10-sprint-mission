@@ -19,7 +19,6 @@ public class RoleUpdatedEvent {
     private final Instant occurredAt;
 
     // 이벤트 생성자
-
     public RoleUpdatedEvent(
             UUID userId,
             Role oldRole,
