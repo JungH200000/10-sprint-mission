@@ -27,6 +27,18 @@ CREATE TABLE IF NOT EXISTS users
     FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE SET NULL
 );
 
+-- users : notifications = M: 0...N
+CREATE TABLE IF NOT EXISTS notifications
+(
+    id          UUID PRIMARY KEY,
+    created_at  timestamptz  NOT NULL,
+    updated_at  timestamptz,
+    receiver_id UUID         NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    content     text         NOT NULL,
+    FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
 -- read_status : channels = 0..N : 1
 -- messages : channels = 0..N : 1
 CREATE TABLE IF NOT EXISTS channels
