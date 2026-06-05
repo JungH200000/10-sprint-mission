@@ -205,9 +205,9 @@ public class BasicUserService implements UserService {
         log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        validateAndGetUserByUserId(userId);
+        User user = validateAndGetUserByUserId(userId);
 
-        userRepository.deleteById(userId);
+        userRepository.delete(user);
 
         log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
     }
