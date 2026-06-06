@@ -38,6 +38,8 @@ public class BinaryContentCreatedEventListener {
 
             log.error("[BINARY_CONTENT_UPLOAD_FAIL] Binary 파일 저장 실패: binaryContentId={}, status={}, size={}",
                     binaryContentId, BinaryContentStatus.FAIL, bytes.length, e);
+
+            return;
         }
 
         // 저장(put) 성공 시 BinaryContent status를 SUCCESS로 업데이트
