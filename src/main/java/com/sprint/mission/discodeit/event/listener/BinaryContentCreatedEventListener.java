@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -24,6 +25,7 @@ public class BinaryContentCreatedEventListener {
 
     // 이전 로직 트랜잭션이 성공적으로 Commit된 뒤 Binary 파일을 저장하는 Listener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async(value = "eventTaskExecutor")
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
         UUID binaryContentId = event.getBinaryContentId();
         byte[] bytes = event.getBytes();

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -26,6 +27,7 @@ public class NotificationRequiredEventListener {
 
     // 채널에 새로운 메시지 생성 시 알림을 설정한 모든 참가자에게 알림을 보내는 Listener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async(value = "eventTaskExecutor")
     public void on(MessageCreatedEvent event) {
         Message message = event.getMessage();
         Channel channel = message.getChannel();
@@ -54,6 +56,7 @@ public class NotificationRequiredEventListener {
 
     // 권한(role)이 변경된 사용자에게 알림을 보내는 Listener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async(value = "eventTaskExecutor")
     public void on(RoleUpdatedEvent event) {
         UUID userId = event.getUserId();
         Role oldRole = event.getOldRole();
