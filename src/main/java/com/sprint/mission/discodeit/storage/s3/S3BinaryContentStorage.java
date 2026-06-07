@@ -45,7 +45,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Retryable(
-            value = SdkClientException.class,
+            retryFor = {
+                    BinaryContentSaveFailedException.class,
+                    AwsServerConnectFailedException.class
+            },
             maxAttempts = 3,
             backoff = @Backoff(delay = 1000, multiplier = 2),
             recover = "putFallback"
@@ -72,9 +75,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         return binaryContentId;
     }
 
-    // SdkClientException 예외 발생 시 실행되는 복구 메서드
+    // BinaryContentSaveFailedException 예외 발생 시 실행되는 복구 메서드
     @Recover
-    public void putFallback(SdkClientException e, UUID binaryContentId) {
+    public UUID putFallback(BinaryContentSaveFailedException e, UUID binaryContentId) {
         log.error("[S3_UPLOAD_FALLBACK] S3 업로드 Fallback 실행: errorMessage={}",
                 e.getMessage(), e);
 
@@ -84,6 +87,26 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
                         e
                 )
         );
+
+        // binaryContent 상태를 Fail로 변경시키기 위해서는 예외를 던져야 함.
+        throw e;
+    }
+
+    // AwsServerConnectFailedException 예외 발생 시 실행되는 복구 메서드
+    @Recover
+    public UUID putFallback(AwsServerConnectFailedException e, UUID binaryContentId) {
+        log.error("[S3_UPLOAD_FALLBACK] S3 업로드 Fallback 실행: errorMessage={}",
+                e.getMessage(), e);
+
+        applicationEventPublisher.publishEvent(
+                new S3UploadFailedEvent(
+                        binaryContentId,
+                        e
+                )
+        );
+
+        // binaryContent 상태를 Fail로 변경시키기 위해서는 예외를 던져야 함.
+        throw e;
     }
 
     @Override
