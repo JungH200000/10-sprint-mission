@@ -103,7 +103,14 @@ public class BasicMessageService implements MessageService {
         messageRepository.save(message);
 
         applicationEventPublisher.publishEvent(
-                new MessageCreatedEvent(message)
+                new MessageCreatedEvent(
+                        message.getContent(),
+                        channel.getId(),
+                        channel.getType(),
+                        channel.getName(),
+                        author.getId(),
+                        author.getUsername()
+                )
         );
 
         log.debug("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}",

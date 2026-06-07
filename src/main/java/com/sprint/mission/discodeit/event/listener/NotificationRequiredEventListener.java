@@ -29,26 +29,23 @@ public class NotificationRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async(value = "eventTaskExecutor")
     public void on(MessageCreatedEvent event) {
-        Message message = event.getMessage();
-        Channel channel = message.getChannel();
-        User author = message.getAuthor();
 
         // 채널 알림 여부를 활성화(true)한 ReadStatus 조회한 후 사용자 ID Set(중복 방지)
         Set<UUID> receiverIds = readStatusRepository
-                .findAllByChannelIdAndNotificationEnabledIsTrue(channel.getId())
+                .findAllByChannelIdAndNotificationEnabledIsTrue(event.getChannelId())
                 .stream()
                 .map(readStatus -> readStatus.getUser().getId())
                 // 메시지 author는 제외
-                .filter(userId -> !userId.equals(author.getId()))
+                .filter(userId -> !userId.equals(event.getAuthorId()))
                 .collect(Collectors.toSet());
 
         // title
-        String title = channel.getType().equals(ChannelType.PUBLIC)
-                ? String.format("%s (#%s)", author.getUsername(), channel.getName())
-                : author.getUsername();
+        String title = event.getChannelType().equals(ChannelType.PUBLIC)
+                ? String.format("%s (#%s)", event.getAuthorName(), event.getChannelName())
+                : event.getAuthorName();
 
         // 메시지 내용 (content)
-        String content = message.getContent();
+        String content = event.getMessageContent();
 
         // 해당 정보를 notificationService로 전송해 알림 생성
         notificationService.create(receiverIds, title, content);
