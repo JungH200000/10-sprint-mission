@@ -75,7 +75,7 @@ public class SecurityConfig {
                         // Actuator (prod일 때 조정 필요)
                         .requestMatchers("/actuator/**").permitAll()
                         // 프론트엔드
-                        .requestMatchers("/", "/index.html", "/assests/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         // 그 외 나머지 `/api/**` 요청
                         .requestMatchers("/api/**").authenticated()
                         // 그 외 나머지 `/api/**` 가 아닌 요청
