@@ -1,12 +1,16 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.config.init.AdminProperties;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -22,8 +26,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
-    private final NotificationService notificationService;
+    private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final NotificationService notificationService;
+
+    // 관리자 Username
+    @Value("${discodeit.admin.username}")
+    private final AdminProperties adminProperties;
 
     // 채널에 새로운 메시지 생성 시 알림을 설정한 모든 참가자에게 알림을 보내는 Listener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -63,5 +72,35 @@ public class NotificationRequiredEventListener {
         String content = String.format("%s -> %s", oldRole, newRole);
 
         notificationService.create(Set.of(userId), title, content);
+    }
+
+    // S3에 파일 업로드 실패 시 알림을 보내는 Listener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async(value = "eventTaskExecutor")
+    public void on(S3UploadFailedEvent event) {
+        String requestId = event.getRequestId();
+        UUID binaryContentId = event.getBinaryContentId();
+        String errorMessage = event.getError().getMessage();
+
+        String username = adminProperties.getUsername();
+
+        // 실패 정보를 관리자에게 전송
+        Set<UUID> receiverIds = userRepository.findByUsername(username)
+                .map(user -> Set.of(user.getId()))
+                .orElse(Set.of());
+
+        String title = "S3 파일 업로드 실패";
+
+        String content = String.format("""
+                RequestId: %s
+                BinaryContentId: %s
+                Error: %s
+                """,
+                requestId,
+                binaryContentId,
+                errorMessage
+        );
+
+        notificationService.create(receiverIds, title, content);
     }
 }
