@@ -106,10 +106,6 @@ public class BasicReadStatusService implements ReadStatusService {
         log.debug("[READ_STATUS_UPDATE] ReadStatus 수정 시작: readStatusId={}, newLastReadAt={}, newNotificationEnabled={}",
                 readStatusId, request.newLastReadAt(), request.newNotificationEnabled());
 
-        if (request.newLastReadAt() == null) {
-            throw new InvalidInputException("newLastReadAt", null);
-        }
-
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(readStatusId);
 
         Instant newLastReadAt = changedInstant(
