@@ -32,7 +32,7 @@ public class AsyncConfig implements AsyncConfigurer {
         // core 개수를 초과해 만들어진 스레드가 놀고 있을 때 유지되는 시간(초)
         executor.setKeepAliveSeconds(60);
         // 어떤 Executor를 실행했는지 구분하기 위한 스레드 이름 접두어
-        executor.setThreadNamePrefix("taskExecutor-");
+        executor.setThreadNamePrefix("eventTaskExecutor-");
         // TaskDecorator를 설정해 MDC, SecurityContext,트랜잭션 리소스 같은 컨텍스트를 작업 실행 전/후에 복사/정리
         executor.setTaskDecorator(
                 new CompositeTaskDecorator(
