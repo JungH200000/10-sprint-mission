@@ -95,11 +95,11 @@ public class SecurityConfig {
 
         SecurityFilterChain chain = http.build();
 
-        log.debug("========== [Spring Security Filter List - START] ==========");
-        chain.getFilters().forEach(filter ->
-                log.debug("{}", filter.getClass().getSimpleName())
-        );
-        log.debug("========== [Spring Security Filter List - END] ==========");
+//        log.debug("========== [Spring Security Filter List - START] ==========");
+//        chain.getFilters().forEach(filter ->
+//                log.debug("{}", filter.getClass().getSimpleName())
+//        );
+//        log.debug("========== [Spring Security Filter List - END] ==========");
 
         return chain;
     }
