@@ -65,6 +65,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         } catch (IOException e) {
             throw new BinaryContentSaveFailedException(binaryContentId, e);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException("Thread interrupted while simulating delay", e);
         }
 
