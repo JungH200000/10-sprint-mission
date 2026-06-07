@@ -12,6 +12,8 @@ spring:
     open-in-view: false
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  cache:
+    type: ${CACHE_TYPE:caffeine}
 
 discodeit:
   admin:
