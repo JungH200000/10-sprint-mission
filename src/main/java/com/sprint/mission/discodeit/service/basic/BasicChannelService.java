@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
@@ -59,6 +61,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @Override
     public ChannelDto createPrivateChannel(PrivateChannelCreateRequest request) {
         log.debug("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 시작: count={}",
@@ -164,6 +167,7 @@ public class BasicChannelService implements ChannelService {
         return channelDtoList;
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -196,6 +200,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("@channelAuthorizationEvaluator.canDelete(#channelId, authentication)")
     @Override
     public void delete(UUID channelId) {

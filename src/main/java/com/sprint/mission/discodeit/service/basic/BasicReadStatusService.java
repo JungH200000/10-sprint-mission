@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
     private final ReadStatusMapper readStatusMapper;
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @Override
     public ReadStatusDto create(ReadStatusCreateRequest request) {
         log.debug("[READ_STATUS_CREATE] ReadStatus 생성 시작: userId={}, channelId={}, lastReadAt={}",
@@ -128,6 +130,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusMapper.toDto(readStatus);
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("@readStatusAuthorizationEvaluator.isOwner(#readStatusId, authentication.principal)")
     @Override
     public void delete(UUID readStatusId) {

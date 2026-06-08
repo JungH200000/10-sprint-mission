@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
@@ -17,7 +16,9 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +43,7 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @CacheEvict(value = "userList", allEntries = true)
     @Override
     public UserDto create(
             UserCreateRequest request,
@@ -125,6 +127,10 @@ public class BasicUserService implements UserService {
         return userDtoList;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "userList", allEntries = true),
+            @CacheEvict(value = "channelList", allEntries = true) // 채팅창 내 사용자 정보
+    })
     @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
     public UserDto update(
@@ -201,6 +207,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @CacheEvict(value = "userList", allEntries = true)
     @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
     public void delete(UUID userId) {

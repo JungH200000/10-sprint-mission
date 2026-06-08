@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * 로그인 성공 시 JwtInformation 등록(저장)
      */
+    @CacheEvict(value = "userList", allEntries = true)
     @Override
     public JwtInformation registerJwtInformation(JwtInformation jwtInformation) {
         UUID userId = jwtInformation.getUserDto().id();
@@ -66,6 +68,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * UserId로 해당 유저의 모든 JwtInformation 삭제
      */
+    @CacheEvict(value = "userList", allEntries = true)
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
         // InMemory(map)에서 제거
@@ -190,6 +193,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * 만료된 JwtInformation 삭제
      */
+    @CacheEvict(value = "userList", allEntries = true) // token 만료로도 online 상태 변경되기 때문
     @Scheduled(fixedDelay = 1000 * 60 * 5) // 5분 간격
     @Override
     public void clearExpiredJwtInformation() {

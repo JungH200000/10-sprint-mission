@@ -12,6 +12,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +36,8 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 
+    private final CacheManager cacheManager;
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void create(Set<UUID> receiverIds, String title, String content) {
@@ -45,6 +50,9 @@ public class BasicNotificationService implements NotificationService {
                 .toList();
 
         notificationRepository.saveAll(notificationList);
+
+        // 각 receiverId 별로 캐시 삭제
+        evictNotificationListCache(receiverIds);
 
         log.info("[NOTIFICATION_CREATE] 알림 생성 완료: title={}, content={}, count={}",
                 title, content, notificationList.size());
@@ -70,6 +78,7 @@ public class BasicNotificationService implements NotificationService {
         return notificationDtoList;
     }
 
+    @CacheEvict(value = "notificationList", key = "#receiverId")
     @PreAuthorize("#receiverId != null and #receiverId.equals(authentication.principal.userDto.id)")
     @Override
     public void deleteByReceiverId(UUID receiverId, UUID notificationId) {
@@ -115,5 +124,18 @@ public class BasicNotificationService implements NotificationService {
                 .orElseThrow(() ->
                         new NotificationNotFoundException("notificationId", notificationId)
                 );
+    }
+
+    // 각 receiverId 별로 캐시 삭제
+    private void evictNotificationListCache(Set<UUID> receiverIds) {
+        Cache cache = cacheManager.getCache("notificationList");
+
+        if (cache == null) {
+            return;
+        }
+
+        receiverIds.stream()
+                .filter(receiverId -> receiverId != null)
+                .forEach(receiverId -> cache.evict(receiverId));
     }
 }
