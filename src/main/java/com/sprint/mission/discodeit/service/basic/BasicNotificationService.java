@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,7 @@ public class BasicNotificationService implements NotificationService {
                 title, content, notificationList.size());
     }
 
+    @Cacheable(value = "notificationList", key = "#receiverId", unless = "#result.isEmpty()")
     @Transactional(readOnly = true)
     @Override
     public List<NotificationDto> findAllByReceiverId(UUID receiverId) {

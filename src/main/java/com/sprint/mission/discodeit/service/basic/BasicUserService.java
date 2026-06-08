@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -109,6 +110,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @Cacheable(value = "userList", unless = "#result.isEmpty()")
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
