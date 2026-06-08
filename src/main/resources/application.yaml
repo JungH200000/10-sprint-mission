@@ -21,7 +21,7 @@ spring:
     caffeine:
       spec: >
         maximumSize=100,
-        expireAfterWrite=600s,
+        expireAfterWrite=300s,
         recordStats
       # 최대 캐시 항목 수, 쓰기 후 만료 시간, 캐시 통계 기록 활성화
 
