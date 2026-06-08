@@ -19,7 +19,11 @@ spring:
       - notificationList
       - userList
     caffeine:
-      spec: maximumSize=100, expireAfterWrite=10m
+      spec: >
+        maximumSize=100,
+        expireAfterWrite=600s,
+        recordStats
+      # 최대 캐시 항목 수, 쓰기 후 만료 시간, 캐시 통계 기록 활성화
 
 discodeit:
   admin:
@@ -56,7 +60,7 @@ management:
       enabled: true
   observations:
     annotations:
-      enabled: true
+      enabled: true # @Timed 같은 Micrometer 관찰/metric 애너테이션 동작 설정
 
 info:
   app:
