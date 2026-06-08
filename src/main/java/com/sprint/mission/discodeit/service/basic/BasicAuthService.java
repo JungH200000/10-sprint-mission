@@ -22,6 +22,7 @@ import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class BasicAuthService implements AuthService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     // 사용자 권한 수정
+    @CacheEvict(value = "userList", allEntries = true)
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public UserDto updateUserRole(UserRoleUpdateRequest request) {
