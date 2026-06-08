@@ -22,6 +22,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -51,6 +52,7 @@ public class BasicMessageService implements MessageService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @Override
     public MessageDto create(
             MessageCreateRequest request,
@@ -199,6 +201,7 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(message);
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("@messageAuthorizationEvaluator.isAuthor(#messageId, authentication.principal)")
     @Override
     public void delete(UUID messageId) {
