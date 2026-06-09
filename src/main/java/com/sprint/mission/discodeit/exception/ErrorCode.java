@@ -51,6 +51,7 @@ public enum ErrorCode {
 
     // Event
     EVENT_SERIALIZATION_FAILED("이벤트 직렬화에 실패했습니다."),
+    EVENT_DESERIALIZATION_FAILED("이벤트 역직렬화에 실패했습니다."),
 
     // Server
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."); // 커스텀 예외로 처리하지 못하는 예외 코드
