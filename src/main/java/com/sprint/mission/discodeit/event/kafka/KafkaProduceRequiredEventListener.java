@@ -26,36 +26,45 @@ public class KafkaProduceRequiredEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(MessageCreatedEvent event) {
-        try {
-            // MessageCreatedEvent를 String으로 변환 후 payload 변수에 할당
-            String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
-        } catch (JsonProcessingException e) {
-            throw new EventSerializationFailedException("MessageCreatedEvent 직렬화에 실패했습니다.", e);
-        }
+        // MessageCreatedEvent를 String으로 변환 후 payload 변수에 할당
+        sendEvent("discodeit.MessageCreatedEvent", event);
     }
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(RoleUpdatedEvent event) {
-        try {
-            // RoleUpdatedEvent를 String으로 변환 후 payload 변수에 할당
-            String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.RoleUpdatedEvent", payload);
-        } catch (JsonProcessingException e) {
-            throw new EventSerializationFailedException("RoleUpdatedEvent 직렬화에 실패했습니다.", e);
-        }
+        // RoleUpdatedEvent를 String으로 변환 후 payload 변수에 할당
+        sendEvent("discodeit.RoleUpdatedEvent", event);
     }
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(S3UploadFailedEvent event) {
+        // RoleUpdatedEvent를 String으로 변환 후 payload 변수에 할당
+        sendEvent("discodeit.S3UploadFailedEvent", event);
+    }
+
+    private void sendEvent(String topic, Object event) {
         try {
-            // RoleUpdatedEvent를 String으로 변환 후 payload 변수에 할당
+            // Event를 String으로 변환 후 payload 변수에 할당
             String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.S3UploadFailedEvent", payload);
+
+            kafkaTemplate.send(topic, payload)
+                    .whenComplete((result, e) -> {
+                        if (e != null) {
+                            log.error("[KAFKA_EVENT_PUBLISH_FAULED] Kafka 이벤트 발행 실패: topic={}, event={}",
+                                    topic, event.getClass().getSimpleName(), e);
+                        } else {
+                            log.info("[KAFKA_EVENT_PUBLISH_SUCCESS] Kafka 이벤트 발행 성공: topic={}, event={}",
+                                    topic, event.getClass().getSimpleName());
+                        }
+                    });
         } catch (JsonProcessingException e) {
-            throw new EventSerializationFailedException("S3UploadFailedEvent 직렬화에 실패했습니다.", e);
+            log.error("[EVENT_SERIALIZATION_FAILED] 이벤트 직렬화 실패", e);
+            throw new EventSerializationFailedException(
+                    event.getClass().getSimpleName() + " 직렬화에 실패했습니다.",
+                    e
+            );
         }
     }
 }
