@@ -49,6 +49,9 @@ public enum ErrorCode {
     INVALID_JWT_INFORMATION("유효하지 않은 Jwt Information입니다."),
     JWT_INFORMATION_NOT_FOUND("Jwt Information을 찾을 수 없습니다."),
 
+    // Event
+    EVENT_SERIALIZATION_FAILED("이벤트 직렬화에 실패했습니다."),
+
     // Server
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."); // 커스텀 예외로 처리하지 못하는 예외 코드
 
