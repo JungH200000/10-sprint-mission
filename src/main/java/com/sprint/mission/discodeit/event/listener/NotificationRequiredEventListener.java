@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 // MessageCreatedEvent를 받아 메시지 생성 시 알림을 발행하는 Listener
-@Component
+//@Component
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
