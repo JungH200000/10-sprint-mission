@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.exception.event.EventDeserializationFailedException;
 import com.sprint.mission.discodeit.exception.event.EventSerializationFailedException;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -65,9 +66,9 @@ public class NotificationRequiredTopicListener {
             notificationService.create(receiverIds, title, content);
 
         } catch (JsonProcessingException e) {
-            log.error("[EVENT_SERIALIZATION_FAILED] 이벤트 직렬화 실패", e);
-            throw new EventSerializationFailedException(
-                    "이벤트 직렬화에 실패했습니다.",
+            log.error("[EVENT_DESERIALIZATION_FAILED] 이벤트 역직렬화에 실패", e);
+            throw new EventDeserializationFailedException(
+                    "이벤트 역직렬화에 실패했습니다.",
                     e
             );
         }
@@ -91,9 +92,9 @@ public class NotificationRequiredTopicListener {
 
             notificationService.create(Set.of(userId), title, content);
         } catch (JsonProcessingException e) {
-            log.error("[EVENT_SERIALIZATION_FAILED] 이벤트 직렬화 실패", e);
-            throw new EventSerializationFailedException(
-                    "이벤트 직렬화에 실패했습니다.",
+            log.error("[EVENT_DESERIALIZATION_FAILED] 이벤트 역직렬화에 실패", e);
+            throw new EventDeserializationFailedException(
+                    "이벤트 역직렬화에 실패했습니다.",
                     e
             );
         }
@@ -133,9 +134,9 @@ public class NotificationRequiredTopicListener {
 
             notificationService.create(receiverIds, title, content);
         } catch (JsonProcessingException e) {
-            log.error("[EVENT_SERIALIZATION_FAILED] 이벤트 직렬화 실패", e);
-            throw new EventSerializationFailedException(
-                    "이벤트 직렬화에 실패했습니다.",
+            log.error("[EVENT_DESERIALIZATION_FAILED] 이벤트 역직렬화에 실패", e);
+            throw new EventDeserializationFailedException(
+                    "이벤트 역직렬화에 실패했습니다.",
                     e
             );
         }
