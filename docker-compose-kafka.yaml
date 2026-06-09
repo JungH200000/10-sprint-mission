@@ -23,4 +23,10 @@ services:
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
 
+    networks:
+      - backend
+
+networks:
+  backend:
+
 # 실행: docker compose -f docker-compose-kafka.yaml up -d
