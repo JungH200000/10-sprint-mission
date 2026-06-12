@@ -62,7 +62,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       # 10초마다 확인
       interval: 10s
-      # 각 확인의 최대 대기 시간
+      # 각 healthcheck의 최대 대기 시간
       timeout: 5s
       # 3번 재시도 후 실패 처리
       retries: 3
