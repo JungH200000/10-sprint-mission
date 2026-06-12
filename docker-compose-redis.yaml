@@ -16,3 +16,5 @@ networks:
 
 volumes:
   redis-data:
+
+# 실행: docker compose -f docker-compose-redis.yaml up -d
