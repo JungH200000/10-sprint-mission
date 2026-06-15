@@ -54,7 +54,7 @@ public class BasicNotificationService implements NotificationService {
         // 각 receiverId 별로 캐시 삭제
         evictNotificationListCache(receiverIds);
 
-        log.info("[NOTIFICATION_CREATE] 알림 생성 완료: title={}, content={}, count={}",
+        log.debug("[NOTIFICATION_CREATE] 알림 생성 완료: title={}, content={}, count={}",
                 title, content, notificationList.size());
     }
 
