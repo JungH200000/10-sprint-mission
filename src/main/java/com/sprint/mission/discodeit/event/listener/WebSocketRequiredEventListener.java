@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.UUID;
-
 // 메시지 생성 시 해당 채널을 구독 중인 클라이언트에게 새 메시지를 발행하는 Listener
 @Component
 @Slf4j
