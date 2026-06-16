@@ -26,6 +26,10 @@ logging:
 #    org.springframework.transaction.support: TRACE # 트랜잭션 처리 상세 로그
 #    org.springframework.orm.jpa: TRACE # Spring ORM/JPA 상세 로그
     org.springframework.security: INFO # Spring Security 전체 로그
+    org.springframework.data.redis: WARN
+    org.apache.kafka.clients.consumer.ConsumerConfig: WARN
+    org.apache.kafka.clients.consumer.internals: WARN
+    org.springframework.kafka.listener: WARN
 
 management:
   endpoint:
