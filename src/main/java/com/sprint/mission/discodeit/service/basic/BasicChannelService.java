@@ -227,6 +227,9 @@ public class BasicChannelService implements ChannelService {
         Channel channel = validateAndGetChannelByChannelId(channelId);
         ChannelDto channelDto = channelMapper.toDto(channel);
 
+        // 채널 삭제 전 ReadStatus 삭제하여 참조 상태 해제(private channel)
+        readStatusRepository.deleteByChannelId(channelId);
+        // 채널 삭제
         channelRepository.delete(channel);
 
         changeEventPublish(ChangeType.DELETED, channelDto);
