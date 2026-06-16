@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.event;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelDto;
-import com.sprint.mission.discodeit.event.enums.ChangeType;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -11,16 +10,19 @@ import java.util.UUID;
 @Getter
 public class UserOnlineStatusUpdateEvent {
 
-    private final ChangeType changeType;
     private final UUID userId;
+    private final UserDto userDto;
 
     // 이벤트 생성 시간
     private final Instant occurredAt;
 
     // 이벤트 생성자
-    public UserOnlineStatusUpdateEvent(ChangeType changeType, UUID userId) {
-        this.changeType = changeType;
+    public UserOnlineStatusUpdateEvent(
+            UUID userId,
+            UserDto userDto
+    ) {
         this.userId = userId;
+        this.userDto = userDto;
 
         this.occurredAt = Instant.now();
     }
