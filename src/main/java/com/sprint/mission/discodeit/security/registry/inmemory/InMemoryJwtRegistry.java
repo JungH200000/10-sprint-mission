@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.security.registry.inmemory;
 
+import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
+import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
@@ -10,6 +12,7 @@ import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +30,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // 사용자 ID별 JwtInformation Queue
     private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
@@ -197,8 +202,10 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     @Scheduled(fixedDelay = 1000 * 60 * 5) // 5분 간격
     @Override
     public void clearExpiredJwtInformation() {
-        origin.forEach((userId, jwtInformationQueue) ->
-                removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue)
+        origin.forEach((userId, jwtInformationQueue) -> {
+                    removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue);
+                    changeEventPublish(ChangeType.UPDATED, userId);
+                }
         );
 
         log.debug("[EXPIRED_JWT_CLEAR] 만료된 Jwt Information 삭제 완료");
@@ -278,5 +285,14 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private void changeEventPublish(ChangeType changeType, UUID userId) {
+        applicationEventPublisher.publishEvent(
+                new UserOnlineStatusUpdateEvent(
+                        changeType,
+                        userId
+                )
+        );
     }
 }
