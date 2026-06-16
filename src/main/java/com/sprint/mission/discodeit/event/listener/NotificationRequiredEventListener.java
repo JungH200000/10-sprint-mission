@@ -41,7 +41,6 @@ public class NotificationRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async(value = "eventTaskExecutor")
     public void on(MessageCreatedEvent event) {
-
         // 채널 알림 여부를 활성화(true)한 ReadStatus 조회한 후 사용자 ID Set(중복 방지)
         Set<UUID> receiverIds = readStatusRepository
                 .findAllByChannelIdAndNotificationEnabledIsTrue(event.getChannelId())
