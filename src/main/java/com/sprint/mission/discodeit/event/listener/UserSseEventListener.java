@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.event.listener;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.event.UserChangeEvent;
 import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
@@ -8,6 +7,7 @@ import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -35,12 +35,14 @@ public class UserSseEventListener {
         sseService.broadcast(changeType, userDto);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     @Async(value = "eventTaskExecutor")
     public void on(UserOnlineStatusUpdateEvent event) {
-        String changeType = event.getChangeType().toString();
-        UserDto userDto = userService.find(event.getUserId());
+        String eventName = "users.updated";
+        UserDto userDto = event.getUserDto() != null
+                ? event.getUserDto()
+                : userService.find(event.getUserId());
 
-        sseService.broadcast(changeType, userDto);
+        sseService.broadcast(eventName, userDto);
     }
 }
