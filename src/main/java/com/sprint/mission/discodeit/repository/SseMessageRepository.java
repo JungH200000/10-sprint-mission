@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.dto.sse.SseMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 // 이벤트 유실 복원을 위해 SSE 메시지를 저장하는 컴포넌트
 @Repository
+@Slf4j
 public class SseMessageRepository {
 
     private final ConcurrentLinkedDeque<UUID> eventIdQueue = new ConcurrentLinkedDeque<>();
@@ -36,6 +38,8 @@ public class SseMessageRepository {
     // lastEventId 이후의 이벤트 가져오기
     public List<SseMessage> findAllAfter(UUID receiverId, UUID lastEventId) {
         List<SseMessage> result = new ArrayList<>();
+
+        // lastEventId 발견 여부
         boolean foundLastEventId = false;
 
         for (UUID eventId : eventIdQueue) {
@@ -57,6 +61,13 @@ public class SseMessageRepository {
             if (message != null && message.receiverIds().contains(receiverId)) {
                 result.add(message);
             }
+        }
+
+        // lastEventId가 repository에 존재하지 않을 때
+        // 이때 List<SseMessage> result가 빈 리스트
+        if (!foundLastEventId) {
+            log.warn("[SSE_RESTORE_FAILED] lastEventId를 찾을 수 없음: receiverId={}, lastEventId={}",
+                    receiverId, lastEventId);
         }
 
         return result;
