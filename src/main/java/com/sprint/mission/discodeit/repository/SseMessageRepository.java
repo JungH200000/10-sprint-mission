@@ -17,9 +17,20 @@ public class SseMessageRepository {
     private final ConcurrentLinkedDeque<UUID> eventIdQueue = new ConcurrentLinkedDeque<>();
     private final Map<UUID, SseMessage> messages = new ConcurrentHashMap<>();
 
+    // 최대 저장 이벤트 개수
+    private static final int MAX_EVENT_COUNT = 1000;
+
     public void save(SseMessage sseMessage) {
         eventIdQueue.addLast(sseMessage.id());
         messages.put(sseMessage.id(), sseMessage);
+
+        // 오래된 이벤트(id, message) 삭제
+        if (eventIdQueue.size() > MAX_EVENT_COUNT) {
+            UUID oldEventId = eventIdQueue.pollFirst();
+            if (oldEventId != null) {
+                messages.remove(oldEventId);
+            }
+        }
     }
 
     // lastEventId 이후의 이벤트 가져오기
