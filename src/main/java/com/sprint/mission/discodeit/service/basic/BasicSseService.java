@@ -94,7 +94,7 @@ public class BasicSseService implements SseService {
     // 연결된 모든 클라이언트에게 동일한 이벤트 전송
     @Override
     public void broadcast(String eventName, Object data) {
-        Collection<UUID> receiverIds = sseEmitterRepository.findAll().keySet();
+        Collection<UUID> receiverIds = List.copyOf(sseEmitterRepository.findAll().keySet());
         send(receiverIds, eventName, data);
     }
 

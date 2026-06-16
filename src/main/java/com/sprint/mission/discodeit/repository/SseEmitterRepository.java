@@ -40,6 +40,6 @@ public class SseEmitterRepository {
     }
 
     public Map<UUID, List<SseEmitter>> findAll() {
-        return data;
+        return Map.copyOf(data);
     }
 }
