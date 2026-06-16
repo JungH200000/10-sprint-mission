@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.security.handler.jwt;
 
 import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
-import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
-import com.sprint.mission.discodeit.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,8 +22,6 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtLogoutHandler implements LogoutHandler {
-
-    private final UserService userService;
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
@@ -62,7 +58,7 @@ public class JwtLogoutHandler implements LogoutHandler {
                             UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
                             jwtRegistry.invalidateJwtInformationByUserId(userId);
 
-                            changeEventPublish(ChangeType.UPDATED, userId);
+                            changeEventPublish(userId);
                         }
                     });
         }
@@ -70,11 +66,11 @@ public class JwtLogoutHandler implements LogoutHandler {
         log.info("[AUTH_LOGOUT_SUCCESS] 로그아웃 성공");
     }
 
-    private void changeEventPublish(ChangeType changeType, UUID userId) {
+    private void changeEventPublish(UUID userId) {
         applicationEventPublisher.publishEvent(
                 new UserOnlineStatusUpdateEvent(
-                        changeType,
-                        userId
+                        userId,
+                        null
                 )
         );
     }

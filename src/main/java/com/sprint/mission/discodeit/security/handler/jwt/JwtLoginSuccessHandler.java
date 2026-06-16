@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.jwt.JwtProperties;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.event.UserChangeEvent;
-import com.sprint.mission.discodeit.event.enums.ChangeType;
+import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
@@ -73,7 +72,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         jwtRegistry.registerJwtInformation(jwtInformation);
 
         // 사용자 로그인 상태 변경으로 이벤트 전송
-        changeEventPublish(ChangeType.UPDATED, refreshUserDto);
+        changeEventPublish(refreshUserDto);
 
         // Refresh Token을 Cookie에 저장
         ResponseCookie refreshTokenCookie = ResponseCookie
@@ -106,10 +105,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", refreshUserDto.id());
     }
 
-    private void changeEventPublish(ChangeType changeType, UserDto userDto) {
+    private void changeEventPublish(UserDto userDto) {
         applicationEventPublisher.publishEvent(
-                new UserChangeEvent(
-                        changeType,
+                new UserOnlineStatusUpdateEvent(
+                        null,
                         userDto
                 )
         );

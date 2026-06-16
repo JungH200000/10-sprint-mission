@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.security.registry.inmemory;
 
 import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
-import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
@@ -202,10 +201,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     @Scheduled(fixedDelay = 1000 * 60 * 5) // 5분 간격
     @Override
     public void clearExpiredJwtInformation() {
-        origin.forEach((userId, jwtInformationQueue) -> {
-                    removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue);
-                    changeEventPublish(ChangeType.UPDATED, userId);
-                }
+        origin.forEach((userId, jwtInformationQueue) ->
+                removeAndHasActiveJwtInformationByUserId(userId, jwtInformationQueue)
         );
 
         log.debug("[EXPIRED_JWT_CLEAR] 만료된 Jwt Information 삭제 완료");
@@ -271,6 +268,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         // 위에서 Refresh Token 삭제 후 남은 JwtInformation이 없다면 Map에서 userId 삭제
         if (jwtInformationQueue.isEmpty()) {
             origin.remove(userId);
+            changeEventPublish(userId);
             return false;
         }
 
@@ -287,11 +285,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         }
     }
 
-    private void changeEventPublish(ChangeType changeType, UUID userId) {
+    private void changeEventPublish(UUID userId) {
         applicationEventPublisher.publishEvent(
                 new UserOnlineStatusUpdateEvent(
-                        changeType,
-                        userId
+                        userId,
+                        null
                 )
         );
     }
