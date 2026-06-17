@@ -48,7 +48,7 @@ RUN addgroup -S app \
     && chown -R app:app /app
 
 # 2-4. 서비스 포트 노출
-EXPOSE 80
+EXPOSE 8080
 
 # 2-5. 프로젝트 정보를 환경 변수로 설정 -> 실행할 jar 파일의 이름을 추론하는데 활용
 # JVM 옵션을 환경 변수로 설정 (기본값은 빈 문자열)
