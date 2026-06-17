@@ -3,7 +3,9 @@ services:
   redis:
     image: redis:7.2-alpine
     container_name: redis
-    ports:
+    expose:
+      - 6379
+    ports:  # (개발용)DataGrip 확인용 포트
       - "6379:6379"
     volumes:
       - redis-data:/data
