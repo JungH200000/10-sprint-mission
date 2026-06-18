@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.event;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
 // 채널에 새로운 메시지가 생성될 시 알림 발생을 요청하는 이벤트 클래스
 @Getter
+@NoArgsConstructor(force = true)
 public class MessageCreatedEvent {
 
     private final UUID messageId;
