@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.ChannelChangeEvent;
+import com.sprint.mission.discodeit.event.PrivateChannelChangeEvent;
 import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
@@ -65,7 +66,7 @@ public class BasicChannelService implements ChannelService {
 
         ChannelDto channelDto = channelMapper.toDto(channel);
 
-        changeEventPublish(ChangeType.CREATED, channelDto);
+        changeEventPublish(channel.getType(), ChangeType.CREATED, channelDto);
 
         return channelDto;
     }
@@ -99,7 +100,7 @@ public class BasicChannelService implements ChannelService {
 
         ChannelDto channelDto = channelMapper.toDto(channel);
 
-        changeEventPublish(ChangeType.CREATED, channelDto);
+        changeEventPublish(channel.getType(), ChangeType.CREATED, channelDto);
 
         return channelDto;
     }
@@ -212,7 +213,7 @@ public class BasicChannelService implements ChannelService {
 
         ChannelDto channelDto = channelMapper.toDto(channel);
 
-        changeEventPublish(ChangeType.UPDATED, channelDto);
+        changeEventPublish(channel.getType(), ChangeType.UPDATED, channelDto);
 
         return channelDto;
     }
@@ -232,7 +233,7 @@ public class BasicChannelService implements ChannelService {
         // 채널 삭제
         channelRepository.delete(channel);
 
-        changeEventPublish(ChangeType.DELETED, channelDto);
+        changeEventPublish(channel.getType(), ChangeType.DELETED, channelDto);
 
         log.info("[CHANNEL_DELETE] 채널 삭제 완료: channelId={}", channelId);
     }
@@ -269,7 +270,22 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
-    private void changeEventPublish(ChangeType changeType, ChannelDto channelDto) {
+    private void changeEventPublish(
+            ChannelType channelType,
+            ChangeType changeType,
+            ChannelDto channelDto
+    ) {
+        if (ChannelType.PRIVATE.equals(channelType)) {
+            applicationEventPublisher.publishEvent(
+                    new PrivateChannelChangeEvent(
+                            changeType,
+                            channelDto
+                    )
+            );
+
+            return;
+        }
+
         applicationEventPublisher.publishEvent(
                 new ChannelChangeEvent(
                         changeType,
